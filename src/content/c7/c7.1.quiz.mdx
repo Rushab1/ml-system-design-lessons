@@ -290,18 +290,19 @@ The production version of this: any strategy whose backtest shows a small steady
 ## Rapid-fire: probability techniques
 
 These 14 questions stand alone, so you can drill this section without reading anything above it. Each should take 2 to 5 minutes to answer out loud, with arithmetic done in your head or on one line of scratch paper. They are picked for how often they get asked, not for how interesting they are.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
-1. **Expected flips to HHT** Flip a fair coin until you see H, H, T in a row. Give the expected number of flips, and show the state equations you used. Then say what the answer is for HTH and why the two differ.
-2. **Three heads in a row** Expected flips until you see three heads in a row. Then give the formula for $n$ heads in a row and sanity-check it at $n=1$ and $n=2$.
-3. **Coupon collector** Roll a fair die until every face has appeared. Expected number of rolls? Give the exact value and a fast approximation you could produce for $n=50$ without a calculator.
-4. **Distinct faces in ten rolls** Roll a fair die 10 times. Expected number of distinct faces seen. State why the indicators you use are dependent and why that does not matter.
+1. **Rare disease positive test** A disease affects 1 in 10,000. A test is 99% accurate in both directions. You test positive. Probability you are sick? Do it in natural frequencies out loud.
+2. **Expected flips to HHT** Flip a fair coin until you see H, H, T in a row. Give the expected number of flips, and show the state equations you used. Then say what the answer is for HTH and why the two differ.
+3. **Gambler's ruin, fair** You have 20 dollars, your opponent has 80, you bet one dollar per round on a fair coin until someone is broke. Probability you take all 100, and expected number of rounds?
+4. **Coupon collector** Roll a fair die until every face has appeared. Expected number of rolls? Give the exact value and a fast approximation you could produce for $n=50$ without a calculator.
 5. **Does linearity need independence** Your interviewer asks whether linearity of expectation requires the variables to be independent. Answer, justify in one or two sentences, and name what independence is actually needed for.
-6. **Fixed points in a shuffle** Shuffle $n$ cards uniformly. Expected number of cards that land in their original position. Explain why the answer does not depend on $n$, and say what changes if they ask for the probability that zero cards match.
-7. **Rare disease positive test** A disease affects 1 in 10,000. A test is 99% accurate in both directions. You test positive. Probability you are sick? Do it in natural frequencies out loud.
-8. **The jar of coins** 999 fair coins and 1 double-headed coin. You draw one and flip 10 heads. Probability it is the double-headed coin? Then: probability the next flip is heads?
-9. **Nine heads out of ten** Same jar, but now you observe 9 heads in 10 flips rather than 10 in a row. What is the posterior probability that you hold the double-headed coin, and why?
-10. **Gambler's ruin, fair** You have 20 dollars, your opponent has 80, you bet one dollar per round on a fair coin until someone is broke. Probability you take all 100, and expected number of rounds?
-11. **Gambler's ruin with an edge** Same setup, but each round you win with probability 0.49. Roughly what happens to your chance of reaching 100? Give the formula and the rough magnitude, and explain in one sentence why a 1% edge matters so much.
-12. **Ant on a cube** An ant walks from one corner of a cube to a uniformly random adjacent corner each step. Expected steps to reach the diagonally opposite corner? Say how you reduce eight vertices to a handful of states.
-13. **Ninety-nine percent accurate, ninety-nine percent wrong** You ship a fraud model with 99% sensitivity and 99% specificity into a stream where 1 in 10,000 transactions is fraud. What does the alert queue look like in week one, and which offline metric should have caught this before launch?
+6. **Three heads in a row** Expected flips until you see three heads in a row. Then give the formula for $n$ heads in a row and sanity-check it at $n=1$ and $n=2$.
+7. **The jar of coins** 999 fair coins and 1 double-headed coin. You draw one and flip 10 heads. Probability it is the double-headed coin? Then: probability the next flip is heads?
+8. **Gambler's ruin with an edge** Same setup, but each round you win with probability 0.49. Roughly what happens to your chance of reaching 100? Give the formula and the rough magnitude, and explain in one sentence why a 1% edge matters so much.
+9. **Distinct faces in ten rolls** Roll a fair die 10 times. Expected number of distinct faces seen. State why the indicators you use are dependent and why that does not matter.
+10. **Ant on a cube** An ant walks from one corner of a cube to a uniformly random adjacent corner each step. Expected steps to reach the diagonally opposite corner? Say how you reduce eight vertices to a handful of states.
+11. **Ninety-nine percent accurate, ninety-nine percent wrong** You ship a fraud model with 99% sensitivity and 99% specificity into a stream where 1 in 10,000 transactions is fraud. What does the alert queue look like in week one, and which offline metric should have caught this before launch?
+12. **Fixed points in a shuffle** Shuffle $n$ cards uniformly. Expected number of cards that land in their original position. Explain why the answer does not depend on $n$, and say what changes if they ask for the probability that zero cards match.
+13. **Nine heads out of ten** Same jar, but now you observe 9 heads in 10 flips rather than 10 in a row. What is the posterior probability that you hold the double-headed coin, and why?
 14. **Adjacent pairs** Flip a fair coin $n$ times. Expected number of positions where two heads appear back to back. Then say what you would need in order to compute the variance, and why that is a genuinely harder problem.

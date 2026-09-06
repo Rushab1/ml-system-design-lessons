@@ -196,19 +196,20 @@ Others worth naming: the improvement is real but confined to a small segment, or
 ## Rapid-fire: building the eval pipeline
 
 These 15 questions stand alone. Each should take 2 to 5 minutes to answer out loud. They are chosen for how often they come up when you have to own an eval system rather than report a number.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Where the set comes from.** Your PM asks you to write 200 eval examples from scratch. Push back and say where the set should actually come from, and why the invented one will be systematically optimistic.
 2. **What goes in it.** Describe the mix of a real eval set: representative traffic, regression cases, adversarial cases, golden set. Why must the growing regression suite be reported separately from the headline number?
-3. **A gate that fires on noise.** Your CI blocks any drop in score. Say what goes wrong socially and statistically, and design a threshold you would actually defend.
-4. **Paired against last release.** Why does comparing a release against the previous one on shared items need far fewer examples than comparing two independent samples? What is being cancelled?
-5. **The mean did not move.** Enterprise tickets tripled, the headline pass rate is flat. Explain how both are true, and how you would find the regression without fishing.
-6. **Pre-declare or p-hack.** What does pre-declaring your slices actually buy you, and what do you do with an interesting result that shows up in an exploratory slice?
-7. **Nobody deployed anything.** Quality dropped 6 points overnight with no model change. Give your check order, and name the two things people most often forget to version.
+3. **Shadow, canary, experiment.** Distinguish the three. What does each catch that the others do not, and in what order would you use them?
+4. **A gate that fires on noise.** Your CI blocks any drop in score. Say what goes wrong socially and statistically, and design a threshold you would actually defend.
+5. **Offline up, online flat.** Give three distinct explanations, and be precise about the difference between "no effect" and "not enough power."
+6. **Nobody deployed anything.** Quality dropped 6 points overnight with no model change. Give your check order, and name the two things people most often forget to version.
+7. **Paired against last release.** Why does comparing a release against the previous one on shared items need far fewer examples than comparing two independent samples? What is being cancelled?
 8. **Version the judge.** Why is a silently upgraded judge model one of the nastiest failure modes in an eval pipeline, and what does it look like when it happens?
-9. **What is in a run record.** List what you pin and log on every eval run so that diffing two runs is a lookup instead of an investigation.
-10. **Cost as a gate.** A model is 3 points better, 2.5× the cost, and 400ms slower at p95. Walk through the decision. What makes latency different from the other two?
-11. **Do not choose, route.** Instead of picking the expensive model or the cheap one, what architectures let you have both? Name two and say what each costs you in complexity.
-12. **Offline up, online flat.** Give three distinct explanations, and be precise about the difference between "no effect" and "not enough power."
-13. **Shadow, canary, experiment.** Distinguish the three. What does each catch that the others do not, and in what order would you use them?
-14. **Guardrail metrics.** You are optimizing answer quality. Name the guardrails you would hold fixed, and describe a change that improves the primary metric while doing real damage.
+9. **Cost as a gate.** A model is 3 points better, 2.5× the cost, and 400ms slower at p95. Walk through the decision. What makes latency different from the other two?
+10. **Guardrail metrics.** You are optimizing answer quality. Name the guardrails you would hold fixed, and describe a change that improves the primary metric while doing real damage.
+11. **The mean did not move.** Enterprise tickets tripled, the headline pass rate is flat. Explain how both are true, and how you would find the regression without fishing.
+12. **What is in a run record.** List what you pin and log on every eval run so that diffing two runs is a lookup instead of an investigation.
+13. **Do not choose, route.** Instead of picking the expensive model or the cheap one, what architectures let you have both? Name two and say what each costs you in complexity.
+14. **Pre-declare or p-hack.** What does pre-declaring your slices actually buy you, and what do you do with an interesting result that shows up in an exploratory slice?
 15. **Defend the design.** You built an eval pipeline and an engineer says it is overhead that slows the team down. Give your actual answer, in terms of what it caught.

@@ -333,19 +333,20 @@ Why the loss plateaus rather than diverging: the surviving units compensate as f
 ## Rapid-fire: neural networks and backpropagation
 
 These 15 questions stand alone. Each should take two to five minutes to answer out loud, and they are picked for how often they get asked, not for how interesting they are. Several are ML-coding prompts where the graded content is shapes and numerical stability, so say the shapes out loud as you write.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Backprop in NumPy** Write the forward and backward pass for a 2-layer MLP with ReLU, softmax and cross-entropy, vectorized, no frameworks. Annotate every line with its shape, and say where you divide by the batch size and why exactly once.
-2. **The two shape rules** For $z = aW$ in row-major form, state the gradient of the loss with respect to $W$ and with respect to $a$, and say why the bias gradient is a sum over the batch rather than the delta itself.
-3. **Softmax and cross-entropy** Why do these two get paired? Derive the gradient at the logits, and separately say what you must do to the logits before exponentiating and what breaks in production if you skip it.
-4. **Why not MSE for classification** A candidate uses squared error with a sigmoid output on a binary task. Explain what happens to the gradient when the model is confidently wrong, with a rough number, and what cross-entropy does differently.
-5. **Why ReLU replaced sigmoid** Give the graded answer, not "it's faster." Put a number on how much a 10-layer sigmoid stack attenuates the gradient, and say what ReLU's derivative actually is on each branch.
-6. **How do you know gradients are exploding** You suspect exploding gradients. What do you log, what does the failure look like in that log, and what shows up before the loss does?
-7. **How do you prevent vanishing or exploding gradients** Give the full remedy set in order, then say which of them treat the symptom and which fix the underlying conditioning. Be ready for the interviewer to say "and?" after you mention clipping.
-8. **What is a dead neuron** Define it, say how you detect it in a running job, and name the two most common causes and the corresponding fixes.
-9. **Why are RNNs the pathological case** Explain why the vanishing and exploding gradient problem is structurally worse in a recurrent network than in a feedforward one of the same depth, and what quantity governs the behaviour.
-10. **Two linear layers in a row** Why shouldn't you stack two linear layers with no activation between them? Say what the composite actually is, and name the one architecture that does this deliberately and why that is not a contradiction.
-11. **How does autograd work** What does the framework build during the forward pass, what does `.backward()` traverse, and what does each node store? Then say why gradients accumulate rather than overwrite.
+2. **Softmax and cross-entropy** Why do these two get paired? Derive the gradient at the logits, and separately say what you must do to the logits before exponentiating and what breaks in production if you skip it.
+3. **How do you prevent vanishing or exploding gradients** Give the full remedy set in order, then say which of them treat the symptom and which fix the underlying conditioning. Be ready for the interviewer to say "and?" after you mention clipping.
+4. **Why ReLU replaced sigmoid** Give the graded answer, not "it's faster." Put a number on how much a 10-layer sigmoid stack attenuates the gradient, and say what ReLU's derivative actually is on each branch.
+5. **The two shape rules** For $z = aW$ in row-major form, state the gradient of the loss with respect to $W$ and with respect to $a$, and say why the bias gradient is a sum over the batch rather than the delta itself.
+6. **How does autograd work** What does the framework build during the forward pass, what does `.backward()` traverse, and what does each node store? Then say why gradients accumulate rather than overwrite.
+7. **NaN loss at step 400** Your loss prints `NaN` 400 steps into a run that was going fine. Walk through your diagnosis in order, name the three most likely causes, and say what you would have logged in advance to make this a 5-minute investigation.
+8. **How do you know gradients are exploding** You suspect exploding gradients. What do you log, what does the failure look like in that log, and what shows up before the loss does?
+9. **Why not MSE for classification** A candidate uses squared error with a sigmoid output on a binary task. Explain what happens to the gradient when the model is confidently wrong, with a rough number, and what cross-entropy does differently.
+10. **What is a dead neuron** Define it, say how you detect it in a running job, and name the two most common causes and the corresponding fixes.
+11. **Two linear layers in a row** Why shouldn't you stack two linear layers with no activation between them? Say what the composite actually is, and name the one architecture that does this deliberately and why that is not a contradiction.
 12. **detach, no_grad, and in-place** Explain what `detach()` and `torch.no_grad()` each do and when you would use each. Then say why `x += f(x)` can throw an error inside a model while `x = x + f(x)` does not.
-13. **NaN loss at step 400** Your loss prints `NaN` 400 steps into a run that was going fine. Walk through your diagnosis in order, name the three most likely causes, and say what you would have logged in advance to make this a 5-minute investigation.
-14. **Activation memory** Your model fits in GPU memory as parameters but OOMs during training. Explain what is consuming the memory and why, and describe gradient checkpointing including what it costs you.
+13. **Activation memory** Your model fits in GPU memory as parameters but OOMs during training. Explain what is consuming the memory and why, and describe gradient checkpointing including what it costs you.
+14. **Why are RNNs the pathological case** Explain why the vanishing and exploding gradient problem is structurally worse in a recurrent network than in a feedforward one of the same depth, and what quantity governs the behaviour.
 15. **Gradient checking** You have hand-written a backward pass and want to know it is right before training on it. Describe the check you would run, what agreement you expect to see, and one situation where the check legitimately fails on correct code.

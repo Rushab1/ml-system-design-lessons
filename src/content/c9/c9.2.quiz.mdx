@@ -272,18 +272,19 @@ Whatever the route, $\sigma^2$ is what makes the test number interpretable. A te
 ## Rapid-fire: the decomposition and the penalty
 
 Fourteen questions on the three-term split, on measuring its pieces, and on what a penalty does to each of them.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
-1. **Define the two words** Define bias and variance for a prediction at a fixed input. Say exactly what is random and what is held fixed, and answer whether the model currently in your repository has variance.
-2. **Derive it cold** Derive the three-term decomposition of expected squared prediction error. Show both cross-terms and name the assumption each one needs, then say what happens to the first one if your test row leaked into training.
+1. **Derive it cold** Derive the three-term decomposition of expected squared prediction error. Show both cross-terms and name the assumption each one needs, then say what happens to the first one if your test row leaked into training.
+2. **Define the two words** Define bias and variance for a prediction at a fixed input. Say exactly what is random and what is held fixed, and answer whether the model currently in your repository has variance.
 3. **Beat an unbiased estimator** Show me a biased estimator that strictly beats an unbiased one in mean squared error. Give the derivative argument at zero penalty, and say why the true parameter value cannot spoil it.
-4. **Junk features** You add twenty pure-noise columns to a 200-row, 20-feature OLS with unit noise variance. What happens to training error, to test error, and to bias? Give both numbers and the general formula behind them.
-5. **How optimistic is training error** By exactly how much does expected training error understate expected test error for a linear smoother? Give the formula, give a worked number, and name the two model-selection criteria built from it.
-6. **Ridge or lasso, defend it** You have 500 features, 5000 rows, features correlated in blocks, and you believe about 30 matter. You pick one penalty. Defend the choice out loud, then say what evidence would make you switch.
-7. **Standardise before you penalise** Why does ridge require standardised features when OLS does not? Say what the penalty is actually measuring, and what goes wrong if one column is in dollars and another in millions of dollars.
+4. **Standardise before you penalise** Why does ridge require standardised features when OLS does not? Say what the penalty is actually measuring, and what goes wrong if one column is in dollars and another in millions of dollars.
+5. **Ridge or lasso, defend it** You have 500 features, 5000 rows, features correlated in blocks, and you believe about 30 matter. You pick one penalty. Defend the choice out loud, then say what evidence would make you switch.
+6. **Why more rows cannot fix bias** Your model underfits. Explain, in terms of what bias is defined against, why collecting ten times more data does not move that term at all.
+7. **Junk features** You add twenty pure-noise columns to a 200-row, 20-feature OLS with unit noise variance. What happens to training error, to test error, and to bias? Give both numbers and the general formula behind them.
 8. **The intercept** Do you penalise the intercept in ridge? Answer, then say what happens to the fitted values if you do, and what that implies about centring the response.
 9. **The one-standard-error rule** You sweep $\lambda$ and a colleague picks the largest $\lambda$ within one standard error of the minimum instead of the minimum itself. Defend or attack that choice, and say what the standard error in question is computed over.
-10. **What elastic net adds** Your features come in correlated blocks. What does adding an $\ell_2$ term to the lasso penalty change about which coefficients survive, and why is the selected set from pure lasso unstable across resamples?
-11. **Measuring the two terms** Cross-validation gives you one number. Describe a procedure that separates bias from variance, and say what has to be inside the refit loop for the answer to be honest.
-12. **Correction or resampling** You can correct training error analytically with $C_p$, or you can run 5-fold cross-validation. What does each one assume, when is the analytic route the better choice, and what does cross-validation estimate that the correction does not?
-13. **Classification breaks it** Does the bias-variance decomposition hold for 0-1 loss? Give a concrete numerical example where a higher-variance classifier has lower error, say what fails in the derivation, and give the scoring rule that restores the identity.
-14. **Why more rows cannot fix bias** Your model underfits. Explain, in terms of what bias is defined against, why collecting ten times more data does not move that term at all.
+10. **How optimistic is training error** By exactly how much does expected training error understate expected test error for a linear smoother? Give the formula, give a worked number, and name the two model-selection criteria built from it.
+11. **What elastic net adds** Your features come in correlated blocks. What does adding an $\ell_2$ term to the lasso penalty change about which coefficients survive, and why is the selected set from pure lasso unstable across resamples?
+12. **Classification breaks it** Does the bias-variance decomposition hold for 0-1 loss? Give a concrete numerical example where a higher-variance classifier has lower error, say what fails in the derivation, and give the scoring rule that restores the identity.
+13. **Correction or resampling** You can correct training error analytically with $C_p$, or you can run 5-fold cross-validation. What does each one assume, when is the analytic route the better choice, and what does cross-validation estimate that the correction does not?
+14. **Measuring the two terms** Cross-validation gives you one number. Describe a procedure that separates bias from variance, and say what has to be inside the refit loop for the answer to be honest.

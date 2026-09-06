@@ -320,18 +320,19 @@ where $\mathbb{E}[\text{RI}]$ is computed from the contingency-table margins und
 ## Rapid-fire: Clustering
 
 These 14 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **k-means in sixty seconds** Walk me through k-means as if I have never seen it: the two alternating steps, the quantity it is minimizing, and what it converges to. Then name the assumptions it makes about the shape and size of clusters.
 2. **Choosing k** Your within-cluster sum of squares keeps dropping as you raise $k$, all the way to zero at $k = n$. So how do you actually pick $k$? Name at least two methods and say what each one measures.
-3. **Why k-means++ exists** What goes wrong if you pick the initial centroids uniformly at random, and what does k-means++ do instead? Just the sampling rule and the intuition for why it helps.
-4. **The scaling trap** You cluster customers on annual income (tens of thousands) and age (tens). Which feature effectively decides the partition, and why? Would you always standardize before k-means, or is there a case where standardizing destroys the structure you wanted?
+3. **The scaling trap** You cluster customers on annual income (tens of thousands) and age (tens). Which feature effectively decides the partition, and why? Would you always standardize before k-means, or is there a case where standardizing destroys the structure you wanted?
+4. **Why k-means++ exists** What goes wrong if you pick the initial centroids uniformly at random, and what does k-means++ do instead? Just the sampling rule and the intuition for why it helps.
 5. **Right k, wrong answer** You run k-means with $k = 2$ on two concentric rings and it fails, even with perfect initialization. Explain geometrically why, and name a method that would recover the rings.
 6. **k-means versus GMM** What does a Gaussian mixture model give you that k-means does not, and in what sense is k-means a special case of it? Does fitting a GMM find the global optimum, and what happens if one component collapses onto a single point?
 7. **DBSCAN tradeoffs** Explain how DBSCAN decides what counts as a cluster, what its two parameters control, and one situation where it clearly beats k-means. Then give a dataset where no single choice of $\varepsilon$ works.
 8. **Grading without labels** You have no ground-truth labels. Define the silhouette score, say what its range means, and name one other way you would judge whether a clustering is any good.
-9. **Are these segments real?** A PM asks whether your five customer segments are real structure or an artifact of the algorithm. What checks do you run to answer that, and what would convince you they are not real?
-10. **The n_init gotcha** A teammate upgrades scikit-learn and their `KMeans` results get noticeably noisier with no code change. What is the likely cause, and what is the one-line fix?
+9. **Reading a t-SNE plot** A teammate shows a t-SNE plot with five tight blobs and argues that two of them sit far apart, so those groups must be very different. What do you push back on, which parts of the picture can you trust, and what would you do before claiming those blobs are real clusters?
+10. **Are these segments real?** A PM asks whether your five customer segments are real structure or an artifact of the algorithm. What checks do you run to answer that, and what would convince you they are not real?
 11. **A hundred million points** What is the per-iteration cost of k-means in terms of $n$, $k$, and $d$? Now you have 100M points and $k = 1000$ and it will not finish. What do you change, and what do you lose?
 12. **Categorical features** Someone one-hot encodes country and device type, throws them in with numeric features, and runs k-means. What does the centroid of a one-hot column even mean here, and what would you do instead?
-13. **Reading a t-SNE plot** A teammate shows a t-SNE plot with five tight blobs and argues that two of them sit far apart, so those groups must be very different. What do you push back on, which parts of the picture can you trust, and what would you do before claiming those blobs are real clusters?
-14. **When hierarchical wins** When would you reach for agglomerative clustering over k-means? Explain what single linkage does to two compact clusters joined by a thin bridge of points, and why Ward linkage behaves differently.
+13. **When hierarchical wins** When would you reach for agglomerative clustering over k-means? Explain what single linkage does to two compact clusters joined by a thin bridge of points, and why Ward linkage behaves differently.
+14. **The n_init gotcha** A teammate upgrades scikit-learn and their `KMeans` results get noticeably noisier with no code change. What is the likely cause, and what is the one-line fix?

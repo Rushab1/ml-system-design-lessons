@@ -1,100 +1,149 @@
 # Curriculum plan
 
-The lesson list for this ML-interview-prep course. Authoring standard lives in
-`.claude/skills/authoring-lessons/` — including §11 on **figures**, which is a hard bar:
-every lesson ships with 2–4 inline SVG figures where a whiteboard sketch would help.
-Reference lessons that set the bar: `c1.1`, `c1.2`, and (as of the figure sweep) `c1.4`.
-Real interview questions + expected-answer rubrics by company (for the system-design-rehearsal
-track and "Interview gotchas" sections) live in `.claude/skills/interview-questions/`.
+The lesson list and forward plan for this interview-prep course. The authoring standard lives
+in `.claude/skills/authoring-lessons/SKILL.md` — including §11 on **figures**, which is a hard
+bar. Real interview questions and expected-answer rubrics by company live in
+`.claude/skills/interview-questions/SKILL.md`.
 
-## Chapter roadmap (planned)
-
-The book's spine moves from paradigm-agnostic foundations → deep-learning mechanics →
-architectures → a separate reinforcement-learning paradigm. Only Chapter 1 is partly
-written; the rest are planned placement, not yet authored.
-
-| Chapter | Title | Covers | Status |
-|---|---|---|---|
-| 1 | Data & ML foundations | data, losses, linear/logistic models, evaluation | 🟡 in progress |
-| 2 | Deep learning fundamentals | MLPs, backprop, optimization, normalization, regularization | ⬜ planned |
-| 3 | Architectures | **CNNs** (weight sharing / translation equivariance), sequence models/RNNs, **Transformers** (Q/K/V, self-attention) | ⬜ planned |
-| 4 | Sequence / LLM & generative | language models, pretraining, generative models (optional bridge) | ⬜ planned |
-| 5 | Reinforcement learning | MDPs, Bellman, value/policy methods, policy gradients; RLHF/DPO bridge to Ch 4 | ⬜ planned |
-
-> **Why CNNs + Transformers share a chapter but RL does not.** CNNs and Transformers are
-> both supervised-learning *architectures* and belong together once Ch 2 establishes backprop
-> and optimization. RL is a different *paradigm* (agent/environment/reward, MDPs, Bellman) and
-> earns its own chapter rather than being folded in with architectures. The authoring skill §4
-> already anticipates Transformer content ("Q vs K: which part of the role is forced by the
-> architecture and which is just the human label?").
-
-## Chapter 1 — Data & ML foundations
-
-| Lesson | Title | Status |
-|---|---|---|
-| c1.1 | Data foundations (OLTP/OLAP, splits, leakage) | ✅ written |
-| c1.2 | Regression losses (loss = −log p(noise)) | ✅ written |
-| c1.3 | Classification losses (cross-entropy, focal, class-balanced; calibration) | ✅ written |
-| c1.4 | Linear & logistic regression (OLS/MLE, regularization, VIF, PCA) | ✅ written |
-| c1.5 | Trees & ensembles (CART, bagging/RF, boosting/GBDT, stacking) | ✅ written |
-| c1.6 | Kernel methods & instance-based (SVM, kNN) | ✅ written |
-| c1.7 | Unsupervised learning (clustering + nonlinear embeddings) | ✅ written |
-| c1.8 | Naive Bayes & probabilistic (generative vs. discriminative) | ✅ written |
-| c1.9 | Model selection & validation (bias-variance, CV, tuning) | ✅ written |
-| c1.10 | Evaluation metrics (AUC=concordance, ROC vs PR, calibration) | ✅ written — built to the spec below |
-| c1.11 | Class imbalance & resampling (threshold-moving, prior correction) | ✅ written |
-
-> **Sort-order gotcha (resolved):** `listLessons` now sorts with `localeCompare(..., { numeric: true })`,
-> so `c1.10`/`c1.11` order after `c1.9` (not after `c1.1`). No id zero-padding needed.
+**Target.** Tier 1 quant research/trading roles, alongside an AI Product / AI Engineer track.
+The quant target sets the calibration bar: derivations *are* asked in quant loops, so rigor on
+OLS, PCA, estimators, stationarity and portfolio math is deliberate, not accidental depth.
 
 ---
 
-## c1.10 — Evaluation metrics (planned)
+## Status: all ten chapters are written
 
-c1.1 already forward-references this lesson for "full derivations and edge cases" of the
-classification-metric vocabulary (`c1.1.mdx:412`). Build it to the c1.1/c1.2 depth bar
-(60-min lesson + 12-question quiz).
+33 lessons, each with a paired quiz. Content is discovered by directory scan
+(`src/lib/lessons.ts`) — there is no manifest to update, just drop files in.
 
-### ROC / AUC — required interview-grade depth
+| Ch | Title | Lessons | Track |
+|---|---|---|---|
+| 1 | Classical ML foundations | 9 | shared |
+| 2 | Deep learning foundations | 3 | AI |
+| 3 | Transformers | 3 | AI |
+| 4 | Agentic AI | 2 | AI |
+| 5 | Retrieval-augmented generation | 2 | AI |
+| 6 | Evaluation pipelines | 3 | AI |
+| 7 | Probability & statistics | 2 | quant |
+| 8 | Time series & strategy statistics | 3 | quant |
+| 9 | Bias, variance & what makes an estimator good | 3 | quant |
+| 10 | Portfolio construction | 3 | quant |
 
-The current c1.1 treatment is a deliberately-brief refresher (2 bullets, `c1.1.mdx:403–410`).
-A Google-AI-overview level treatment (TPR vs FPR, "0.5 = random, 1.0 = perfect", "threshold-
-agnostic / scale-invariant", "use PR-AUC when imbalanced") is the **floor, not the ceiling** —
-that depth is the whole point for interviews. c1.10 must go past it:
+### Chapter 1 — Classical ML foundations
 
-- **AUC = concordance probability, derived.** Prove AUC equals $P(\text{score}_+ > \text{score}_-)$
-  for a random positive/negative pair, and that this is exactly the **Mann–Whitney U / Wilcoxon
-  rank-sum** statistic ($\text{AUC} = U / (n_+ n_-)$). This is the organizing thesis for the ROC
-  half: AUC is a *ranking* statistic, not a threshold statistic.
-- **Why ROC is invariant to class balance — and PR is not.** Mechanism, not assertion: TPR and FPR
-  are each computed *within* one class (column-normalized), so changing the positive:negative ratio
-  leaves the ROC curve unchanged; precision mixes both classes, so PR moves with prevalence. Quantify
-  with a worked example (e.g. 1% vs 50% positive, same scorer → identical ROC-AUC, very different
-  PR-AUC and precision).
-- **The imbalanced-data trap, made precise.** Why a 0.9 ROC-AUC can be useless at 1% positives:
-  a tiny FPR still floods the flagged set with negatives because there are 99× more of them.
-  Tie to the c1.1 quiz "95%-accuracy trap" (`c1.1.quiz.mdx:527`) so the threads connect.
-- **ROC vs PR dominance.** A classifier that dominates in ROC space dominates in PR space
-  (Davis & Goadrich 2006) — but the *converse* and the *area* relationship do not transfer.
-  Good "challenge the standard story" material.
-- **Ranking vs calibration.** AUC is invariant to any monotonic transform of scores, so a model
-  with perfect AUC can be terribly *calibrated*. Motivates log-loss / Brier / reliability diagrams
-  as the calibration counterpart.
-- **Edge cases / gotchas.** AUC < 0.5 → flip the sign; partial AUC when only low-FPR region matters;
-  ties in scores (the convex-hull / trapezoidal subtlety); multiclass AUC (one-vs-rest macro/micro);
-  AUC's blind spot to where on the curve you actually operate.
+| Lesson | Title | Status |
+|---|---|---|
+| c1.1 | Data, splits & validation | ✅ |
+| c1.2 | Loss functions | ✅ |
+| c1.3 | Linear regression | ✅ |
+| c1.4 | Logistic regression | ✅ rebuilt to depth |
+| c1.5 | PCA & dimensionality reduction | ✅ rebuilt to depth |
+| c1.6 | Trees & ensembles | ✅ |
+| c1.7 | Unsupervised learning | ✅ |
+| c1.8 | SVM, kNN & Naive Bayes | ✅ |
+| c1.9 | Evaluation & class imbalance | ✅ |
 
-### Other metrics the lesson should cover (to round out the chapter)
+### Chapters 2–10
 
-Confusion matrix → precision/recall/F1 (and Fβ), PR-AUC, log-loss & Brier score, calibration
-(reliability diagrams, Platt / isotonic), threshold selection (Youden's J, cost-sensitive),
-and metric choice as a function of the business cost matrix.
+| Lesson | Title |
+|---|---|
+| c2.1 / c2.2 / c2.3 | Neural networks and backpropagation · Training dynamics · Making training work |
+| c3.1 / c3.2 / c3.3 | Attention and the transformer block · What changed since the original paper · Inference, serving and cost |
+| c4.1 / c4.2 | How agents actually work · Where agents break |
+| c5.1 / c5.2 | Retrieval fundamentals · Building a RAG system that works |
+| c6.1 / c6.2 / c6.3 | What to measure and how · Building the eval pipeline · Statistical rigor in evals |
+| c7.1 / c7.2 | The techniques that solve most problems · Distributions, order statistics and stopping |
+| c8.1 / c8.2 / c8.3 | Stationarity and spurious regression · Autocorrelation, ARIMA and volatility · The statistics of a track record |
+| c9.1 / c9.2 / c9.3 | What makes an estimator good · The bias-variance decomposition for prediction · Bias and variance across model families |
+| c10.1 / c10.2 / c10.3 | Mean-variance, and why it breaks · Factor models and where risk comes from · From backtest to live portfolio |
 
-### Authoring reminders for c1.10
-- Lead with the one-sentence thesis (likely: *AUC is a ranking statistic — the concordance
-  probability — which is exactly why it ignores class balance and says nothing about calibration*).
-- Each "what you'll be able to do" bullet maps 1:1 to a quiz question.
-- Library claims version-accurate with mechanism named (e.g. `sklearn.metrics.roc_auc_score`
-  uses the trapezoidal rule; `average_precision_score` vs `auc(recall, precision)` differ).
-- Cite primary sources: Hanley & McNeil 1982 (AUC = Wilcoxon), Davis & Goadrich 2006 (ROC↔PR),
-  Saito & Rehmsmeier 2015 (PRC for imbalanced data).
+---
+
+## Rapid-fire ordering convention
+
+**Rapid-fire is the only section actually studied**, so its order carries the triage. Within
+every `## Rapid-fire` section the questions are sorted by **interview importance, most important
+first**, against this contract:
+
+- **Top 5 = ~80% of that lesson's interview value.** These are the questions a loop opens with.
+  They have to be bang on.
+- **Top 10 = ~95%+.** Everything past 10 is genuine but lower-frequency depth.
+
+Nothing is deleted to achieve this — the full set stays on the page, reordered. A reader with
+one evening does the top 5 per lesson; a reader with a week does all of them.
+
+**When you add a rapid-fire question, insert it at its correct rank** rather than appending to
+the end, and renumber. Appending silently breaks the contract, because position *is* the
+priority signal.
+
+Related standing rules: 10–20 questions per rapid-fire section (a cap, not a target);
+calibrate on interview frequency rather than teaching value; each answerable out loud in
+2–5 minutes; self-contained, never referencing the numbered questions above.
+
+---
+
+## Planned work
+
+### c7.3 — Markov chains, martingales and Brownian motion *(not yet written)*
+
+The one genuine coverage gap for a Tier 1 quant loop. Current state, verified by grep:
+"Markov chain" appears in **no** lesson; martingales appear only as a shortcut inside c7.1's
+gambler's-ruin section; Brownian motion appears only inside c8.1's unit-root discussion. These
+are opening questions at Jane Street, Citadel, HRT and Two Sigma, so the gap is squarely on the
+critical path.
+
+Build it to the c1.1 / c1.2 depth bar. Coverage it needs:
+
+- **Markov chains.** State space, transition matrix, Chapman–Kolmogorov. Stationary distribution
+  as the left eigenvector of $P$ with eigenvalue 1 — connect explicitly to the eigen machinery
+  already derived in c1.5, since that link is the sort of thing a quant interviewer probes.
+  Irreducibility, aperiodicity, ergodicity. Hitting times and absorption via first-step analysis
+  (c7.1 already does this concretely for gambler's ruin — frame that retroactively as the
+  Markov-chain method it is). Detailed balance and reversibility.
+- **Martingales.** Definition against a filtration; why "fair game" is the wrong one-line gloss.
+  The optional stopping theorem with its three separate sufficient conditions, and a worked
+  counter-example where it fails (the unbounded doubling strategy). Wald's identity. Martingale
+  constructions as the fast route to gambler's-ruin and ballot-type answers — c7.1's "martingale
+  shortcut" section is the forward reference to honor.
+- **Brownian motion.** Defining properties; scaling and the quadratic-variation result
+  $[W]_t = t$, which is the fact that makes Itô calculus behave unusually. Reflection principle
+  and the running maximum. First-passage times. Geometric Brownian motion and why log-returns
+  rather than returns are the modeled object — this is the bridge into c8.
+- **Interview surface.** Expected time to a pattern; ruin probabilities with a drift; "is this
+  process a martingale" verification questions; the ant/random-walk family; why a stopped
+  martingale is still a martingale.
+
+Cross-links to honor when it lands: c7.1 (first-step analysis, martingale shortcut), c7.2
+(stopping, order statistics), c8.1 (random walks, unit roots, spurious regression), c8.3
+(track-record statistics), c10.3 (drawdown and first-passage).
+
+### Figures
+
+Every lesson needs **2–4 inline SVG figures minimum** (skill §11), and more is better — the
+bar is the whiteboard test: if you would sketch it while teaching, it gets a figure. Chapters
+3 through 8 and chapter 10 were written without figures and are being backfilled. See
+`src/components/mdx/*-figures.tsx` for the existing set and `figure-helpers.tsx` for the shared
+primitives. Figures are server-rendered SVG only: no client JS, no chart library, no
+`Math.random` or `new Date()`.
+
+---
+
+## Deliberately not doing
+
+- **Bringing chapters 2–10 quizzes up to the 12-question spec.** Most sit at 6–8 numbered
+  questions. Since rapid-fire is the studied surface, ~100 new numbered questions would be
+  written onto a page nobody reads. Sharpen rapid-fire instead.
+- **A dedicated linear-algebra chapter.** Eigen material already spans a dozen lessons,
+  including c1.5's full power-iteration → orthogonal-iteration → QR → Householder → Lanczos
+  chain. A separate chapter would duplicate rather than add.
+
+---
+
+## Build notes
+
+- Lessons render at `/c/<chapter>/<lesson>`, quizzes at `/c/<chapter>/<lesson>/quiz`.
+- `listLessons` sorts with `localeCompare(..., { numeric: true })`, so `c1.10` would order after
+  `c1.9` correctly. No id zero-padding needed.
+- **MDX compiles per request.** `npm run build` and a green Vercel deploy both pass on MDX that
+  500s when served. Always curl the changed lesson *and* quiz pages for 200 after deploying.
+- Escape bare `<`, `>`, `{`, `}` in prose — all four have shipped request-time 500s here.

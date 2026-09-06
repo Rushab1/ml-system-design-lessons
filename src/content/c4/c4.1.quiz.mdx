@@ -394,22 +394,23 @@ The genuine case for multi-agent is context isolation: a sub-agent that reads fo
 ## Rapid-fire: agent mechanics
 
 These 18 questions stand on their own, so you can study this section without reading anything above it. Each should take 2 to 5 minutes out loud. They are picked for how often they get asked in the agentic-system-design round, not for how interesting they are, and almost all of them are scenario-shaped because that is how they arrive. Assume the interviewer chains "why?" two levels deeper, and assume they want a number wherever a number exists.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Agent versus chain** What is the difference between an agent and a simple LLM chain? Say what capability you gain and what new failure modes you take on with it.
-2. **When an agent is wrong** When is agentic architecture the wrong solution? Give the test you apply, and say what you build instead.
-3. **The boundary** For a customer-support agent, what logic belongs in the orchestrator versus the LLM? Give the rule you used to partition, and say where authorization lives.
+2. **Schema design** How do you design a function schema for tool calling? Walk through one concrete tool and say which parts of the schema the model can actually use.
+3. **When an agent is wrong** When is agentic architecture the wrong solution? Give the test you apply, and say what you build instead.
 4. **Stopping it** How do you prevent an agent from running forever, including the case where it keeps making calls but makes no progress? Put real numbers on your caps.
-5. **Schema design** How do you design a function schema for tool calling? Walk through one concrete tool and say which parts of the schema the model can actually use.
-6. **Wrong tool** Your agent has 40 tools and keeps picking the wrong one. How do you diagnose it before you fix it, and what are the structural fixes?
-7. **Wrong arguments** The model picks the right tool but generates arguments that are syntactically valid and semantically wrong. How do you fix that, and what does structured-output enforcement not solve?
-8. **Tool errors** How do you handle tool failures? Compare throwing an exception with returning an error result to the model, and say how you keep that from becoming an infinite retry.
-9. **Duplicate side effects** A payment tool times out after the charge succeeded, the agent retries, and the customer is charged twice. How do you harden this?
-10. **Irreversible actions** Your AI agent deleted a production database. How do you prevent irreversible actions? Answer at more than one layer, and say why prompt instructions are not one of them.
-11. **The generic tool** Product wants to expose a generic SQL or shell tool because it looks powerful in demos. How do you respond, and what do you offer instead?
-12. **Token budget** Your agent burns too many tokens per task and keeps exceeding budget. Explain where the tokens go in a multi-turn loop, then say how you enforce a ceiling and which two levers cut the bill.
-13. **Latency budget** You have a p95 target of 10 seconds and a task that takes 8 tool calls. Do the arithmetic out loud and say what you would actually change.
-14. **Ten turns** Your chatbot loses context after 10 turns of conversation. How do you maintain long conversation context? Say what stays verbatim and what leaves the context window.
-15. **Memory types** What types of memory does an agentic system need, and how do you design long-term memory so it does not get polluted? Say which layer the defense belongs in.
-16. **Single versus multi** When do you go multi-agent instead of single-agent? Give the one argument that survives scrutiny and what it costs you.
-17. **ReAct** Explain ReAct in one paragraph, and say what is left of it now that models have native tool calling.
-18. **Planner or loop** Planner-executor versus single-loop agent — when do you pick which? Say what triggers a replan, and what planning costs on a short task.
+5. **Tool errors** How do you handle tool failures? Compare throwing an exception with returning an error result to the model, and say how you keep that from becoming an infinite retry.
+6. **Irreversible actions** Your AI agent deleted a production database. How do you prevent irreversible actions? Answer at more than one layer, and say why prompt instructions are not one of them.
+7. **Wrong tool** Your agent has 40 tools and keeps picking the wrong one. How do you diagnose it before you fix it, and what are the structural fixes?
+8. **The boundary** For a customer-support agent, what logic belongs in the orchestrator versus the LLM? Give the rule you used to partition, and say where authorization lives.
+9. **Ten turns** Your chatbot loses context after 10 turns of conversation. How do you maintain long conversation context? Say what stays verbatim and what leaves the context window.
+10. **Token budget** Your agent burns too many tokens per task and keeps exceeding budget. Explain where the tokens go in a multi-turn loop, then say how you enforce a ceiling and which two levers cut the bill.
+11. **Wrong arguments** The model picks the right tool but generates arguments that are syntactically valid and semantically wrong. How do you fix that, and what does structured-output enforcement not solve?
+12. **Duplicate side effects** A payment tool times out after the charge succeeded, the agent retries, and the customer is charged twice. How do you harden this?
+13. **Single versus multi** When do you go multi-agent instead of single-agent? Give the one argument that survives scrutiny and what it costs you.
+14. **Memory types** What types of memory does an agentic system need, and how do you design long-term memory so it does not get polluted? Say which layer the defense belongs in.
+15. **Latency budget** You have a p95 target of 10 seconds and a task that takes 8 tool calls. Do the arithmetic out loud and say what you would actually change.
+16. **The generic tool** Product wants to expose a generic SQL or shell tool because it looks powerful in demos. How do you respond, and what do you offer instead?
+17. **Planner or loop** Planner-executor versus single-loop agent — when do you pick which? Say what triggers a replan, and what planning costs on a short task.
+18. **ReAct** Explain ReAct in one paragraph, and say what is left of it now that models have native tool calling.

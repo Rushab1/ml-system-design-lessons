@@ -417,19 +417,20 @@ The naive read — "the model is underfitting" — is wrong twice over, and the 
 ## Rapid-fire: training dynamics
 
 These 15 questions stand on their own, so you can study this section without reading anything above it. Each should take 2 to 5 minutes out loud. They are picked for how often they actually get asked in ML-fundamentals and ML-depth rounds, not for how interesting they are. Assume the interviewer chains "why?" two levels deeper on every one, so have a second and third layer ready.
+They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Common optimizers** Walk from SGD to AdamW as a chain of fixes, naming the specific failure each stage repairs. Do not list optimizers; tell the story. Finish on what Adam's two moments actually estimate.
 2. **Adam versus SGD** Compare them on convergence speed and on generalization. Where does SGD with momentum still win, and why is essentially every large language model trained with AdamW instead?
-3. **Bias correction** Adam initializes both moment estimates to zero. What goes wrong, what is the correction, and roughly how big is the very first update without it?
-4. **Warmup** What is learning-rate warmup and why do we need it? Say what specifically is untrustworthy in the early steps, and why large-batch transformer runs diverge without it.
-5. **Weight decay** Some training recipes multiply the weights by a factor slightly less than 1 after every update. What is that for? Then: is it the same as adding an L2 penalty to the loss? Answer for SGD and for Adam separately.
-6. **Adam versus AdamW** What exactly does AdamW change, and why does it matter? If a teammate switches `Adam(weight_decay=0.01)` to `AdamW(weight_decay=0.01)` and quality drops, what do you tell them?
-7. **Why LayerNorm in transformers** Why do transformers use LayerNorm instead of BatchNorm? Give more than one reason. Mention what RMSNorm drops, and whether the norm goes before or after the residual add in a modern model.
-8. **Compare BatchNorm and LayerNorm** Which axis does each average over? What does BatchNorm keep around for inference that LayerNorm does not need, and what breaks when the batch is small or the sequences are ragged?
-9. **How does BatchNorm actually help** Give the mechanism, then say what you think of the internal-covariate-shift explanation and why.
-10. **Why not initialize to zero** Why don't we initialize all weights to zero? Then say what scale you do use, and what determines whether it is Xavier or He.
-11. **The factor of two** Where does He initialization's factor of 2 come from? What happens in a 50-layer ReLU network if you use Xavier instead?
-12. **Batch size triple** What happens when you drop the batch size to 1? What happens with the full dataset in one batch? How should the learning rate change when you scale the batch up, and does the answer differ for SGD versus Adam?
-13. **Gradient accumulation** You want the effect of batch 2048 but can only fit 256 in memory. Describe what you do, what is now mathematically identical to a true large batch, and the one common thing that is not.
-14. **Exploding gradients** How do you know your gradients are exploding, and what do you do about it? After you say "clip", say what clipping is and is not fixing. What would make you suspicious that clipping is hiding a real bug?
+3. **Adam versus AdamW** What exactly does AdamW change, and why does it matter? If a teammate switches `Adam(weight_decay=0.01)` to `AdamW(weight_decay=0.01)` and quality drops, what do you tell them?
+4. **Why LayerNorm in transformers** Why do transformers use LayerNorm instead of BatchNorm? Give more than one reason. Mention what RMSNorm drops, and whether the norm goes before or after the residual add in a modern model.
+5. **Warmup** What is learning-rate warmup and why do we need it? Say what specifically is untrustworthy in the early steps, and why large-batch transformer runs diverge without it.
+6. **Why not initialize to zero** Why don't we initialize all weights to zero? Then say what scale you do use, and what determines whether it is Xavier or He.
+7. **Compare BatchNorm and LayerNorm** Which axis does each average over? What does BatchNorm keep around for inference that LayerNorm does not need, and what breaks when the batch is small or the sequences are ragged?
+8. **Exploding gradients** How do you know your gradients are exploding, and what do you do about it? After you say "clip", say what clipping is and is not fixing. What would make you suspicious that clipping is hiding a real bug?
+9. **Weight decay** Some training recipes multiply the weights by a factor slightly less than 1 after every update. What is that for? Then: is it the same as adding an L2 penalty to the loss? Answer for SGD and for Adam separately.
+10. **Batch size triple** What happens when you drop the batch size to 1? What happens with the full dataset in one batch? How should the learning rate change when you scale the batch up, and does the answer differ for SGD versus Adam?
+11. **Bias correction** Adam initializes both moment estimates to zero. What goes wrong, what is the correction, and roughly how big is the very first update without it?
+12. **The factor of two** Where does He initialization's factor of 2 come from? What happens in a 50-layer ReLU network if you use Xavier instead?
+13. **How does BatchNorm actually help** Give the mechanism, then say what you think of the internal-covariate-shift explanation and why.
+14. **Gradient accumulation** You want the effect of batch 2048 but can only fit 256 in memory. Describe what you do, what is now mathematically identical to a true large batch, and the one common thing that is not.
 15. **Val loss below train loss** You are training a large language model and validation loss is consistently lower than training loss. Give at least three explanations, and say what you would measure first to tell them apart.

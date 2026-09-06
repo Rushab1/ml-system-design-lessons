@@ -53,6 +53,8 @@ The sampling frequency cancels: the $\sqrt{252}$ that shrinks the per-period Sha
 
 ### Working the arithmetic
 
+<SharpeSamplingError caption="Why a Sharpe ratio needs an error bar. The curve is the distribution of the estimated annual Sharpe for a strategy whose true Sharpe is zero, over three years of daily data. The standard error is √(1/T) ≈ 0.58 in annual units, so noise alone routinely produces estimates near 1. The observed 1.5 lands at t = 1.5√3 = 2.60 — significant on a single test, and that qualifier is doing all the work, as the next figure shows." />
+
 How long to distinguish a Sharpe of 1 from a Sharpe of 0? At the two-sided 5 percent level you need $t \ge 1.96$, so $\sqrt{T} \ge 1.96$ and $T \ge 3.84$ years. That is only the coin-flip threshold, because at exactly $T = 3.84$ your *expected* t-statistic sits on the critical value, and the realised one lands above it half the time. To detect the strategy 80 percent of the time, the expected t has to clear the critical value by the point of the standard normal that leaves 20 percent in the upper tail, $z_{0.20} = 0.84$. So $t \ge 2.80$ and $T \ge 7.84$ years.
 
 Because $T$ scales as $1/SR^2$ the picture degrades fast: a Sharpe of $0.5$ needs $(2.80/0.5)^2 = 31$ years, a Sharpe of $2$ needs $2.0$ years. Almost every strategy anyone actually runs sits in the region where a decade of honest data cannot prove it works.
@@ -235,6 +237,8 @@ Worked example, $m = 100$, $\alpha = 0.10$, sorted p-values $0.0001, 0.0008, 0.0
 
 ### The trap follow-up
 
+<BestOfNSharpe caption="The same 1.5, after being told it was the best of 200 tries. The blue curve is the Sharpe you should expect the winner to post when every strategy tested is worthless, and it rises with the number of tries because the maximum of many draws drifts right. At N = 200 it reaches 1.60 — above the dashed line. The backtest is not merely unimpressive; it is below what pure noise would be expected to deliver from a search that size, so the first thing to ask a researcher is not their Sharpe but their trial count." />
+
 Return to Sharpe 1.5 over 3 years, $t = 2.60$. Now add one fact: it was the best of 200 configurations tried. Bonferroni needs $p \le 0.05/200 = 0.00025$, which on a standard normal is a cutoff of $z \ge 3.48$. Setting $SR\sqrt{3} \ge 3.48$ means you needed a Sharpe of $2.01$. Your 1.5 does not clear it, and the shortfall is not marginal.
 
 ### Probabilistic and Deflated Sharpe
@@ -262,6 +266,8 @@ against the undeflated $\mathrm{PSR}(0) = \Phi(0.0945 \times 27.48 / 1.002) = \P
 One honest caveat on the moment terms. At daily frequency $\widehat{SR}$ is tiny, so the skew and kurtosis corrections barely move the answer even with $\gamma_4 = 15$. They bite at low frequency where $\widehat{SR}$ per period is large. At monthly frequency the same annualized 1.5 gives $\widehat{SR} = 0.433$, and with $\gamma_3 = -1.5$, $\gamma_4 = 8$ the denominator becomes $\sqrt{1 + 0.650 + 0.328} = 1.41$ against $1.05$ under normality, a 34 percent inflation of the standard error. Short-volatility strategies reporting monthly are exactly where this correction earns its keep.
 
 ## Part 6 — Why k-fold cross-validation is invalid here
+
+<PurgedKFold caption="Three schemes on one timeline. Plain k-fold puts training data on both sides of the test fold, so a model is fit on the future and scored on the past — and because financial labels span multiple bars, adjacent observations overlap and leak even without that. Walk-forward is honest but spends data: early folds train on very little. Purged k-fold keeps both sides and deletes the contaminated boundary instead, purging observations whose labels overlap the test window and embargoing a stretch afterwards to break the serial correlation." />
 
 Standard k-fold cross-validation shuffles observations into $k$ folds, trains on $k-1$ of them and tests on the one held out. On financial time series this breaks in two independent ways, and fixing one leaves the other untouched.
 

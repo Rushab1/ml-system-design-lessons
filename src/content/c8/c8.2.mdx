@@ -83,6 +83,8 @@ The PACF does not. Feed $\rho_1 = 0.441$ and $\rho_2 = 0$ into the same order-2 
 
 The identification step of Box-Jenkins is exactly this contrast, and it is symmetric.
 
+<AcfPacfSignatures caption="The identification table as four pictures. Read the column that cuts off, not the one that decays. An AR process has a PACF that drops to noise immediately after its order, because once you condition on the p lags that generate it there is nothing left to explain; its ACF decays geometrically forever. An MA(q) is the mirror image: the ACF is exactly zero past lag q because the process is a finite window of shocks, while the PACF tails off. Shaded band is the ±1.96/√T noise interval." />
+
 - **AR(p)**: ACF tails off geometrically, PACF cuts off after lag $p$.
 - **MA(q)**: ACF cuts off after lag $q$, PACF tails off.
 - **ARMA(p,q)**: both tail off, and neither plot gives you the order cleanly. This is why people fall back to fitting a grid of orders and choosing by AIC or BIC, criteria that score goodness of fit against the number of parameters spent.
@@ -140,6 +142,8 @@ $$
 A sharp $-0.5$ at lag 1 that appeared after you differenced means you differenced one time too many. The resulting MA is also non-invertible, which makes estimation ill-behaved.
 
 ## Part 5 — The one empirical fact that matters
+
+<ReturnsVsSquaredAcf caption="The fact the entire volatility literature exists to model. Top: a simulated return series where calm and violent stretches visibly cluster. Bottom left: the autocorrelation of the returns themselves sits inside the noise band at every lag — the sign of tomorrow's move is unforecastable, which is what market efficiency buys you. Bottom right: the autocorrelation of squared returns is strongly positive and decays slowly — the size of tomorrow's move is very forecastable. Uncorrelated, therefore, is not independent." />
 
 Run the machinery above on daily equity index returns and you find almost nothing. Sample autocorrelations of returns are tiny at every lag, typically between $-0.05$ and $+0.05$ at lag 1 and smaller after, which with $T = 2520$ sits at or inside the $\pm 0.039$ noise band. Fit ARIMA to returns and you get a model indistinguishable from "tomorrow's return is unforecastable." That is an equilibrium, not an accident: a lag-1 autocorrelation of $0.2$ in a liquid index is a trivially tradable trend rule, and trading it removes the autocorrelation.
 
@@ -220,6 +224,8 @@ The two parameters do different jobs. **$\alpha$ is reactivity**: how much a sin
 At $\alpha + \beta = 1$ the denominator in $\omega/(1-\alpha-\beta)$ vanishes, so $\bar\sigma^2$ does not exist: there is no long-run level for variance to be pulled back toward, and shocks to variance never die. That boundary case is called IGARCH, for integrated GARCH. Setting $\omega = 0$, $\beta = \lambda$, $\alpha = 1-\lambda$ with $\lambda = 0.94$ gives exactly the RiskMetrics exponentially weighted moving average. EWMA is a boundary case of GARCH with no mean reversion, which is precisely why it cannot produce a volatility term structure.
 
 ### What it forecasts, and what it does not
+
+<GarchTermStructure caption="What a GARCH forecast actually says. Today's volatility is twice its long-run level, and the forecast decays back toward that level geometrically at rate (α+β) per day. With α+β = 0.98 the variance half-life is 34 days, so a one-month forecast is still 1.71× long-run while a one-year forecast is essentially 1.00×. This is the whole content of the model at long horizons: it forecasts the path back to the unconditional variance, and it has nothing to say about the level you end up at." />
 
 One step ahead, $\sigma_{t+1}^2$ is known at time $t$: it is a deterministic function of data you already have. For $h$ steps, use $E_t[r_{t+h-1}^2] = E_t[\sigma_{t+h-1}^2]$ to get $E_t[\sigma_{t+h}^2] = \omega + (\alpha+\beta)E_t[\sigma_{t+h-1}^2]$. Subtracting the fixed point $\bar\sigma^2$ and iterating,
 

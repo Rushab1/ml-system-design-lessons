@@ -29,6 +29,28 @@ import {
   InterceptShift,
 } from "./logistic-figures";
 import { ScreeRankCeiling } from "./pca-rank-figures";
+import {
+  PatternAutomata,
+  BaseRateGrid,
+  CouponCollectorStages,
+  GamblersRuinPaths,
+  InspectionParadox,
+  UniformOrderStats,
+  KellyCurve,
+  FiveDistributions,
+} from "./prob-figures";
+import {
+  RandomWalkVariance,
+  SpuriousRegression,
+  AdfKpssGrid,
+  CointegratedSpread,
+  AcfPacfSignatures,
+  ReturnsVsSquaredAcf,
+  GarchTermStructure,
+  SharpeSamplingError,
+  BestOfNSharpe,
+  PurgedKFold,
+} from "./timeseries-figures";
 import { EstimatorIsRandom } from "./fig-beta-random";
 import { StratifiedVsSrs } from "./fig-stratified";
 import {
@@ -104,6 +126,24 @@ export function MdxContent({ source }: { source: string }) {
         MarginalEffectCurve,
         InterceptShift,
         ScreeRankCeiling,
+        PatternAutomata,
+        BaseRateGrid,
+        CouponCollectorStages,
+        GamblersRuinPaths,
+        InspectionParadox,
+        UniformOrderStats,
+        KellyCurve,
+        FiveDistributions,
+        RandomWalkVariance,
+        SpuriousRegression,
+        AdfKpssGrid,
+        CointegratedSpread,
+        AcfPacfSignatures,
+        ReturnsVsSquaredAcf,
+        GarchTermStructure,
+        SharpeSamplingError,
+        BestOfNSharpe,
+        PurgedKFold,
         BackpropGraph,
         MomentumRavine,
         LossCurveShapes,

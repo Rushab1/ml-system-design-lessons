@@ -66,7 +66,9 @@ $$
 
 ### Why HTH is 10 and not 8
 
-Run the same machine on HTH. The only line that changes is the fallback. From state $HT$, a heads finishes you; a tails gives suffix "TT" and you drop to state $0$. But from state $H$, a heads keeps you in state $H$ rather than sending you back, because that new H is itself a fresh first character.
+Run the same machine on HTH. The only line that changes is the fallback. From state $HT$, a heads finishes you; a tails gives suffix "TT" and you drop to state $0$.
+
+<PatternAutomata caption="The two machines side by side. Every state is 'how much of the pattern my last few flips have already matched', and only the red failure edge differs. In HHT, failing the last flip leaves you still holding HH, so you re-enter one step from the finish. In HTH, failing sends you back to H — you keep less of your progress, so you spend longer in the earlier states, and the expectation is 10 rather than 8. Patterns that can overlap themselves take longer, and this edge is where that shows up." /> But from state $H$, a heads keeps you in state $H$ rather than sending you back, because that new H is itself a fresh first character.
 
 $$
 E_{HT} = 1 + \tfrac12 E_0, \qquad E_H = 1 + \tfrac12 E_H + \tfrac12 E_{HT}, \qquad E_0 = 1 + \tfrac12 E_H + \tfrac12 E_0
@@ -100,7 +102,9 @@ $$
 E = \sum_{k=0}^{5} \frac{6}{6-k} = 6\left(1+\tfrac12+\tfrac13+\tfrac14+\tfrac15+\tfrac16\right) = 6 \cdot \frac{49}{20} = 14.7
 $$
 
-With $n$ faces instead of six the same sum is $n H_n$, where $H_n = 1 + \tfrac12 + \dots + \tfrac1n$ is the $n$-th harmonic number. That sum grows like a logarithm, $n H_n \approx n(\ln n + 0.577)$, with $0.577$ the Euler-Mascheroni constant. For $n = 6$ the estimate gives $6(1.792+0.577) = 14.2$, close enough to say out loud.
+With $n$ faces instead of six the same sum is $n H_n$, where $H_n = 1 + \tfrac12 + \dots + \tfrac1n$ is the $n$-th harmonic number.
+
+<CouponCollectorStages caption="Each bar is the expected number of extra rolls to see one more new face, and the label above it is the geometric mean 6/(6−k). The last face alone costs 6 rolls — more than the first four combined — because by then only one face in six is still useful. The running total underneath reaches 14.7. This shape is why the collector problem grows like n log n: the tail stages dominate." /> That sum grows like a logarithm, $n H_n \approx n(\ln n + 0.577)$, with $0.577$ the Euler-Mascheroni constant. For $n = 6$ the estimate gives $6(1.792+0.577) = 14.2$, close enough to say out loud.
 
 ### The version where dependence would have killed you
 
@@ -132,7 +136,9 @@ $$
 P(\text{sick} \mid +) = \frac{99}{99 + 9999} = \frac{99}{10098} \approx 0.0098
 $$
 
-About 1%. The false positives from the enormous healthy group swamp the true positives. In odds form: prior odds $1:9999$, likelihood ratio $99:1$, posterior odds $99:9999$. Same answer, less scratch paper.
+About 1%. The false positives from the enormous healthy group swamp the true positives.
+
+<BaseRateGrid caption="The same answer as natural frequencies, which is how to say it out loud without algebra. Above: the disease is rare enough that essentially the whole population is healthy. Below: among everyone who tests positive, the 99 genuinely sick are a sliver against 9,999 false alarms — because 1% of an enormous healthy group is far larger than 99% of a tiny sick one. The test is 99% accurate and a positive result still leaves you 99% likely to be healthy." /> In odds form: prior odds $1:9999$, likelihood ratio $99:1$, posterior odds $99:9999$. Same answer, less scratch paper.
 
 ### The biased coin from a jar
 
@@ -169,6 +175,8 @@ $$
 Solving a three-term recurrence head-on is unpleasant, so look at how much each extra dollar buys you rather than at $P_i$ itself. Define the gap $d_i = P_i - P_{i-1}$ for $i = 1, \dots, N$, the increase in your win probability from holding one more dollar. Since $p+q=1$, write $P_i$ as $pP_i + qP_i$ and the recurrence becomes $p(P_{i+1}-P_i) = q(P_i - P_{i-1})$, that is $d_{i+1} = (q/p)\,d_i$. Each gap is a fixed multiple of the one before it, so the gaps form a geometric sequence with ratio $q/p$.
 
 For a **fair** game, $q/p = 1$, so all gaps are equal. Equal gaps mean $P_i$ climbs in a straight line from $P_0 = 0$ to $P_N = 1$:
+
+<GamblersRuinPaths caption="Five fair random walks from 20 dollars, with absorbing barriers at 0 and 100. Four hit ruin, one reaches the top — which is what P = i/N = 0.2 looks like as sample paths. Note what the linearity is saying: in a fair game your chance of reaching the target is just your share of the distance, so the only thing that matters is where you start. Tilt the odds even slightly and that straight line becomes an exponential that collapses toward zero." />
 
 $$
 P_i = \frac{i}{N}

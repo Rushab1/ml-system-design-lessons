@@ -55,6 +55,8 @@ $$
 
 The shocks are uncorrelated, so their variances add, and the weights $\phi^{2j}$ form a geometric series:
 
+<RandomWalkVariance caption="Six random walks from the same start. The envelope is ±2σ√t, and it never stops widening — that is Var(xₜ) = σ²t drawn rather than stated. Two consequences follow immediately. There is no level the series is pulled back toward, so “it is far from its mean” is not a trading signal; and any two such series, run long enough, will drift far apart, which is what makes the regression in Part 3 find a relationship that is not there." />
+
 $$
 \operatorname{Var}(x_t) = \sigma^2 \frac{1-\phi^{2t}}{1-\phi^2}
 $$
@@ -123,7 +125,9 @@ $$
 
 $R^2$ here converges to a **nondegenerate random variable on $[0,1)$** — a ratio of Brownian functionals, same as $\hat\beta$. It does not converge to zero, which is the shocking part, but it does not converge to anything above 0.5 either. It is diffuse. Plenty of independent random-walk pairs produce an $R^2$ of 0.05, so a low $R^2$ does not acquit a regression.
 
-A quoted "$R^2$ above 0.5" therefore describes one draw somebody happened to see, not a result. The mechanism to name is the diverging t-statistic; the high $R^2$ is a symptom that shows up often. "Spurious regressions always have high $R^2$" is the anecdote, not the theorem.
+A quoted "$R^2$ above 0.5" therefore describes one draw somebody happened to see, not a result.
+
+<SpuriousRegression caption="Both series here were generated independently — neither knows the other exists. On the left they look related because both wander upward, which any two random walks with drift will do. On the right, the regression converts that shared wandering into a steep slope, a large t-statistic and an R² that would pass any casual review. The regression is not wrong about the sample; it is answering a question whose standard errors are invalid, because the residuals are themselves I(1)." /> The mechanism to name is the diverging t-statistic; the high $R^2$ is a symptom that shows up often. "Spurious regressions always have high $R^2$" is the anecdote, not the theorem.
 
 ### The diagnostic
 
@@ -133,7 +137,9 @@ $$
 DW = \frac{\sum_{t=2}^{T}(\hat u_t - \hat u_{t-1})^2}{\sum_{t=1}^{T}\hat u_t^2} \approx 2(1 - \hat\rho_1)
 $$
 
-With iid residuals $\hat\rho_1 \approx 0$ and $DW \approx 2$. With random-walk residuals $\hat\rho_1 \to 1$ and $DW \to 0$. Granger and Newbold's rule of thumb, still the fastest check available: **if $R^2 > DW$, do not believe the regression.** A regression with $R^2 = 0.6$ and $DW = 0.3$ is telling you the residuals are a random walk and your standard errors are fiction.
+With iid residuals $\hat\rho_1 \approx 0$ and $DW \approx 2$.
+
+<AdfKpssGrid caption="Why you run both tests, and why the answer is not a single p-value. The two have opposite nulls, so they can only pin the answer down jointly. The diagonal cells are agreement. The off-diagonal ones are the informative failures: “inconclusive” is the common case on short samples and must not be read as evidence of stationarity, while “contradiction” usually means the series is neither — look for a structural break before you difference anything." /> With random-walk residuals $\hat\rho_1 \to 1$ and $DW \to 0$. Granger and Newbold's rule of thumb, still the fastest check available: **if $R^2 > DW$, do not believe the regression.** A regression with $R^2 = 0.6$ and $DW = 0.3$ is telling you the residuals are a random walk and your standard errors are fiction.
 
 ## Part 4 — Differencing, and what it costs
 
@@ -196,7 +202,9 @@ $$
 y_t - \beta x_t = \tilde y_t - \beta\, \tilde x_t
 $$
 
-The $W_t$ cancels exactly, and what remains is a linear combination of two I(0) series, hence I(0). That is a cointegrating vector, and it exists precisely when the two series share their non-stationary driver. Two random walks with *independent* drivers have no such $\beta$.
+The $W_t$ cancels exactly, and what remains is a linear combination of two I(0) series, hence I(0).
+
+<CointegratedSpread caption="The common-trend construction, drawn. Top: two prices sharing one stochastic trend, so each on its own is I(1) and neither has a mean. Bottom: the combination in which the shared trend cancels, leaving a series that does have a mean and does return to it. Everything tradeable is in the lower panel — the entry bands at ±2σ are only meaningful because the spread is I(0), which is exactly what the cointegration test is checking before you are allowed to draw them." /> That is a cointegrating vector, and it exists precisely when the two series share their non-stationary driver. Two random walks with *independent* drivers have no such $\beta$.
 
 A stationary combination cannot exist unless something pulls the spread back whenever it widens, and that pull has to be visible in the dynamics of the series. The result guaranteeing that it always is — cointegration is equivalent to the existence of an **error-correction** form — is the Granger representation theorem, and it is what turns cointegration into something tradeable:
 

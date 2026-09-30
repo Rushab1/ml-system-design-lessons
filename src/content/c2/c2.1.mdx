@@ -149,7 +149,7 @@ The cost is the other branch: $\mathrm{ReLU}'(z) = 0$ for $z \le 0$. A unit whos
 
 ## Part 6 — Why depth helps
 
-**Goal: give the concrete construction instead of the theorem everyone recites.** The universal approximation theorem says one hidden layer of sufficient width can approximate any continuous function. It is true, and it predicts nothing useful, because it says nothing about how many units you need or whether gradient descent will find them.
+**Goal: distinguish an existence theorem from a practical construction.** For suitable activations, the universal approximation theorem guarantees that a sufficiently wide hidden layer can approximate a continuous function on a compact domain to arbitrary accuracy. That existence result alone does not specify the width needed for a given problem, the required training data, or whether gradient descent will find the approximation.
 
 The useful statement is about efficiency. A ReLU network is a piecewise-linear function, and the relevant currency is how many linear pieces it can create per parameter. One hidden layer of $n$ ReLU units on a 1-D input gives at most $n + 1$ pieces: each unit contributes one kink where its pre-activation crosses zero. Pieces grow **linearly** in width.
 

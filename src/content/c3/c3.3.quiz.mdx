@@ -2,11 +2,11 @@
 lessonId: c3.3
 chapter: 3
 title: Quiz — Inference, serving and cost
-description: KV-cache arithmetic on an unseen spec, the memory-bandwidth argument, batching design, and the two exactness traps.
-estimatedMinutes: 65
+description: Twelve worked questions on prefill and decode costs, batching, quantization and reasoning budgets.
+estimatedMinutes: 75
 ---
 
-Eight questions. Most of them want a number, not a paragraph. The model spec in Q1 is deliberately not the one from the lesson, because the thing being tested is whether you can run the formula on something you have never seen while an interviewer watches. Do the arithmetic on paper before you open the answer. If you get the units wrong, that is the finding.
+Apply the derivations in [the lesson](/c/c3/c3.3) to prefill and decode costs, batching, quantization and reasoning budgets. Try each question before revealing its worked answer. Numerical scenarios are illustrative unless a source is named.
 
 <Quiz id="1">
 
@@ -38,7 +38,7 @@ That is the sentence that scores: this GPU is not gated by FLOPs, it is gated at
 
 **(e) INT8 weights.** Weights drop to 34 GB, so free HBM is $80 - 34 - 2 = 44$ GB, and $44 / 1.61 \approx$ **27 concurrent requests**. Roughly 4.5× the concurrency from one change.
 
-What did not change: the cache is still FP16, so per-request cache cost is identical; TTFT is unchanged because prefill is compute-bound and the math is still FP16; and per-user tokens/sec improves only because there are fewer weight bytes to stream per decode step, not because of anything to do with the cache.
+What did not change: the cache is still FP16, so per-request cache cost is identical; the theoretical prefill FLOP count is unchanged if compute remains FP16, although kernel choice and conversion overhead can change TTFT; and per-user tokens/sec improves only because there are fewer weight bytes to stream per decode step, not because of anything to do with the cache.
 
 **Rubric:**
 - Formula correct and uses `n_kv_heads`, not `n_heads`
@@ -176,7 +176,7 @@ Roughly 2×, which matches reported end-to-end numbers of 2-3×. Raising $k$ has
 
 GPTQ works layer by layer, using second-order (Hessian) information from a small calibration set to pick each weight's rounding direction so the layer's *output* error is minimized, and updates the not-yet-quantized weights to compensate for error already committed. AWQ starts from the observation that a small fraction of weight channels dominate quality, identifies them by *activation* magnitude rather than weight magnitude, and rescales those channels before quantizing so they survive INT4. Both are post-training. AWQ tends to be less sensitive to calibration-set choice.
 
-**(b) It will not fix TTFT.** TTFT is prefill, prefill is compute-bound, and weight-only quantization dequantizes to FP16 inside the kernel — the arithmetic is unchanged. Quantization halves or quarters the *bytes moved per decode step*, so it improves TPOT and frees HBM for KV cache. Those are real wins and neither is the one being asked for. For TTFT: prefix-cache the system prompt, shorten the prompt, chunk the prefill, add prefill compute, or disaggregate prefill from decode.
+**(b) A smaller weight format does not establish a TTFT gain.** Weight-only quantization with FP16 compute need not accelerate compute-bound prefill and can add conversion overhead. Supported native low-precision compute can accelerate it. Specify storage dtype, arithmetic dtype, hardware and kernel, then measure TTFT and task quality. Prefix caching, shorter inputs and prefill capacity are other levers; chunked prefill mainly protects scheduling and can trade off an individual request’s TTFT.
 
 **(c) Activation outliers.** Weights are reasonably well-behaved per channel. Transformer activations are not: a few channels carry values orders of magnitude larger than the rest, and a per-tensor INT8 scale chosen to cover them quantizes everything else to near-zero. LLM.int8() keeps the outlier channels in FP16 and does the rest in INT8. SmoothQuant migrates the difficulty into the weights with a per-channel scaling: pick a scale $s$ for each activation channel, divide that channel's activations by $s$ and multiply the corresponding weight rows by $s$. The product is unchanged, so the transformation is mathematically neutral, and it leaves both sides quantizable.
 
@@ -187,7 +187,7 @@ GPTQ works layer by layer, using second-order (Hessian) information from a small
 **Rubric:**
 - Explicitly separates formats from methods
 - GPTQ = Hessian-based per-layer error compensation; AWQ = activation-salience channel rescaling
-- Refuses the TTFT premise with the compute-bound argument, and redirects to real TTFT levers
+- Distinguishes weight storage from arithmetic precision and measures the chosen kernel’s TTFT
 - Activation outliers explained per channel, with LLM.int8() and SmoothQuant
 - Keys sensitive via softmax amplification and RoPE outliers; values averaged
 - Rejects perplexity as sufficient evidence and names concrete task-level failures
@@ -203,19 +203,19 @@ GPTQ works layer by layer, using second-order (Hessian) information from a small
 <details>
 <summary>Model answer + rubric</summary>
 
-**Measure first.** Split the 8 seconds into TTFT and $N_{\text{out}} \times \text{TPOT}$, where $N_{\text{out}}$ is the number of output tokens and TPOT is the time to produce one of them. This is one line of instrumentation and it determines everything that follows. Also get the distribution of prompt length, output length, and how much of the prompt is shared across requests. Candidates who start proposing fixes before this split are the ones who get filtered.
+**Measure first.** Split the 8 seconds into TTFT and $N_{\text{out}} \times \text{TPOT}$, where $N_{\text{out}}$ is the number of output tokens and TPOT is the time to produce one of them. This is one line of instrumentation and it determines everything that follows. Also get the distribution of prompt length, output length, and how much of the prompt is shared across requests.
 
-**If TTFT dominates.** Prefill cost is linear in prompt tokens (and quadratic in the attention term once prompts get very long). Levers, cheapest first: prefix-cache the system prompt and tool definitions, since a chat product typically has thousands of tokens of identical preamble on every request and this is pure bookkeeping with zero quality risk; cut the prompt itself, especially over-retrieved RAG context; chunked prefill so long prompts stop blocking; more prefill FLOPs, or disaggregating prefill onto separate GPUs from decode.
+**If TTFT dominates.** The weight-multiplication cost grows linearly with prompt tokens, while dense attention adds a quadratic term. Test prefix caching when prompts share substantial prefixes, with cache keys and isolation checked. Also compare reducing unnecessary context, chunked prefill to limit blocking, and additional or separate prefill resources. Measure the benefit on the prompt-length and arrival distributions.
 
-**If generation dominates.** It is output tokens times per-token time, so attack both factors. Reduce $N_{\text{out}}$: terser system instructions, stop sequences, structured output instead of prose, and stream so that *perceived* latency drops to TTFT even if total time does not. Reduce TPOT: quantize weights (bandwidth-bound, so bytes halved is roughly time halved), speculative decoding if batch is small, more tensor-parallel GPUs to raise aggregate bandwidth. Or route: classify traffic and send the easy 80% to a much smaller model, which usually beats every other lever on both axes at once.
+**If generation dominates.** Reduce output length where the task allows it, and benchmark changes to TPOT. Weight quantization may help a bandwidth-bound workload; speculative decoding depends on draft acceptance and batch size; additional tensor parallelism adds communication as well as bandwidth. Routing some requests to a smaller model is another candidate, but the eligible traffic fraction and quality must be measured. Streaming changes when users see output, not the time to complete it.
 
-**For cost.** Cost is dollars per GPU-hour divided by tokens per GPU-hour, so anything that raises tokens per GPU-hour is a cost win. Continuous batching and prefix caching do that at zero quality risk and come first. Quantization does it with some quality risk and needs a task eval. Model routing usually does it best of all. Check utilization before buying anything: a fleet at 30% utilization has a scheduling problem, not a capacity problem.
+**For cost.** Compare dollars per completed task at the required quality and latency. Batching can improve weight reuse, and prefix caching can avoid repeated prefill. Their intended computation is preserved only with correct cache keys, model state, request isolation and scheduling; floating-point execution can still vary. Quantization and smaller-model routing need task-level quality checks. Low average utilization warrants checking arrival patterns, memory pressure and peak demand before choosing a scheduling or capacity change.
 
-**The tension, said out loud.** Batching improves cost per token and *worsens* per-user latency, because larger batches mean longer queueing and more contention per step. Speculative decoding does the reverse: better latency, worse throughput per GPU. You cannot optimize both with the same knob, which is why the answer starts with the measurement and ends with an explicit SLO — "p95 TTFT under 1 s, ITL under 50 ms, minimize cost subject to that" — rather than a list of techniques.
+**The tension.** Batching can improve throughput while increasing queueing or time per token. Speculative decoding can reduce latency when verification has enough spare capacity, but its draft overhead can reduce throughput on a saturated fleet. Optimize measured cost subject to quality and latency targets, for example p95 TTFT below 1 second and inter-token latency below 50 ms.
 
 **Rubric:**
 - Decomposes 8 s into TTFT and $N_{\text{out}} \times \text{TPOT}$ before proposing anything
-- Prefix caching named as the first cost/TTFT lever and flagged as zero-risk
+- Connects prefix caching to shared-prefix traffic and checks cache correctness and measured TTFT/cost
 - Reducing output tokens treated as a first-class lever, not just speeding up generation
 - Streaming distinguished from actual latency reduction
 - Model routing named as usually the largest win
@@ -232,20 +232,20 @@ GPTQ works layer by layer, using second-order (Hessian) information from a small
 <details>
 <summary>Model answer + rubric</summary>
 
-**(a) Half right, wrongly stated.** Per decode step, attention still touches all $n$ cached positions — that step is $O(n)$ with or without the cache. What the cache removes is *recomputing K and V for the entire prefix at every step*. Without it, generating $n$ tokens costs $O(n^2)$ total *because you redo the prefix each step*; with it, it is $O(n)$ per step and the redundancy is gone. The cache is a memory-for-compute trade: you buy back that recomputation with HBM that grows linearly in context and linearly in concurrency, and at long context you end up wishing you had the memory instead.
+**(a) Correct under a specified baseline.** Recomputing all layers over an $n$-token prefix performs $O(n^2)$ dense-attention work per generated token. With KV caching, only the new query attends over $n$ cached positions, giving $O(n)$ attention work per step. Summing over a growing generation gives cubic versus quadratic attention work, plus prefill; projection/FFN terms have separate scaling. The cache also avoids recomputing old hidden states, keys and values. It does not make attending to all past tokens constant time.
 
 The clean phrasing: the cache does not make attention cheaper, it removes redundant recomputation.
 
-**(b) Wrong twice.** FlashAttention is **exact** — bit-for-bit the same function, up to floating-point reassociation. And it does not reduce FLOPs. It reduces HBM traffic. It tiles Q, K and V into blocks small enough to live in SRAM, computes attention with an online-softmax running normalizer so no block needs the full row, and never materializes the $n \times n$ attention matrix in HBM at all. It recomputes some intermediates in the backward pass rather than storing them, which is *more* arithmetic for less memory movement. That is a rational trade precisely because attention is memory-bound. Claiming it is approximate is one of the most common candidate errors in this topic.
+**(b) Wrong twice.** FlashAttention is **algebraically equivalent to dense attention**; floating-point reassociation prevents a promise of bitwise equality, and low-precision variants add quantization error. And it does not reduce FLOPs. It reduces HBM traffic. It tiles Q, K and V into blocks small enough to live in SRAM, computes attention with an online-softmax running normalizer so no block needs the full row, and never materializes the $n \times n$ attention matrix in HBM at all. It recomputes some intermediates in the backward pass rather than storing them, which is *more* arithmetic for less memory movement. That is a rational trade precisely because attention is memory-bound. Claiming it is approximate is one of the most common candidate errors in this topic.
 
 **(c) Wrong.** There is no distribution shift to accept. Accepting each drafted token with probability $\min(1, p/q)$ and resampling rejections from the residual proportional to $\max(0, p - q)$ produces samples distributed exactly as the target model's. Exactness is the entire selling point; without it you would just use the small model.
 
-**(d) Incomplete in the way that matters.** Attention is $O(n^2)$ in *memory* as well as time, and naive implementations materialize the $n \times n$ score matrix. At 100K tokens that matrix alone is enormous per head per layer, and you OOM before you notice the time. That memory cost is what FlashAttention attacks, and it is also why paged caches exist.
+**(d) Incomplete in the way that matters.** Attention is $O(n^2)$ in *memory* as well as time, and naive implementations materialize the $n \times n$ score matrix. At 100K tokens that matrix alone is enormous per head per layer, and you OOM before you notice the time. That memory cost is what FlashAttention attacks, while paged KV allocation addresses a separate problem: fragmentation and reservation waste in the linear-sized persistent cache.
 
 Add the quantitative nuance: the quadratic *term* does not dominate as early as people assume. For a model with $N$ parameters, $L$ layers and hidden size $d$, prefill's attention FLOPs equal everything else at a prompt length $s$ of about $N / (L \cdot d)$. For a 34B model with 48 layers and $d = 5120$ that is $34\times10^9 / (48 \times 5120) \approx 138{,}000$ tokens. Below ~100K the quadratic term is a minority of prefill cost and the linear KV-cache growth is the more pressing problem; above it, attention genuinely dominates.
 
 **Rubric:**
-- (a) corrected as "removes redundant recomputation," with the memory-for-compute framing
+- (a) specifies the full-prefix baseline and derives quadratic-to-linear per-step and cubic-to-quadratic total attention work
 - (b) FlashAttention is exact AND does not reduce FLOPs; tiling in SRAM, no $n \times n$ matrix in HBM
 - (c) rejection-sampling correction named, output distribution exactly the target's
 - (d) $O(n^2)$ in memory too, and it is the memory that breaks first
@@ -272,7 +272,7 @@ Here 3,000 of 3,200 prompt tokens are shared, so a hit removes about **94% of pr
 
 **(c) The overnight tripling.** Almost certainly someone put something varying at the top of the prompt. "Current date and time is 2026-08-14T09:31:07Z" at the start of the system prompt is the canonical version: every request now hashes differently at block zero, every prefix lookup misses, and you are paying full prefill on 3,200 tokens for every request. There was no deploy because it was a prompt or config change, or a template that always contained the timestamp and only started varying at second granularity. Other candidates: a cache eviction policy change, a model or tokenizer version bump that invalidated every entry, or a routing change spreading traffic across more replicas so each one's cache hit rate collapsed.
 
-Second-order lesson: alert on prefix cache hit rate directly. It is the metric that would have caught this in minutes, and almost nobody graphs it.
+Alert on prefix-cache hit rate. In this example, a drop would expose the loss of prefix reuse and help explain the increased prefill cost.
 
 **(d) Why the price ladder.** Cached input costs the vendor only the memory to hold the blocks and the attention reads against them; no prefill compute at all. Uncached input costs prefill compute, but prefill is parallel and compute-bound, so it runs at high hardware utilization and the per-token cost is low. Output tokens each require a full pass over the weights in a bandwidth-bound regime where the GPU sits far below the ridge point, so each one is intrinsically expensive. The 3-to-10× output-versus-input price gap you see on every vendor's page is that intensity gap showing through the pricing.
 
@@ -288,10 +288,80 @@ Second-order lesson: alert on prefix cache hit rate directly. It is the metric t
 
 </Quiz>
 
+<Quiz id="9">
+
+**Q9. Allocate compute under uncertainty.** Use the lesson’s 50/50 easy/hard workload. Uniform two-unit success is 75%; perfect adaptive routing gives 80%. If the router swaps 20% of easy cases and 20% of hard cases, compute adaptive success and average cost.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Easy cases remain at 90% whether given one or three units. Hard cases reach $0.8(0.70)+0.2(0.40)=0.64$. Overall success is $0.5(0.90)+0.5(0.64)=0.77$. Symmetric routing mistakes preserve mean cost: easy mean 1.4 units, hard mean 2.6, overall 2. Thus the adaptive gain falls from five points to two. These are hypothetical response curves; estimate routing and success curves on held-out traffic.
+
+**Rubric:**
+
+- Computes 77% success and 2 mean units.
+- Includes router mistakes in the benefit calculation.
+
+</details>
+
+</Quiz>
+
+<Quiz id="10">
+
+**Q10. A candidate exists; did you select it?.** Four independent answers each succeed with probability 0.5. Compute the probability at least one is correct. A selector finds a correct answer with probability 0.7 conditional on one existing. What is selected-answer success, and what breaks the calculation?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Candidate-set success is $1-0.5^4=0.9375$. With the stated conditional selector and no correct answer possible when all candidates fail, selected success is $0.9375\times0.7=0.65625$. Candidate correlation invalidates the independence formula; a noisy or distribution-shifted verifier invalidates the 0.7 assumption. Count generation plus verification compute, and compare against a single stronger attempt at the same budget.
+
+**Rubric:**
+
+- Separates 93.75% availability from 65.625% selected success.
+- Names dependence, verifier quality and total-budget controls.
+
+</details>
+
+</Quiz>
+
+<Quiz id="11">
+
+**Q11. R1 is not a prompt template.** Distinguish R1-Zero, R1, inference-time search and distillation. A team sees strong math scores and wants to remove its refund-agent validators. Assess the inference.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+R1-Zero applies reasoning RL without preliminary supervised fine-tuning. R1 uses cold-start data and multistage training. Inference-time search allocates computation after training; distillation transfers behavior into another model. Verifiable math/code rewards do not establish correct authorization, safe side effects or faithful explanations. Keep execution checks and evaluate the deployed agent/model at its actual budget, including the distilled version if used.
+
+**Rubric:**
+
+- Separates the four procedures.
+- Rejects transferring a narrow benchmark result into an unmeasured safety/reliability claim.
+
+</details>
+
+</Quiz>
+
+<Quiz id="12">
+
+**Q12. A 2× kernel and an unstable training run.** Attention is 30% of request latency and a new low-bit path halves it. Compute the whole-request speedup. What do the September 2026 FP4 study’s failed training trajectories establish?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Time falls to $0.70+0.30/2=0.85$ of baseline, giving $1/0.85\approx1.18$× speedup before other changes. The reported MXFP4 probability/value distributed-training configurations diverged; that does not prove all FP4 methods fail or that an inference-accurate path is training-stable. Validate numerical error, task quality, training stability when relevant, and full-system latency on the target hardware.
+
+**Rubric:**
+
+- Derives 1.18× and holds other time fixed.
+- Bounds the empirical claim to tested configurations and distinguishes training from inference.
+
+</details>
+
+</Quiz>
+
 ## Rapid-fire: inference, serving and cost
 
-These 18 stand alone and are picked for how often they actually get asked in inference and serving rounds, not for how interesting they are. Two to five minutes each, out loud. Several want a number — if your answer to one of those has no arithmetic in it, it is not finished. This is the section where seniority shows, because almost everyone can name the techniques and almost nobody can size them.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **What is the KV cache** Give a systems-level answer: which tensors are cached, their exact shapes, why it accelerates autoregressive decoding, and how prefill differs from decode. Then name two production optimizations built on top of it.
 2. **Prefill vs decode** What is the computational difference between the two phases? Say which is compute-bound and which is memory-bandwidth-bound, and give the arithmetic intensity of each.

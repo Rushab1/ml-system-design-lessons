@@ -9,7 +9,7 @@ estimatedMinutes: 135
 
 ## TL;DR
 
-Picture the postmortem. The model is fine. The architecture diagram is fine. The offline AUC was 0.93 and the production AUC is 0.74, and nobody can find the bug because there isn't a bug in the modeling code. Most ML systems fail in production not because the model is wrong but because the **data pipeline silently violated an assumption the model was trained under**. This lesson teaches the data architecture, sampling math, splitting strategies, and leakage detection that make production ML *work* — derived, with worked examples, not just stated.
+In an illustrative postmortem, offline AUC is 0.93 and production AUC is 0.74, even though the modeling code is unchanged. A **data pipeline that violates a training assumption** can cause that gap. Sampling, split design and leakage checks help determine whether the offline result measures the task the model will face in production.
 
 The second half of the lesson is about the number you report. Model selection is **an estimation problem about an estimator.** Test error is a quantity you *estimate*; cross-validation is the *estimator*; and its own bias, its variance, and — crucially — the **selection bias you induce by optimizing on it** govern every choice in this lesson. Three tools split the work between them. The **bias-variance decomposition** tells you *what you're trading*; **cross-validation** tells you *how well you can measure the trade*; **double descent** tells you *where the classical trade stops being the whole story*. (CV *mechanics* — k-fold, stratified, group, temporal, nested — come earlier, in the splits section; the numbered parts at the end treat CV as a statistical estimator and derive bias-variance from scratch.)
 
@@ -461,7 +461,7 @@ That's enough metric vocabulary to follow the rest of this lesson. Full derivati
 
 ## Data leakage
 
-This is the most important section of the lesson. Data leakage is the single most common reason ML systems pass offline evaluation and fail in production. Yet it's rarely *the* topic of any one course or chapter — it gets distributed across "feature engineering," "experimentation," and "model evaluation." That scattering is itself part of why it keeps happening: nobody owns it. We treat it as the first-class concept it should be.
+Data leakage lets information unavailable at prediction time influence training or evaluation. It can inflate offline performance by giving the model a shortcut that disappears in production. The checks below trace those shortcuts through features, splits and preprocessing.
 
 ### Definition (information-theoretic)
 
@@ -647,7 +647,7 @@ Everything up to here has been about getting honest data into the model. The res
 
 > **Goal — derive, from scratch, the identity that names the entire trade.**
 
-Most people can recite "bias-variance tradeoff" and cannot say where the two terms come from. They come from one line of algebra plus one added-and-subtracted quantity, and doing it once means you never have to trust the slogan again.
+Add and subtract the mean prediction to separate squared error into bias, variance and irreducible noise. The expectations below specify which quantities vary across training sets.
 
 Data model: $y=f(x)+\varepsilon$, $\mathbb{E}[\varepsilon]=0$, $\text{Var}(\varepsilon)=\sigma^2$, $\varepsilon\perp x$. In words: the world produces a true value $f(x)$ and adds noise that averages to zero and is unrelated to the input. The estimator $\hat f=\hat f_{\mathcal D}$ depends on a random training set $\mathcal D$; write $\bar f(x)=\mathbb{E}_{\mathcal D}[\hat f(x)]$. Read $\bar f(x)$ as "the prediction you'd get at $x$ if you retrained on fresh datasets forever and averaged all the predictions." It is not a model you can build; it's a bookkeeping device. At a fixed test point $x$:
 
@@ -737,7 +737,7 @@ Sometimes you can't afford to hold anything out at all, because $n$ is small eno
 If your background is statistics or quant research, these four connections are the ones that make the rest of the course cohere.
 
 - **The decomposition is the whole game** — derive it cold, state the squared-loss caveat, and connect "ridge accepts bias to cut variance" to c1.3's shrinkage story (a little bias can strictly lower total MSE).
-- **CV error is an estimator with a sampling distribution** — three distinct effects (pessimistic bias from smaller folds, high variance from correlated LOO folds, optimistic *selection* bias from min-over-candidates); a staff-level answer separates all three.
+- **CV error is an estimator with a sampling distribution** — distinguish pessimistic bias from smaller training folds, variance affected by dependence between folds, and optimistic *selection* bias from minimizing over candidates.
 - **Data-snooping is meta-level leakage:** running 100 CV configs and reporting the best is multiple testing; the number is an order statistic biased by $\approx\tau\sqrt{2\ln m}$. In quant this is **backtest overfitting** (Bailey & López de Prado's *deflated Sharpe ratio*); nested CV / a truly-held-out set is the only honest fix — the same root cause as "more factors mechanically raise in-sample $R^2$" (c1.3).
 - **Double descent as statistics:** at $p=n$ the min-norm solution's variance spikes ($X^\top X$ ill-conditioned), then falls as $p\gg n$ because the pseudoinverse spreads and shrinks weight — an implicit ridge (the c1.3 SVD picture).
 

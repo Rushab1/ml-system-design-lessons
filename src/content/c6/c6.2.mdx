@@ -9,14 +9,14 @@ estimatedMinutes: 55
 
 ## TL;DR
 
-An eval is not a score you compute at the end. It is a piece of infrastructure with a dataset, a version, a runner, a gate and an owner, and its job is to answer one question: **do we ship this change or not?** Every design choice that follows is downstream of that question. If a number cannot block a deploy or trigger a rollback, it is a dashboard, not an eval. The most common failure is not a bad metric, it is a good metric attached to no decision.
+**A release evaluation connects measured outcomes to an explicit deployment decision.** Version the dataset, runner and criteria, assign an owner, and define when results block release or trigger rollback. Diagnostic and exploratory evaluations serve other purposes, such as locating failures or comparing designs; their measures remain useful even when they do not directly gate deployment.
 
 Two structural facts do most of the work. First, **the eval set is discovered from production traces, not invented in a planning meeting** — you read real failures, cluster them into a counted taxonomy, and write one binary check per observed failure mode. Second, **the gate has to survive statistics**: your system is stochastic, your slices are many, and a naive per-slice threshold turns red about half the time for no reason. Get those two right and the rest of the pipeline is ordinary plumbing.
 
 ## What you'll be able to do after this lesson
 
 - Build an eval dataset from traces: sample, label the first upstream failure, count the taxonomy, write one binary check per mode.
-- Explain why binary pass/fail per named failure mode beats a 1-to-5 quality score.
+- Choose binary checks or anchored ordinal rubrics according to the property being measured, and validate judge reliability.
 - Compute the standard error of a paired version comparison and show why pairing buys you a factor of two.
 - Quantify the false-alarm rate of a multi-slice CI gate and pick a correction that keeps the gate trusted.
 - Construct a case where the aggregate score improves while a real cohort collapses.
@@ -29,9 +29,9 @@ Two structural facts do most of the work. First, **the eval set is discovered fr
 
 The instinct is to sit down and write a list of things the system should do well. That list is a list of your imagination's failure modes, and your imagination is not where the failures are.
 
-The method that works: pull a sample of real traces, around 100, stratified so that the single most common intent does not crowd out everything else. Read each one end to end. Write a free-text note on **the first upstream failure only**. This constraint matters more than it looks. A trace where retrieval missed the document and then the model hallucinated and then the citation was wrong is one failure, not three, and if you count it as three you will spend a quarter tuning the citation formatter.
+Start with a sample of real traces, for example 100, stratified so that common intents do not crowd out the others. Read each trace and label its **first observed upstream failure** for the primary count. Record later contributing failures separately. A retrieval miss followed by an unsupported answer and an invalid citation is one failed trace with several defects; counting traces and counting defects answer different questions.
 
-Then cluster the notes into a taxonomy and count. A real distribution looks like this:
+Then cluster the notes into a taxonomy and count. For example, an illustrative sample of 100 traces might contain the following 65 failures, with 35 traces passing the reviewed checks:
 
 | Failure mode | Count / 100 |
 |---|---|
@@ -42,7 +42,7 @@ Then cluster the notes into a taxonomy and count. A real distribution looks like
 | Wrong output format for the downstream parser | 4 |
 | Everything else, singletons | 9 |
 
-Now you have a build order. Fifty-six of your failures are covered by five checks, and the check for each is **binary**: did this response cite a source that supports every factual claim, yes or no. Not "rate groundedness 1 to 5." Nobody in the room can say what separates a 3 from a 4, which means the score is unreproducible, and an unreproducible number cannot gate anything. Binary per named mode also hands the taxonomy back: when the gate fails you already know which mode moved.
+In this illustrative sample, the first five categories cover 56 traces. Build separate checks for their distinct requirements: evidence support, complete evidence, current policy, appropriate refusal and parseable output. Binary labels suit explicit pass/fail conditions. An ordinal rubric is also usable when each level has a defined meaning and its reliability is measured. Validate either format against held-out human judgments; binary labels do not automatically make a judge reproducible.
 
 > **Stop and think.** You ship the first five checks and the aggregate pass rate climbs from 61% to 88% in a month. Is the system better? Consider what happens to the singleton bucket, and to failure modes that only appear in traffic you started serving after the sample was drawn.
 
@@ -145,7 +145,7 @@ Worked: version B is +2.1 points on quality, p95 goes 1.2s to 1.9s, cost goes fr
 
 Offline evals answer "is this version plausibly not broken." They cannot answer "does this help users," and the seam between those two questions is where most eval programs come apart. Three stages, each answering a different question.
 
-**Shadow.** Run version B on live traffic in parallel with A, discard B's output, log it. Answers: does B crash, time out, blow the cost budget, or produce structurally invalid output on real inputs? Catches training-serving skew — inputs or features computed one way in the offline harness and another way in the live path — and distribution mismatch, at zero user risk. Cannot answer anything about user behavior, because no user saw it.
+**Shadow.** Run version B on live inputs alongside A, log B's results and keep its output out of the user-facing path. This can reveal crashes, timeouts, cost changes, invalid output and differences from offline preprocessing. Prevent B from making live writes or other external side effects, and isolate its resource use so it does not degrade A. Because users do not see B's output, shadow results cannot measure their response to it.
 
 **Canary.** Route 1% of traffic to B. Answers: do the operational and guardrail metrics hold under real exposure — error rate, p95, cost per query, refusal rate, escalation rate. Watch for an hour, then a day, then ramp. Automatic rollback on a guardrail breach.
 
@@ -174,7 +174,7 @@ The canonical worked case for the offline-online gap: an offline retrieval metri
 | Choice | Cheap option | Expensive option | When the expensive one earns it |
 |---|---|---|---|
 | Grader | Deterministic assertion | LLM judge, then human review | No programmatic ground truth exists |
-| Score type | Binary per failure mode | Likert 1-to-5 | Almost never; binary is usually better |
+| Score type | Binary per named failure | Anchored ordinal rubric | When degree matters and the levels have validated meaning |
 | Eval set source | Synthetic cases | Sampled production traces | Always — synthetic misses real modes |
 | Comparison | Unpaired, two runs | Paired, same cases, repeated trials | Any gate; pairing cuts the SE by more than half |
 | Slice gating | Aggregate only | Per-slice with FDR control | Traffic is uneven, which it always is |
@@ -198,7 +198,7 @@ The canonical worked case for the offline-online gap: an offline retrieval metri
 - **"Offline quality went up and user task completion went down. Debug it."** Do not say "offline and online are different." Name mechanisms: leakage or look-ahead in the offline label, position bias in logged data, training-serving skew, a stale feature, an eval set that no longer matches traffic, a feedback loop. Then name the bridges: shadow mode, interleaving for ranking, a backtest with a correct label window.
 - **"How do you decide whether to block the deploy?"** Tier it. Blocking on safety and severity-1 checks and on the aggregate paired comparison; alerting on per-slice moves with FDR control; hard budgets on p95 and cost per query. Then say what rollback looks like and who can override.
 - **"Your eval is 200 cases. Is that enough?"** Show the paired arithmetic. Unpaired SE 3.6 points, paired SE 1.6 points, and the power lives in the roughly 10 discordant cases. Then say what you would do with more budget: more cases in the thin slices, not more cases overall.
-- **"Why binary and not a 1-to-5 quality score?"** Because nobody can reproduce the boundary between 3 and 4, so the score has no test-retest reliability, so it cannot gate. Binary per named failure mode is reproducible, gives you the taxonomy back, and is directly checkable against human labels.
+- **"Why use binary checks?"** They map directly to discrete conditions and yield interpretable failure rates. For graded properties, define ordinal anchors and validate agreement and stability. Neither format guarantees reliability without clear criteria and evidence.
 - **"How do you version this?"** The tuple: dataset hash, prompt sha, model id, index version, grader version, config, environment. One change per run. Per-case results stored, not just aggregates.
 - **"What is the difference between a guardrail and an eval?"** Guardrails are synchronous, inline, deterministic and blocking. Evals are asynchronous measurement feeding an improvement loop. Cheap sentence, reliably good signal.
 - **A warning about prep material.** Public AI-engineer prep repos are saturated with benchmark suites, contamination, leaderboards and named eval frameworks. Across a large corpus of reported interview questions, essentially none of that gets asked. The questions are about experimentation, metric definition, diagnosis and eval-system design. Study accordingly.

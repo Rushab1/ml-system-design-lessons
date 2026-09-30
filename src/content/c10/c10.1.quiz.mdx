@@ -76,7 +76,7 @@ Affinity does the rest. Take two distinct frontier portfolios $w(m_1)$ and $w(m_
 
 $$w_{\text{GMV}} = \frac{\Sigma^{-1}\mathbf{1}}{\mathbf{1}'\Sigma^{-1}\mathbf{1}}, \qquad \sigma^2_{\text{GMV}} = \frac{1}{C}, \qquad m_{\text{GMV}} = \frac{A}{C}$$
 
-It sits at the hyperbola's vertex, and $\mu$ does not appear anywhere in it. That is the remarkable part, and it is the reason minimum variance survives estimation error better than anything on the rest of the frontier: it never uses the worst-estimated input.
+The minimum-variance portfolio sits at the hyperbola's vertex and does not depend directly on $\mu$. This avoids estimation error in expected returns, but covariance estimates and portfolio constraints still affect its weights and realized risk. It is not a guarantee of superior performance across objectives.
 
 **(c)** Add an asset with known return $r_f$ and zero variance, and write the excess return vector $e = \mu - r_f\mathbf{1}$. Any leftover capital can now sit in the risk-free asset, so the budget constraint on the risky weights disappears. Maximise the Sharpe ratio, expected excess return per unit of volatility:
 
@@ -378,9 +378,6 @@ What I refuse: I will not run an unconstrained plug-in mean-variance on 200 raw 
 </Quiz>
 
 ## Rapid-fire: portfolio construction
-
-These 16 questions stand alone and do not depend on anything above. Each should take 2 to 5 minutes out loud. They are chosen for how often they come up in a portfolio management or quantitative research seat, not for how interesting they are. Answer them speaking, with the arithmetic said aloud.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Derive the frontier cold** Minimise $w'\Sigma w$ subject to $w'\mu = m$ and $w'\mathbf{1} = 1$. Give the solution, define $A$, $B$, $C$, $D$, and state the variance of the optimal portfolio as a function of $m$. Then say what curve that is in mean-volatility space and where its vertex sits.
 2. **Tangency and the maximum Sharpe** Derive $w \propto \Sigma^{-1}(\mu - r_f\mathbf{1})$ and give the maximum attainable Sharpe ratio in closed form. What happens if the risk-free rate equals the minimum variance portfolio's expected return?

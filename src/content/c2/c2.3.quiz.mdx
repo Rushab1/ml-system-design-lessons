@@ -66,7 +66,7 @@ For a modern LLM pretraining run specifically, causes 1 and 3 are usually absent
 
 **(c) When the split is genuinely the problem.** If eval-mode train loss still sits above validation loss with everything measured at the same step, then the validation set is easier than the training set, not the model being mysterious. Concretely: the split was made by time or by source and the validation slice is cleaner, shorter, more templated, or drawn from a lower-entropy domain (a validation shard that is mostly boilerplate code or repeated web pages will have genuinely lower per-token loss).
 
-How to check: compare the *distributions*, not the means. Sequence-length histograms, per-domain loss broken out by source, and duplicate detection between train and validation. A leaked or near-duplicate validation set shows up as an unusually tight loss distribution with a heavy left tail. Also inspect a random sample of validation documents by hand; on this kind of question the honest senior answer includes "I would read fifty of them."
+How to check: compare sequence-length histograms, per-domain loss and train–validation duplicates. Unusually low validation loss can motivate a leakage check, but its shape alone does not identify the cause. Inspect a sample of validation documents to check the suspected mismatch directly.
 
 **Rubric — full credit:**
 - Names all three mundane causes, and does not lead with the split
@@ -327,7 +327,7 @@ The framing that ties it together: everything in this list is the same question,
 
 <Quiz id="8">
 
-**Q8. Two curves, two prescriptions.** You are shown two runs of the same architecture on the same dataset. Run A: training loss falls to 0.05, validation loss bottoms out at 0.9 at step 3,000 and rises steadily after. Run B: training loss and validation loss both plateau at 1.6 and sit there for 20,000 steps. (a) Name each condition and justify from the curve, not the definition. (b) Give the prescription for each in cost order and say what determines where you enter the ladder. (c) Which of the two is the easier problem, and why does that answer inform how you start every new project?
+**Q8. Two curves, two prescriptions.** You are shown two runs of the same architecture on the same dataset. Run A: training loss falls to 0.05, validation loss bottoms out at 0.9 at step 3,000 and rises steadily after. Run B: training loss and validation loss both plateau at 1.6 and sit there for 20,000 steps. (a) Name each condition and justify from the curve, not the definition. (b) Choose a first intervention for each run and explain which observations would change your choice. (c) What does a small-batch overfitting check establish, and what remains unknown after it passes?
 
 <details>
 <summary>Model answer + rubric</summary>
@@ -336,28 +336,26 @@ The framing that ties it together: everything in this list is the same question,
 
 **Run A is overfitting.** The evidence is not that validation loss is high — it is the *shape*: training loss still falling while validation loss has turned around, so the gap is widening. The model has enough capacity to memorize the training set and nothing is stopping it. The turning point at step 3,000 is where the marginal update stopped buying generalization and started buying memorization.
 
-**Run B is underfitting.** Both losses are high *and* flat *and* equal. No gap means no memorization, so capacity or optimization is the binding constraint, not regularization. And 1.6 is a suspicious number to plateau at: check it against $\ln C$ for the class count, because "underfitting" and "the model never learned anything at all" look identical on the curve and have completely different fixes.
+**Run B has poor training fit.** Similar high, flat losses can reflect optimization failure, insufficient capacity, excessive regularization or problems with the data or objective. Compare 1.6 with the uniform-prediction cross-entropy $\ln C$ for the class count $C$, and inspect predictions and gradients before choosing a remedy.
 
 **(b) Prescriptions.**
 
-**Run A**, cheapest and most effective first: **more data → augmentation → weight decay → dropout → early stopping → smaller model.** The ordering is the answer, not the list. More data comes first because it is the only intervention that raises the achievable ceiling instead of trading training fit for variance reduction. A smaller model comes last because it gives up capacity permanently and you cannot get it back later. Where you enter depends on what is actually available: if more data is not obtainable, start with augmentation *if you can name a true invariance for this task* — augmentation encodes an assumption, and a false one (horizontal flips on a task where left and right differ) makes things worse, not better. In a fine-tuning or small-data regime, dropout is live; in large-model pretraining it mostly is not, because with one pass over a corpus much larger than the parameter count there is nothing to memorize.
+**Run A:** restore the best validation checkpoint, then compare interventions whose assumptions fit the task. Additional representative data may help if it is available at an acceptable cost. Augmentation is appropriate only for a valid invariance; horizontal flips can corrupt labels when left and right matter. Weight decay, dropout or a smaller model are alternative experiments, with training cost and validation performance determining their order. The cited no-dropout pretraining result does not prescribe the choice for small-data fine-tuning.
 
 Note the free win available immediately: Run A already tells you the best checkpoint is at step 3,000. Early stopping with best-checkpoint restore costs nothing and is the first thing to turn on.
 
-**Run B**, before adding a single parameter: **prove the optimization works by overfitting a single batch.** Take 8 examples, disable augmentation, regularization, and shuffling, and train until loss approaches zero. If it cannot, the problem is in the model or the loss and no amount of capacity will help. Only once a single batch overfits do you move on to: sweep the learning rate by powers of ten, check that gradients are flowing at every depth, then train longer, then add capacity, then remove regularization. Adding parameters to a model that cannot fit 8 examples is the single most common wasted week in applied ML.
+**Run B:** try fitting a small diagnostic batch, for example 8 distinct, consistently labeled examples, with augmentation and regularization disabled. If loss does not approach the minimum allowed by the objective, inspect inputs, targets, loss, gradient flow and optimizer updates. Also check whether the architecture can represent those examples; capacity or parameter-sharing constraints can matter even on a small batch. Use these checks to decide whether to change the learning rate, training duration, regularization or model capacity.
 
-**(c) Run A is the far easier problem.** Overfitting means you have proven the model can fit the data; everything after that is trading a known quantity of training fit for generalization, and you have a whole ladder of cheap, reversible levers. Underfitting means you do not yet know whether the model, the loss, the data pipeline, or the optimizer is broken — the hypothesis space is still wide open.
-
-**How this informs project setup:** deliberately overfit first. Start with a model large enough to drive a small subset of the data to near-zero loss with regularization off. That converts an open-ended "why isn't this working" into a bounded "how much do I regularize," and it front-loads the discovery of pipeline bugs, which are otherwise indistinguishable from a model that needs more capacity. This is also the canonical answer to the interview question "should you overfit or underfit first?", and the interviewer is listening for the reasoning, not the word.
+**(c)** A successful small-batch fit shows that this configuration can optimize the chosen loss on those examples. It does not establish that the full dataset is clean, that validation represents deployment, or that the model generalizes. Run A already demonstrates substantial training fit, so its next tests can focus on the growing validation gap; Run B leaves more possible causes unresolved.
 
 **Rubric — full credit:**
 - Diagnoses from shape (gap widening vs both flat), not from absolute loss level
 - Checks Run B's plateau value against $\ln C$
-- Gives the fix ladder in cost order with the reasoning for why data is first and smaller model is last
+- Chooses interventions using the observed failure, acquisition cost, valid augmentations and held-out results
 - Conditions augmentation on a genuine invariance and notes the false-invariance failure
-- Notes dropout's retreat from large-model pretraining
-- For underfitting, leads with overfit-a-single-batch before adding capacity
-- Answers that overfitting is the easier state and connects it to overfitting deliberately at project start
+- Distinguishes the cited dropout experiment from a guarantee about memorization
+- Uses a small-batch fit check and considers data, loss, optimization and representational constraints
+- Explains that fitting a small batch checks part of the training setup without establishing generalization
 
 </details>
 
@@ -365,10 +363,7 @@ Note the free win available immediately: Run A already tells you the best checkp
 
 ## Rapid-fire: Training diagnostics and the debugging ladder
 
-These 15 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest — several of them are near-verbatim from real 2026 loops, and the diagnostic ones show up as entire dedicated rounds at Stripe, Airbnb, OpenAI, and Spotify.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
-1. **Overfitting, start to finish** What is overfitting, how do you detect it, and how do you prevent it? Define it from the shape of the curves rather than from the error level, then give the fix ladder in cost order and say which rung you would reach for on a 5,000-example dataset versus a 50-million-example one.
+1. **Overfitting, start to finish** What is overfitting, how do you detect it, and how do you prevent it? Define it from the shape of the curves rather than from the error level, then choose interventions for a 5,000-example dataset and a 50-million-example dataset, stating the data, cost and validation assumptions behind your order.
 2. **Debug this run** A training script that used to work now has a loss that decreases for 2,000 steps, spikes by an order of magnitude, and goes to NaN. Walk me through your diagnostic order and say what each check rules out. What do you look at *first*, and why that?
 3. **Overfit or underfit first** When you start building a new neural network, should you deliberately overfit it or underfit it first? Say what the first thing you train on is, what you turn off while doing it, and what a failure at that stage rules out.
 4. **Won't overfit one batch** You take 8 examples, turn off augmentation and regularization, train for 500 steps, and the loss will not go near zero. What does that rule out, and where do you look next? Name three concrete bugs that produce exactly this.

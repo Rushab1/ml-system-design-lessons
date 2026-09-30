@@ -142,7 +142,7 @@ with learning rate $\nu$, typically 0.01 to 0.1. Every round is a descent step o
 
 <RFvsGBDTErrorCurves caption="Train and test error as trees are added to a random forest against rounds added to a boosted model. Follow only the test curves. The forest's test error falls, flattens and stays flat, because more trees only shrink the (1-rho)/B term and cannot increase capacity. The boosted model's test error reaches a minimum and turns upward, because each round is a bias-reducing step that eventually starts fitting noise. The dashed line marks where early stopping should cut it off." />
 
-This gives the cleanest one-line distinction in ensemble methods. **In a forest, $B$ is a Monte Carlo knob and not a capacity knob**, so more trees never hurt and the only cost is compute. **In boosting, $M$ is a capacity knob**, so it must be tuned, and every serious boosting library ships early stopping on a validation set because there is no way to avoid the choice. The capacity knobs in boosting are $M$, $\nu$, and tree depth, and they interact: halving $\nu$ roughly doubles the $M$ you need.
+**In a forest with a fixed tree-building procedure, $B$ controls the Monte Carlo average.** Under the equal-variance, equal-correlation model above, increasing $B$ reduces expected prediction variance toward its correlation floor without changing the mean prediction. This does not guarantee improvement on every finite validation set or metric; it also costs computation and storage. **In boosting, $M$ changes the fitted sequence of corrections**, so tune it jointly with learning rate $\nu$ and tree depth. A smaller learning rate often requires more boosting iterations.
 
 ## Part 4 — Neural networks and where the classical picture breaks
 
@@ -198,7 +198,7 @@ The last case is the one worth rehearsing. A train-validation gap is only eviden
 
 ## Production failure modes
 
-1. **Adding trees to a forest and expecting the plateau to move.** Going from 100 to 1000 trees changes variance from $\rho\sigma^2 + 0.01(1-\rho)\sigma^2$ to $\rho\sigma^2 + 0.001(1-\rho)\sigma^2$. At $\rho = 0.5$ that is 0.505 to 0.5005, a 0.9 percent improvement for 10 times the inference cost. The knob that moves the floor is `mtry`, and nobody tunes it.
+1. **Adding trees to a forest and expecting the plateau to move.** Going from 100 to 1000 trees changes variance from $\rho\sigma^2 + 0.01(1-\rho)\sigma^2$ to $\rho\sigma^2 + 0.001(1-\rho)\sigma^2$. At $\rho = 0.5$ that is 0.505 to 0.5005, a 0.9 percent improvement for 10 times the inference cost. Changing `mtry` can change tree correlation and strength; measure both effects through held-out performance.
 2. **Boosting with early stopping on the same data used for tuning.** The stopping round is a fitted parameter. Choosing it on the set you then report is how a model that "stopped at round 800" turns out to be 3 points worse at round 800 on genuinely held-out data.
 3. **Reporting logistic regression coefficients from a separable subgroup.** The MLE diverges, the optimizer stops on an iteration limit, and coefficients of size 40 with standard errors of size 900 get shipped into a report. Scikit-learn's L2 default masks this by silently giving a finite answer that is a shrunken estimate, not the MLE.
 4. **Tuning $k$ in $k$-NN without scaling the features.** Distance is dominated by whichever feature has the largest units. The variance term still falls as $\sigma^2/k$, so cross-validation returns a confident optimum for a metric that is measuring one column.

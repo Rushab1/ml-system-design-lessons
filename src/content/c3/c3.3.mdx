@@ -3,13 +3,12 @@ id: c3.3
 chapter: 3
 title: Inference, serving and cost
 subtitle: KV cache arithmetic, prefill vs decode, continuous batching, speculative decoding, quantization — and how to budget a serving fleet out loud
-refs: []
 estimatedMinutes: 95
 ---
 
 ## TL;DR
 
-Serving an LLM is not a compute problem. It is a **memory problem wearing a compute costume**. Generating one token requires reading every weight in the model out of GPU memory and doing only about two floating-point operations per byte read — roughly 300 times less arithmetic than the GPU can do per byte it can fetch. So decode speed is set by memory bandwidth, not by FLOPs, and every serious inference optimization is an answer to one of two questions: *how do I move fewer bytes per token* (quantization, GQA, speculative decoding) or *how do I amortize the bytes I already moved across more tokens* (batching).
+**Small-batch dense-model decoding often spends more time moving weights than multiplying them.** In the simplified FP16 weight-only model, one token requires about $2N$ FLOPs and reads $2N$ bytes, giving roughly 1 FLOP per byte at batch size one. Batching reuses the loaded weights; quantization reduces their bytes. Prefill, larger batches, long-context attention and communication can shift the bottleneck, so the workload determines which optimization helps.
 
 The second half of the story is the **KV cache**: the per-request tensor of past keys and values that makes decode $O(n)$ instead of $O(n^2)$ in the context length $n$. It is linear in context length and linear in concurrency, it is not shared between requests, and at long context it can exceed the size of the model weights. That makes it, not the weights, the thing that caps how many users one GPU can serve. Three skills carry the whole topic: writing down the cache formula, plugging in a spec you have never seen, and turning the resulting number into a concurrency limit and a dollar figure.
 
@@ -24,6 +23,7 @@ The second half of the story is the **KV cache**: the per-request tensor of past
 - Turn any of the above into a concurrency limit, a GPU count and a dollar figure.
 - Derive what temperature does to a distribution, and compute the probabilities at $T = 0.5$, $1$ and $2$ from a set of logits.
 - Explain why top-p adapts to the model's confidence while a fixed top-k does not, and choose decoding settings for a given task.
+- Allocate test-time compute at matched cost; separate R1-style post-training, distillation, search and speculative sampling.
 
 > **Vocabulary primer.** Each term below keeps exactly this meaning throughout.
 >
@@ -209,11 +209,11 @@ The last row of the table is the interesting exception: a task with exactly one 
 
 ## Part 2 — Prefill and decode are different machines
 
-Both phases run the same weights. They sit on opposite sides of the ridge point.
+Both phases use the same weights, but their weight reuse differs. The following weight-only roofline model explains why long prefill and small-batch decode can sit on opposite sides of the ridge point.
 
-**Prefill** processes $P$ prompt tokens at once, costing about $2NP$ FLOPs for $N$ parameters ($N$ multiply-accumulates per token, 2 FLOPs each) while reading the weights only once, $2N$ bytes in FP16. Arithmetic intensity is $2NP/2N = P$ FLOPs per byte. A 2000-token prompt gives ~2000, far above an H100's ridge point of $989 \times 10^{12} / 3.35 \times 10^{12} \approx 295$. **Prefill is compute-bound**, and more FLOP/s improves TTFT.
+**Prefill** processes $P$ prompt tokens at once, costing about $2NP$ FLOPs for $N$ parameters ($N$ multiply-accumulates per token, 2 FLOPs each) while reading the weights only once, $2N$ bytes in FP16. Arithmetic intensity is $2NP/2N = P$ FLOPs per byte. A 2000-token prompt gives ~2000, far above an H100's ridge point of $989 \times 10^{12} / 3.35 \times 10^{12} \approx 295$. **This weight-multiplication estimate is compute-bound**; attention, activation traffic, kernel shapes and communication also contribute to observed TTFT.
 
-**Decode** produces one token per sequence: $2N$ FLOPs per sequence, but still $2N$ bytes read, because you cannot multiply by a matrix you have not loaded. With $B$ sequences in the batch the work is $2NB$ FLOPs against the same $2N$ bytes, so intensity is $2NB/2N = B$, the batch size itself. At $B = 1$ that is **1 FLOP per byte**, roughly 300× below the ridge point. **Decode is memory-bandwidth-bound**, and a GPU twice as fast at math generates tokens at exactly the same rate.
+**Decode** produces one token per sequence: $2N$ FLOPs per sequence, but still $2N$ bytes read, because you cannot multiply by a matrix you have not loaded. With $B$ sequences in the batch the work is $2NB$ FLOPs against the same $2N$ bytes, so intensity is $2NB/2N = B$, the batch size itself. At $B = 1$ that is **1 FLOP per byte**, roughly 300× below the ridge point. **This small-batch weight-only estimate is memory-bandwidth-bound**; doubling arithmetic throughput alone does not change that bandwidth limit.
 
 ### The bandwidth bound as a number
 
@@ -263,11 +263,23 @@ Quantization stores numbers in fewer bits. Decode time is bytes-moved ÷ bandwid
 
 **Weight-only quantization** is the default: weights stored in INT8 or INT4, dequantized to FP16 inside the kernel, math still in FP16. Our 70B is 140 GB in FP16, 70 GB in INT8, 35 GB in INT4. INT4 is what makes single-GPU serving of a 70B possible at all.
 
-**It does not speed up prefill.** Prefill is compute-bound and the arithmetic is still FP16, so TTFT is unchanged. The common overstatement is that quantization makes everything 4× faster; it makes *decode* faster and *memory* smaller.
+**Weight-only compression does not imply a proportional prefill speedup.** A kernel that dequantizes and then computes in FP16 may remain compute-bound, and conversion has overhead. Native lower-precision weight-and-activation arithmetic, such as supported FP8 matrix multiplication, can accelerate prefill too. Report storage format, compute format, hardware and kernel separately; neither a 4× smaller file nor a faster isolated matmul guarantees a 4× faster request.
 
 Which value each weight rounds to is a choice, and rounding every weight independently to its nearest representable level is the worst reasonable choice, because it ignores how the errors combine when the layer multiplies them by an activation. Two post-training methods pick better. **GPTQ** quantizes layer by layer, using second-order (Hessian) information from a small calibration set to choose each weight's rounding so the layer's *output* error is minimized, updating the not-yet-quantized weights to compensate for error already introduced. **AWQ** starts from the observation that a small fraction of weight channels matter far more than the rest, identifies them by *activation* magnitude rather than weight magnitude, and rescales them before quantizing so they survive INT4 intact. Both are post-training. AWQ tends to be less sensitive to the calibration set.
 
 **What breaks.** Activation quantization is much harder than weight quantization: transformer activations have extreme per-channel outliers, so naive INT8 activations destroy the model. LLM.int8() keeps outlier channels in FP16; SmoothQuant migrates the difficulty from activations into weights with a per-channel scaling. Quantizing the *KV cache* to INT8/FP8 directly buys concurrency, but **keys are more sensitive than values** — RoPE-rotated keys carry strong outlier channels, and key errors pass through a softmax that amplifies them while value errors get averaged. And perplexity hides the damage: INT4 often costs a few hundredths of perplexity while measurably degrading long-context recall, multi-step arithmetic, and structured-output adherence. Evaluate on your task, not on WikiText.
+
+### A low-bit kernel is not an end-to-end speedup
+
+**Goal — put an upper bound on what one optimized component can buy.** If attention accounts for fraction $f$ of request time and becomes $r$ times faster while everything else stays fixed, Amdahl's law gives
+
+$$S = \frac{1}{(1-f)+f/r}.$$
+
+With $f=0.30$ and $r=2$, total speedup is $1/0.85=1.18$, not 2×. Include weight reads, projections, collectives, cache traffic and queueing in the system measurement.
+
+<ResearchBars variant="precision" />
+
+The September 2026 preprint [Hardware-Aware FP4 FlashAttention-4](https://arxiv.org/abs/2609.04105) reinforces both cautions: a faster low-bit attention path need not deliver a comparable whole-model gain, and all tested MXFP4 probability/value distributed-training trajectories diverged. That is a result for the tested configurations, not a proof that every FP4 method fails. Inference tolerances and stable training are separate validation problems.
 
 ## Part 6 — Putting it together: budget a fleet out loud
 
@@ -280,13 +292,29 @@ Context length has two separate costs, and they grow at different rates, so they
 
 $$1500 \text{ tok/s} \times 3600 = 5.4\text{M tokens/hour} \Rightarrow \frac{\$4}{5.4\text{M}} \approx \$0.74 \text{ per 1M output tokens}$$
 
-At 50% fleet utilization that is ~\$1.50 per 1M output tokens, which is the right order of magnitude versus published API pricing for models this size. Input tokens are far cheaper per token because prefill is parallel; that asymmetry is why every vendor prices input and output separately, and why prefix caching is priced cheaper still.
+At 50% fleet utilization that is ~\$1.50 per 1M output tokens, in this illustrative hardware-rental model; this is not a current vendor quote. Input tokens are far cheaper per token because prefill is parallel; that asymmetry is why every vendor prices input and output separately, and why prefix caching is priced cheaper still.
 
 Sanity-check the concurrency limit too. 160 GB of HBM minus 140 GB of weights leaves ~20 GB for cache. At 8K context (2.6 GB per request) that is 7 concurrent requests. That number, not the FLOPs, is what your autoscaler is actually gated on. Quantize weights to INT8 and you free 70 GB, taking concurrency from 7 to ~34. That is the chain worth tracing every time: the optimization changed a concurrency number, which changed a GPU count, which changed a bill.
 
 ### The \$50k/month, 8-second-p95 question
 
-Decompose before acting: measure the split between TTFT and generation. If TTFT dominates, prefix-cache the system prompt, shorten the prompt, chunk the prefill, or disaggregate prefill onto separate GPUs from decode. If generation dominates, generation time is $N_{\text{out}} \times \text{TPOT}$, where $N_{\text{out}}$ is the number of output tokens (not to be confused with $N$, the parameter count): cut output tokens (terser instructions, stop sequences, streaming so perceived latency falls), cut TPOT with quantization and speculative decoding, or route the easy 80% of traffic to a smaller model. For cost, continuous batching and prefix caching raise tokens per GPU-hour at zero quality risk, quantization raises it further at some risk, and the smaller-model route usually beats both. Name the tension out loud: batching improves cost and *worsens* per-user latency.
+Decompose before acting: measure TTFT and generation separately. If TTFT dominates, test prefix caching, shorter prompts, chunked prefill or separate prefill and decode resources. Generation time is $N_{	ext{out}}	imes	ext{TPOT}$: shorter answers reduce output tokens, while quantization or speculative decoding may reduce time per token. Streaming changes when users see output, not when generation finishes. For cost, benchmark batching and prefix reuse on the traffic mix. Correct caching requires matching model state, tokens, positions and access boundaries; scheduling must preserve request isolation. Smaller-model routing needs its own quality and latency evaluation. More batching can improve throughput while increasing queueing or per-user latency.
+
+## Part 7 — Spend inference compute to improve the answer
+
+**Goal — distinguish producing the same distribution faster from changing the answer-selection procedure.** Speculative decoding verifies a draft to preserve a target distribution. Best-of-$N$, iterative refinement and verifier-guided search spend additional inference compute to improve task success, changing the selected-output distribution. [Snell et al. (2024)](https://arxiv.org/abs/2408.03314) find that useful compute allocation depends on problem difficulty and strategy. There is no universal “think longer” setting.
+
+Use a matched-budget experiment. In an **illustrative** workload, half the requests are easy and half hard. An easy task succeeds at 90% with either 1 or 3 compute units. A hard task succeeds at 40%, 60%, 70% with 1, 2, 3 units respectively; easy tasks also remain at 90% with 2. Uniformly spending 2 units gives $0.5(0.90)+0.5(0.60)=75\%$ success. Spending 1 on easy tasks and 3 on hard ones uses the same mean budget and reaches $0.5(0.90)+0.5(0.70)=80\%$ **if the router classifies difficulty correctly**.
+
+<ResearchBars variant="compute" />
+
+Measure router mistakes, verifier quality, total tokens and p95 latency. For independent candidates with success probability $p$, $1-(1-p)^N$ is the chance at least one is correct; it is not the success probability of the answer actually selected. Correlated candidates and a noisy verifier can erase the apparent gain. A verifier checking unit tests or arithmetic has a narrower, more auditable target than one scoring an open-ended essay. See [agent consistency](/c/c4/c4.2#part-6--measure-success-consistency-and-harm) for the distinction between finding one success and succeeding every time.
+
+### R1: training a reasoning policy versus prompting a plan
+
+**Goal — identify what is learned before inference.** [DeepSeek-R1](https://arxiv.org/abs/2501.12948) reports reasoning behaviors emerging through reinforcement learning with verifiable rewards. **R1-Zero** starts that RL without preliminary supervised fine-tuning; **R1** uses cold-start data and a multistage training process. Distillation transfers useful reasoning behavior to smaller models. These are post-training results, not consequences of simply asking any model to “make a plan.”
+
+The boundary matters: rewardable math/code success does not establish truthful explanations, safe tool use or reliable open-ended agents. Evaluate the distilled model on the deployed task, its allowed compute budget and its failure costs. Keep reasoning effort, sampling and external verification as separate configuration choices.
 
 ## Tradeoff matrix
 
@@ -298,10 +326,10 @@ Decompose before acting: measure the split between TTFT and generation. If TTFT 
 | PagedAttention | no | yes (via concurrency) | **yes (fragmentation)** | none | Kernel complexity |
 | Prefix caching | **yes, hugely** | no | costs memory | none | Only helps shared prefixes |
 | Speculative decoding | no | **yes, 2-3× at low batch** | no | **none — exact** | Draft model memory; useless at high batch |
-| INT8 weights | no | yes (~2×) | **yes (2×)** | small | Calibration; kernel support |
-| INT4 (GPTQ/AWQ) | no | yes (~3-4×) | **yes (4×)** | moderate, task-dependent | Long-context and reasoning regressions |
+| INT8 weights | kernel-dependent | often, when bandwidth-bound | **yes (2× weight storage)** | task-dependent | Calibration; storage/compute dtype and kernel support |
+| INT4 (GPTQ/AWQ) | kernel-dependent | often, when bandwidth-bound | **yes (4× weight storage)** | task-dependent | Conversion overhead; long-context and reasoning regressions |
 | KV-cache quant | no | yes | **yes (2-4×)** | keys sensitive | Accuracy on long context |
-| FlashAttention | **yes** | yes | **yes (no $n^2$ matrix)** | **none — exact** | Nothing; use it |
+| FlashAttention | often | shape/kernel-dependent | **yes (no $n^2$ score matrix)** | Reassociation; additional error in low-precision paths | Hardware/dtype support; benchmark end to end |
 
 ## Production failure modes
 
@@ -311,14 +339,11 @@ Decompose before acting: measure the split between TTFT and generation. If TTFT 
 4. **Batch size tuned for throughput on a latency-sensitive product.** Aggregate tokens/s looks great on the dashboard while p95 TTFT quietly triples. Set a max batch and a queue-time SLO, not just a throughput target.
 5. **Shipping INT4 after checking only perplexity.** The regression surfaces weeks later in tool-call JSON validity and long-context retrieval, somewhere your eval never looked.
 6. **Speculative decoding on a heavily batched throughput fleet.** There were no idle FLOPs to spend, so you paid a draft model's memory for roughly nothing.
-7. **Sampling parameters left at the chat default on a structured-output endpoint.** A temperature of 0.7 with top-p 0.95 is a reasonable prose default and a bad JSON default. The symptom is a small, stubborn rate of schema violations and hallucinated tool arguments that no amount of prompt editing removes, because the cause is the sampler.
-8. **A repetition penalty enabled globally.** It was added to stop a chat model looping, then inherited by the code and tool-calling endpoints, where it renames identifiers mid-function and perturbs keys that are supposed to repeat in every array element.
-9. **An eval regression that was sampling noise.** Pass rate moves from 90% to 87% at temperature 0.8 over 100 tasks, a change gets reverted, the number moves back, and the team learns something untrue. At that sample size the 95% interval is about ±6 points.
-10. **Prefix caching silently defeated.** Someone injects a timestamp or user ID at the top of the system prompt, every prefix hash misses, and prefill cost jumps overnight with no code change to blame.
+7. **Sampling parameters copied across tasks without evaluation.** A prose setting can be a poor fit for a tool endpoint. Constrain output structure, validate argument semantics and compare supported model-specific sampling settings. Lower temperature alone cannot guarantee schema validity or truthful arguments.
 
 ## Interview gotchas
 
-- **"What is the KV cache and what shapes are stored?"** Per layer, K and V of shape (batch, n_kv_heads, seq, d_head). It removes redundant recomputation of the prefix, turning generation from $O(n^2)$ to $O(n)$ total. It does **not** reduce per-step attention FLOPs — it trades memory for compute.
+- **"What is the KV cache and what shapes are stored?"** Per layer, K and V of shape (batch, n_kv_heads, seq, d_head). It removes redundant recomputation of the prefix, reducing dense-attention work from $O(n^2)$ to $O(n)$ per decode step at prefix length $n$, or from cubic to quadratic when summed across a growing generation. It still reads a context-length-dependent set of keys and values — it trades persistent memory for avoided recomputation.
 - **"Compute the cache size for this model."** Recite $2 \times L \times n_{kv} \times d_{head} \times s \times B \times \text{bytes}$, with $L$ layers, $n_{kv}$ KV heads, head width $d_{head}$, sequence length $s$, batch $B$ and bytes per stored number. Do it per token first (320 KiB above), then scale. Compare it to weight memory unprompted.
 - **"GQA vs MQA at 100K context — how much do you save?"** 8 KV heads instead of 64 is 8×: 262 GB → 33 GB per request. MQA is 64× but costs more quality. Frame it as a concurrency multiplier.
 - **"Why is LLM inference memory-bound?"** Decode does $2N$ FLOPs per sequence while reading $2N$ bytes of weights: intensity ≈ batch size, against a ridge point near 300. Not because "models are big."
@@ -329,11 +354,23 @@ Decompose before acting: measure the split between TTFT and generation. If TTFT 
 - **"Your cache is too big during long generation."** In order: GQA if you control the model, paged cache, quantize the cache (keys carefully), sliding window or eviction if the task tolerates it, CPU offload as a last resort, cap context.
 - **"Top-k or top-p?"** Top-k keeps a fixed count, top-p keeps the smallest set whose probability sums to the threshold. A count is wrong in both regimes: when the model is confident the extra slots admit tokens it already ruled out, and when it is unsure the count amputates real candidates. Top-p conditions on mass, so the nucleus narrows and widens with the model's confidence. Give the two-column example. Then name top-p's weakness, that it bounds no count, and say production usually applies a top-k cap on top of it.
 - **"Why does high temperature produce nonsense rather than creativity?"** Temperature raises every odds ratio to the power $1/T$, which cannot distinguish the plausible continuations from the tail. Going from $T=1$ to $T=2$ on the worked example took the junk token from 0.57% to 4.9%, which is 24 expected draws over a 500-token completion. Temperature needs truncation next to it.
-- **"What sampling settings for a tool-calling agent?"** Temperature 0, no penalties, truncation off, and a constrained decoder or schema validator if the endpoint supports one. There is one right set of arguments, so sampling variance is pure loss. Penalties are actively harmful when the correct output repeats keys and identifiers.
+- **"What sampling settings for a tool-calling agent?"** Use schema constraints and semantic validators, then evaluate the model’s supported sampling settings. Greedy decoding is a useful baseline; reasoning models can benefit from nonzero sampling and verification, and several argument choices may be valid. Penalties are actively harmful when the correct output repeats keys and identifiers.
 - **"Is temperature 0 deterministic?"** It removes the sampler's randomness and nothing else. Batch composition under continuous batching changes reduction order in the kernels, floating-point addition is not associative, so logits differ in the last bits and a near-tie can flip the argmax. Seeds control the RNG, not the numerics. Bit-identical replay comes from recording outputs, not from recomputing them.
 - **"Why not just use beam search?"** It fixes greedy's myopia and not greedy's real problem. It still returns the mode, and the mode of a high-dimensional distribution is an outlier of it. The coin argument settles this in one line: the all-heads string is the most probable single outcome of 100 flips at $p=0.7$ and you will never see it, while 70-heads strings carry about 8.7% of the mass between them. Beam search is right where the target distribution is genuinely peaked, as in translation or transcription.
 - **"Design a batching system so 100 requests take as long as 1."** They do *if and only if* you stay memory-bound. So: a continuous-batching scheduler, a paged KV allocator, an admission policy that stops adding requests when cache memory runs out or intensity crosses the ridge point, and separate SLOs for TTFT and ITL. Say the batch ceiling out loud and where it comes from.
 
 ## Take the quiz
 
-Eight questions on cache arithmetic, the memory-bandwidth argument, batching design, and the two "is it an approximation?" traps. **[Take the quiz →](/c/c3/c3.3/quiz)**
+Twelve questions on cache arithmetic, serving, adaptive compute, reasoning training and numerical limits. **[Take the quiz →](/c/c3/c3.3/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Snell et al. (2024), [Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters](https://arxiv.org/abs/2408.03314).
+- DeepSeek-AI (2025), [DeepSeek-R1](https://arxiv.org/abs/2501.12948).
+- DeepSeek-AI (2024; revised 2025), [DeepSeek-V3](https://arxiv.org/abs/2412.19437): mixed-precision training context for [c3.2](/c/c3/c3.2).
+- [Hardware-Aware FP4 FlashAttention-4](https://arxiv.org/abs/2609.04105) (September 2026 preprint): hardware and numerical-stability findings are configuration-specific.

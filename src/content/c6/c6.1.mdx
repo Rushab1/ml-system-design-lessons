@@ -31,7 +31,7 @@ Generation has neither. "Summarize this ticket" has an unbounded set of good ans
 
 There is a third property that is easy to miss. In classification the label is cheap and objective — a human looks at the email and says spam. In generation the label is often a *judgment* — is this summary faithful, is this tone right — which means the labeling process itself has error, and that error has to be measured. Grading the graders is therefore half the work of evaluating a generative system.
 
-The consequence people resist: **an aggregate "quality score" is not a metric.** A number is only a metric if it supports a specific decision — ship or don't, gate this PR or don't, roll back or don't. A 1–5 quality score supports nothing, because nobody can say what separates a 3 from a 4, and two annotators will not agree on it. Part 3 turns this into a concrete choice of judge format.
+**A quality score needs an explicit interpretation.** For a named failure such as an unsupported citation, a binary check makes the criterion easy to inspect. An anchored ordinal rubric can capture degrees of completeness or usefulness if its levels are defined and agreement is validated. Both can support diagnosis; release metrics additionally need thresholds tied to a deployment decision.
 
 ## Part 2 — Reference-based metrics, and where they run out
 
@@ -47,7 +47,7 @@ $$
 
 The prediction is completely correct and scores 0.34. That is the whole indictment of surface overlap in one number.
 
-**BLEU and ROUGE** are the n-gram versions of the same idea — BLEU is precision-weighted over n-grams with a brevity penalty, ROUGE is recall-weighted — and they inherit the same failure amplified, because at $n = 4$ the example above scores exactly zero. The one sentence worth keeping: *n-gram overlap measures surface form, so for open-ended output it penalizes correct paraphrase and rewards fluent copying of the reference.* That sentence is the whole of what these metrics are good for; leading with BLEU as the answer to "how do you evaluate generation" is the clearest signal that a practitioner stopped reading the field a decade ago.
+**BLEU and ROUGE** compare n-gram overlap with references. BLEU combines modified n-gram precision with a brevity penalty; ROUGE includes recall-based variants and other overlap measures. Missing higher-order matches can drive unsmoothed sentence BLEU to zero. These metrics are sensitive to wording, so valid paraphrases may score poorly and surface overlap can hide factual errors. Use them where reference overlap is relevant, alongside checks for the task's actual requirements.
 
 **BERTScore** replaces token equality with embedding similarity: embed every token of the candidate and the reference with a contextual encoder, greedily match each candidate token to its most similar reference token, average the cosine similarities, and combine precision and recall into an F1. It genuinely fixes paraphrase — `thirty days` and `30 days` land close. It does not fix the deeper problem. It still needs one reference to be *the* answer, and it inherits the blindness of the embedding space it is built on, most sharply on negation: "the drug is safe" and "the drug is not safe" are topically near-identical and score high against each other. That is the same failure mode embedding retrieval hits in c5.1, from the same cause.
 
@@ -133,7 +133,7 @@ For more than two raters the same idea generalizes to Fleiss' kappa, and Krippen
 
 ## Part 6 — Benchmarks and task-specific metrics
 
-Public benchmarks measure the capability of a base model, and they answer "which model should I start from", not "does my system work". They also degrade over time: test items leak into pretraining corpora (**contamination**), and a benchmark whose answers a model has memorized reports capability it does not have. That is the entire useful content of the topic for an engineering interview. Prep repositories are saturated with benchmark suites, judge frameworks and contamination detection; that material is genuinely interesting and almost never asked. Do not spend your prep budget there.
+Public benchmarks measure the model or system configuration submitted to them. Some test base-model knowledge; others, such as [tau-bench](https://arxiv.org/abs/2406.12045) and [OSWorld](https://arxiv.org/abs/2404.07972), test agents interacting with environments. They provide useful baselines and diagnostic task families, but do not establish that your private workflow works. Check task overlap, tool access, budgets and contamination: leaked test items can inflate measured capability. Supplement benchmark results with traffic-derived cases, execution checks and the repeated-run reliability scorecard in [c4.2](/c/c4/c4.2#part-6--measure-success-consistency-and-harm).
 
 What you actually ship is task-specific and mostly binary:
 
@@ -176,9 +176,9 @@ The pattern across all six: find the place where the task has a deterministic ch
 - **"How do you stop a model-based grader from favoring its own model family?"** Name it as self-preference bias, quote the magnitude (around 10 points for GPT-4, around 25 for Claude-v1 in the published measurement), and use a judge from a different family; when comparing families, grade with both and require agreement.
 - **"Why not just use BLEU?"** One sentence: it measures surface n-gram overlap, so a correct paraphrase can score zero and a fluent copy of the reference scores high. Then pivot to task-grounded checks.
 - **"Two annotators agree 85% of the time. Is your rubric good?"** Compute kappa. In the example above 85% agreement is $\kappa = 0.32$, because almost everything passes. Prevalence inflates raw agreement.
-- **"Should the judge give a 1–5 score?"** Prefer binary per named failure mode. A binary rate has a confidence interval and can gate a release; a 1–5 mean moves for reasons nobody can articulate, and annotators cannot reproduce the 3/4 boundary.
+- **"Should the judge give a 1–5 score?"** Use binary labels for discrete failures or an anchored ordinal rubric for graded properties. Validate against human judgments, inspect disagreements and repeated-run stability, and report uncertainty. A number alone does not establish that the judge is reliable.
 - **"What's the difference between a guardrail and an eval?"** A guardrail is synchronous, deterministic, inline and blocking — schema validation, PII filter, refusal policy. An eval is asynchronous measurement feeding an improvement loop. Naming the distinction is a cheap seniority signal and it comes up in reliability-design prompts.
-- **"Do public benchmarks tell you your system works?"** No. They rank base models, they saturate, and contaminated test items inflate them. Your eval set comes from your traffic.
+- **"Do public benchmarks tell you your system works?"** They measure particular model or agent configurations on their task distributions. Match tools and budgets, check contamination, and validate your own workflow using traffic-derived cases and execution checks.
 
 ## Take the quiz
 

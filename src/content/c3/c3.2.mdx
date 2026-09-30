@@ -2,26 +2,25 @@
 id: c3.2
 chapter: 3
 title: What changed since the original paper
-subtitle: The seven edits between the 2017 Transformer and a 2026 production LLM, and the constraint each one is answering
-refs: []
-estimatedMinutes: 55
+subtitle: Cache compression, sparse computation, recurrent alternatives, and the hardware constraints behind modern LLMs
+estimatedMinutes: 70
 ---
 
 ## TL;DR
 
-A 2026 production LLM is still the 2017 architecture: embed, then repeat (attention, feed-forward) with residual connections, then unembed. Almost every change since is a response to one of three pressures. Training got deeper, so normalization moved before the sublayer and got cheaper. Context got longer, so absolute position encodings were replaced by rotary embeddings that encode relative distance and can be stretched after training. Serving got expensive, so the key-value cache was compressed with grouped-query attention, the feed-forward network was made sparse with mixture of experts, and the attention kernel was rewritten to stop moving the $n \times n$ attention score matrix, for a sequence of $n$ tokens, through memory.
+Modern language models trade off **what state they retain, which computation they activate, and how that computation reaches hardware**. Many dense decoders retain the original attention/FFN stack, with changes to normalization, positions and kernels. Others compress keys and values into latents, select sparse attention blocks, use recurrent state, or mix these mechanisms. Treat the dense decoder as a baseline to derive from, not a universal description of 2026 models.
 
-The value of this material is not the list. It is the ability to attach a number to each edit. Grouped-query attention with 8 key-value heads instead of 64 cuts a 70B model's cache at 100K context from 262 GB to 33 GB, which is the difference between one concurrent request and fifteen. Mixture of experts cuts per-token FLOPs by 3.6x and cuts memory by zero. FlashAttention changes no FLOPs at all and is bit-for-bit exact. Every section below ends in arithmetic.
+Attach a number and a boundary to every change. In the worked 80-layer example, GQA-8 reduces a 100K-token cache from 262 GB to 33 GB. MLA stores a different object and needs a different formula. MoE lowers active computation without proportionally lowering total weight storage. FlashAttention evaluates dense attention without materializing its quadratic score matrix; algebraic equivalence does not mean bitwise equality, and low-precision paths introduce additional error.
 
 ## What you'll be able to do after this lesson
-
 - Explain why pre-norm made 100-layer transformers trainable without a fragile warmup schedule, and what RMSNorm drops.
 - Derive the property that makes RoPE relative, and implement the rotation from the definition.
 - Explain position interpolation, NTK-aware base scaling and YaRN as three answers to the same extrapolation failure.
-- Size a KV cache in bytes for a given model and context, and compute what MHA, GQA and MQA each cost.
+- Size MHA, GQA, MQA and MLA caches; compare dense, sparse, recurrent and hybrid sequence models.
 - State exactly what mixture of experts saves and what it does not, and describe routing collapse and the load-balancing loss.
-- Argue that FlashAttention is exact and does not reduce FLOPs, and say what it does reduce.
+- Separate FlashAttention’s dense-attention equivalence from low-precision error, and explain why Hopper and Blackwell need different kernel schedules.
 - Trace a tokenizer choice through to a latency and cost number, and name three behavioral failure modes it causes.
+- Locate Engram and mHC within the architecture and distinguish their publication dates and evidence limits.
 
 ## Part 1 — Normalization: where it goes, and what it computes
 
@@ -29,11 +28,11 @@ Two independent changes happened here, and they get merged into one constantly: 
 
 ### Pre-norm vs post-norm
 
-The 2017 paper puts normalization after the sublayer and after the residual add: $x \leftarrow \text{LN}(x + \text{Sublayer}(x))$. That is post-norm. The residual stream is normalized on every hop, so the identity path is not actually an identity. Gradients flowing backward through $L$ layers get multiplied by the Jacobian of a LayerNorm at every step, and at depth those factors compound. In practice post-norm transformers at 24-plus layers either diverge in the first few thousand steps or need a carefully tuned linear warmup on the learning rate to survive them.
+The 2017 paper puts normalization after the sublayer and after the residual add: $x \leftarrow \text{LN}(x + \text{Sublayer}(x))$. That is post-norm. The residual stream is normalized on every hop, so the identity path is not actually an identity. Gradients flowing backward through $L$ layers get multiplied by the Jacobian of a LayerNorm at every step, and at depth those factors compound. This can make deep post-norm training sensitive to initialization and warmup; 24 layers is not a universal failure threshold.
 
-Pre-norm moves the normalization inside the branch: $x \leftarrow x + \text{Sublayer}(\text{LN}(x))$. Now the residual path from input to output is a clean sum of branch outputs with nothing applied to it. The gradient reaches layer 1 through an unobstructed additive path, which is why pre-norm trains at depth with no warmup or a very short one. Every open-weights model since GPT-2 uses pre-norm.
+Pre-norm moves the normalization inside the branch: $x \leftarrow x + \text{Sublayer}(\text{LN}(x))$. Now the residual path from input to output is a clean sum of branch outputs with nothing applied to it. The gradient reaches layer 1 through an unobstructed additive path, which is why pre-norm trains at depth with no warmup or a very short one. Pre-norm is common in decoder families; other normalization and residual layouts exist, and warmup requirements still depend on the training recipe.
 
-The cost is small: pre-norm models are slightly worse at matched depth, because the residual stream grows in magnitude with depth and later layers contribute proportionally less. Every model adds a final norm before the unembedding to compensate.
+The cost is small: pre-norm models are slightly worse at matched depth, because the residual stream grows in magnitude with depth and later layers contribute proportionally less. A final norm before unembedding controls the output scale in common pre-norm designs.
 
 ### RMSNorm
 
@@ -53,7 +52,7 @@ It keeps only the rescaling. The empirical finding is that re-centering contribu
 
 Why does that matter when normalization is well under 1% of a model's FLOPs? Because it is not FLOPs that cost you. A norm is an elementwise operation with very low **arithmetic intensity**, meaning FLOPs performed per byte moved from memory. Low-intensity ops are limited by memory bandwidth rather than by the arithmetic units, so their cost is measured in passes over the tensor.
 
-A third question gets tangled with these two and belongs apart from them. The reason transformers use LayerNorm rather than BatchNorm has nothing to do with placement or with bandwidth. BatchNorm normalizes across the batch dimension, which requires batch statistics that are unstable with variable sequence lengths and unavailable at decode time when the batch is a single sequence generating one token. LayerNorm normalizes within a token, so it behaves identically at batch 1 and batch 256.
+A third question gets tangled with these two and belongs apart from them. The reason transformers use LayerNorm rather than BatchNorm has nothing to do with placement or with bandwidth. BatchNorm normalizes across the batch dimension, which requires batch statistics that are unstable with variable sequence lengths and poorly matched to variable-length autoregressive training. BatchNorm can use stored running statistics at inference; batch size one does not make inference mathematically impossible. LayerNorm normalizes within a token, so it behaves identically at batch 1 and batch 256.
 
 ## Part 2 — Position: from sinusoids to RoPE
 
@@ -128,17 +127,31 @@ Worked example, a 70B-class model: 80 layers, 64 query heads, $d_{head} = 128$, 
 - **GQA-8**: divide by 8, about **33 GB**.
 - **MQA**: divide by 64, about **4.1 GB**.
 
-Now turn that into a serving decision. An 8xH100 node has 640 GB. Subtract 140 GB of weights and you have roughly 500 GB for cache. MHA gives you one concurrent 100K request, and not comfortably. GQA-8 gives you about fifteen. That is the whole argument for why every 70B-plus model since Llama 2 uses GQA. The saving, not the definition, is what the change is for.
+As an optimistic capacity bound, an 8×80 GB node minus 140 GB of weights leaves 500 GB. That fits one MHA request or about fifteen GQA-8 requests at 100K tokens, before activations, workspace, fragmentation and sharding constraints. This explains the incentive to reduce cache size; it does not establish that every large model uses GQA.
 
-What do you give up? Less diversity in what keys and values can represent. MQA measurably degrades quality and is unstable to train; GQA at 8 groups is close to free, which is the empirical reason 8 is the standard choice. Multi-head Latent Attention is the third member of this family: DeepSeek compresses KV into a low-rank latent instead of sharing heads, same goal, different mechanism.
+Sharing KV heads reduces representational freedom. The quality tradeoff depends on architecture, training and task; eight KV heads is an example, not a universal optimum. [Ainslie et al. (2023)](https://arxiv.org/abs/2305.13245) study GQA as a compromise between MHA and MQA. MLA pursues cache compression with a different representation.
+
+### MLA: cache a latent, not fewer heads
+
+**Goal — derive memory from the tensor actually retained.** In [DeepSeek-V2](https://arxiv.org/abs/2405.04434), a token's hidden state is projected into a compressed KV latent $c_t^{KV}$ of width $d_c$. Content keys and values are reconstructed from that latent. In an optimized decode path, the key projection can be absorbed into the query projection and the value projection applied after accumulation, avoiding a permanently expanded cache. A separate positional key of width $d_R$ handles decoupled RoPE.
+
+For $L$ layers, sequence length $s$, batch $B$ and $b$ bytes per element, that compressed cache costs
+
+$$\text{bytes}_{MLA}=L s B(d_c+d_R)b.$$
+
+There is no leading factor of two for separate full K and V tensors. Hold the earlier example's $L=80$, $s=100{,}000$, $B=1$, $b=2$ fixed and choose illustrative $d_c=512$, $d_R=64$: $80\times100{,}000\times576\times2=9.216$ GB, versus 32.768 GB for GQA-8. That is a 3.56× cache reduction for these dimensions, not a quality-matched comparison of actual models. Materializing expanded K/V, padding or replication changes the allocation.
+
+<ResearchBars variant="cache" />
+
+DeepSeek-V2 reports 93.3% less KV cache than its **DeepSeek 67B baseline**, not than every GQA model. The engineering conclusion is to inspect stored tensors and serving kernels before converting an architecture name into a concurrency estimate.
 
 ## Part 5 — Mixture of experts
 
 Replace the single FFN in a block with $E$ parallel FFNs and a small router, a linear layer producing $E$ logits per token. Take the top $k$ (usually 2), softmax over those $k$ scores, and sum the chosen experts' outputs weighted by them. Every token takes a different pair of experts, and routing is per token per layer, not per sequence.
 
-Total parameters and per-token FLOPs decouple. Mixtral 8x7B has 46.7B parameters and activates about 12.9B per token. A forward pass costs roughly $2N$ FLOPs per token when $N$ parameters are active, so Mixtral costs like a 13B model and stores like a 47B one. In fp16 that is 94 GB of weights you must hold resident versus 26 GB for the dense 13B whose speed you get.
+Total parameters and per-token FLOPs decouple. Mixtral 8x7B has 46.7B parameters and activates about 12.9B per token. A forward pass costs roughly $2N$ FLOPs per token when $N$ parameters are active, so Mixtral costs like a 13B model and stores like a 47B one. In fp16 that is 94 GB of weights you must hold resident versus 26 GB for the dense 13B whose active arithmetic is comparable; realized speed also depends on routing and hardware.
 
-That decoupling gets read backwards more often than any other claim in this lesson. **MoE buys compute, not memory.** All experts must be in VRAM because you cannot predict which tokens will need which. It changes your GPU count, not your per-token latency. It also makes batching worse: at large batch a single layer touches most experts anyway, so the FLOPs saving erodes and you are moving many expert weight matrices per step.
+Sparse routing preserves its per-token FLOP saving even if a large batch collectively visits every expert: each token still activates only its selected experts. Total resident weights, expert load imbalance, all-to-all communication and small expert matrix multiplies determine achieved latency and throughput. Larger batches can improve expert utilization while also touching more weight bytes. Offloading experts trades GPU memory for transfer delay; full residency is a common performance choice, not a mathematical requirement. MoE changes compute, storage and communication differently.
 
 Routing has a stability problem. The router is trained jointly, so an expert that gets picked slightly more early on gets more gradient, gets better, and gets picked more. Left alone this collapses to a few overloaded experts while the rest are dead weight. The standard fix is an auxiliary load-balancing loss, added to the training objective:
 
@@ -148,6 +161,12 @@ $$
 
 where $\alpha$ is a small coefficient setting how hard the term pushes, $f_i$ is the fraction of tokens in the batch routed to expert $i$, and $P_i$ is the mean router probability for expert $i$ over that same batch. The product is minimized when both are uniform. $P_i$ has to appear alongside $f_i$ because $f_i$ comes out of a hard top-$k$ selection and carries no gradient, while $P_i$ does. Implementations also set a **capacity factor**, a hard cap on tokens per expert per batch, and tokens over the cap are dropped (their residual passes through unchanged). Newer models bias the router logits directly based on recent load instead of adding a loss term, which avoids the auxiliary gradient perturbing quality.
 
+### A modern MoE is a systems recipe
+
+**Goal — separate sparse arithmetic from the other sources of efficiency.** [DeepSeek-V3](https://arxiv.org/abs/2412.19437) has 671B total parameters and activates about 37B per token. Its router-bias load balancing reduces dependence on a large auxiliary balancing loss; the report still includes a sequence-wise auxiliary term. Its **FP8 mixed-precision training** changes selected arithmetic and storage during training, unlike quantizing a finished model's weights. Its **multi-token prediction** objective trains prediction of additional future tokens; that is distinct from the accept/reject verification that makes speculative decoding distribution-preserving. Low active parameter count alone explains none of those three mechanisms.
+
+Measure expert imbalance and inter-device traffic alongside FLOPs. Two MoE deployments with identical active parameters can differ substantially in throughput because tokens and experts are placed differently.
+
 ## Part 6 — FlashAttention is exact
 
 Two memory tiers matter on a GPU. **HBM** is the high-bandwidth off-chip memory, tens of gigabytes at a few TB/s. **SRAM** is on-chip scratchpad, roughly 20 MB total, one to two orders of magnitude faster. Every read from HBM is expensive relative to arithmetic.
@@ -156,22 +175,50 @@ Naive attention computes the score matrix $S = QK^{\top}$ for a sequence of $n$ 
 
 FlashAttention tiles $Q$, $K$ and $V$ into blocks that fit in SRAM and never materializes $S$. For each block of queries it walks over the key blocks, maintaining a running maximum $m$ of the row's scores so far (a different $m$ from the position index of Part 2), a running sum $\ell$ of the exponentials that form the softmax denominator, and a running output accumulator. It rescales on each step using the online-softmax identity: when the running maximum increases from $m$ to a new value $m'$, multiply the accumulated numerator and denominator by $e^{m - m'}$ before adding the new block's contribution. Everything accumulated so far was exponentiated relative to the old maximum, and that single factor re-bases it to the new one, so the running totals stay exactly what a full-matrix softmax would have produced. The final result is algebraically identical to the standard computation. Backward recomputes the tiles from the stored $m$ and $\ell$ rather than reading a saved attention matrix.
 
-Two claims to get right, because both are commonly stated wrong. FlashAttention is **exact**, not an approximation, and produces the same values up to floating-point associativity. And it does **not reduce FLOPs**; it slightly increases them, since the backward pass recomputes. What it reduces is HBM traffic, from $O(n^2)$ to $O(n^2 d / M)$ where $d$ is the head dimension and $M$ is the SRAM size, and peak memory from $O(n^2)$ to $O(n)$. The speedup is two to four times on typical shapes, and the memory change is what makes long context possible at all.
+For the dense, full-precision algorithm, “exact” means the same attention operation in real arithmetic, not bitwise-identical floating-point results. The original IO bound is $O(n^2d^2/M)$ HBM accesses under its memory-model assumptions, with head width $d$ and SRAM capacity $M$ measured in elements, versus materializing $O(n^2)$ scores. Fixed-width peak auxiliary memory becomes linear in sequence length. Arithmetic remains quadratic; backward recomputation can add FLOPs. [FlashAttention](https://arxiv.org/abs/2205.14135) is an IO algorithm, not a sparse-attention approximation.
+
+### Hardware changes the bottleneck
+
+**Goal — explain why a faster matrix unit does not automatically make the whole kernel faster.** [FlashAttention-3](https://arxiv.org/abs/2407.08608) targets Hopper with asynchronous execution and overlap between data movement, matrix multiplication and softmax. Its FP8 path must also manage quantization error; the dense-attention equivalence claim does not erase that error.
+
+[FlashAttention-4](https://arxiv.org/abs/2603.05451), a March 2026 preprint, targets Blackwell's uneven scaling: tensor cores improved faster than exponential units and shared-memory bandwidth. It changes pipelines, softmax work and memory traffic accordingly. A speedup belongs to a GPU, dtype, sequence shape and comparison kernel. Rebenchmark those together; an H100 calculation remains a useful worked example, not a description of every current deployment.
 
 ## Part 7 — Tokenization leaks into behavior
 
 Byte-pair encoding starts with a base vocabulary, counts adjacent symbol pairs across the corpus, merges the most frequent pair into a new symbol, and repeats until the vocabulary reaches the target size. The merge list is the tokenizer. Encoding replays the merges in order.
 
-The 2017 model used word-piece style vocabularies with an unknown token. GPT-2's change was **byte-level** BPE: the base alphabet is the 256 byte values, so every possible input string is representable and there is no `UNK` case, ever. Every modern tokenizer is byte-level BPE or a close variant.
+The 2017 model used word-piece style vocabularies with an unknown token. GPT-2's change was **byte-level** BPE: the base alphabet is the 256 byte values, so every possible input string is representable and there is no `UNK` case, ever. Modern tokenizers use several families, including byte-level BPE and unigram models with byte fallback; inspect the specific tokenizer rather than assuming its algorithm.
 
 Why an application engineer should care:
 
 1. **Cost and latency scale with tokens, not characters.** The same paragraph in Hindi or Thai can cost two to five times the tokens of its English translation, because the merges were learned on an English-heavy corpus. That multiplies your API bill, multiplies time-to-first-token, and divides your effective context window, all by the same factor. It is a fairness problem and a budget problem at the same time.
-2. **Arithmetic is a tokenization artifact.** If "1234" is one token and "12345" is a different single token, the model has no positional view of the digits. Llama's tokenizer splits numbers into individual digits specifically to fix this, and it measurably improves multi-digit arithmetic.
+2. **Arithmetic is a tokenization artifact.** If "1234" is one token and "12345" is a different single token, the model has no positional view of the digits. Digit grouping differs by model family and tokenizer version. Splitting digits exposes place-level structure but also lengthens the sequence; evaluate arithmetic and token cost together.
 3. **Character-level questions are unanswerable by construction.** "How many r's in strawberry" is hard because the model sees three opaque token IDs, not letters.
 4. **Domain mismatch fragments your vocabulary.** Legal and medical text, chemical names and code with long identifiers all shatter into many tokens under a general tokenizer, inflating cost and weakening the model's representation of the terms that matter most in that domain.
 
 One more piece of arithmetic, because vocabulary size lands in two places and the second one catches people out. "A vocabulary of 100K, how would you optimize" is a question people report being asked directly. With $d = 4096$ for the model width and a 128K vocabulary, the embedding matrix is $128000 \times 4096 = 524$M parameters, about 1 GB in fp16, and the unembedding is another one unless you tie them. Worse, the logits tensor during prefill of an 8K prompt is $8192 \times 128000 \times 2$ bytes, about 2.1 GB, for one sequence. That is why production decode computes logits only at the final position, and why chunked prefill and fused cross-entropy kernels exist.
+
+## Part 8 — Dense, sparse, recurrent, or hybrid
+
+**Goal — distinguish changing the model's state from changing the kernel evaluating it.** [Mamba-2 / Transformers are SSMs](https://arxiv.org/abs/2405.21060) develops structured state-space duality and an efficient selective state-space layer. Recurrent decoding carries a fixed-size state per layer as sequence length grows. That trades direct access to every old token for a compressed evolving state. The equivalence concerns structured attention variants, not arbitrary softmax attention, and layer speedups do not establish universal model quality.
+
+<ResearchFlow variant="architectures" />
+
+| Mechanism | Retained decode state as context grows | Work or information it changes | What to measure |
+|---|---|---|---|
+| Dense attention + FlashAttention | KV cache grows linearly | Kernel IO; preserves dense attention | Memory, latency, numerical error |
+| MLA | Compressed latent cache grows linearly | KV representation | Actual cache layout and task quality |
+| Native sparse attention | Implementation-dependent cache; sparsity alone does not guarantee bounded storage | Which positions or compressed blocks are attended to | Evidence recall and achieved kernel speed |
+| Recurrent SSM | Fixed-size recurrent state for fixed architecture | How history is compressed | Long-range retrieval and state capacity |
+| Hybrid SSM/attention | Recurrent state plus KV for attention layers | Layer-by-layer mix | Remaining attention-cache growth and quality |
+
+[Native Sparse Attention](https://arxiv.org/abs/2502.11089) combines coarse compression, fine block selection and a local sliding window, trained end to end. It changes the attention computation; FlashAttention accelerates dense attention. Fewer nominal FLOPs help only if selection and memory movement also fit the hardware. Test exact-evidence retrieval as well as throughput: a fast model that cannot recover the required span fails the workload.
+
+### Emerging architecture notes, reviewed September 2026
+
+**Goal — locate new mechanisms without treating preprints as settled defaults.** [Engram](https://arxiv.org/abs/2601.07372) (January 2026, revised July) adds conditional lookup memory for local token patterns, complementing conditional computation in its experiments. This is learned architectural memory, distinct from document RAG and an agent's editable notes. Deterministic addressing can support prefetch, but its gains depend on the tested model and resource allocation.
+
+[mHC](https://arxiv.org/abs/2512.24880) first appeared on **31 December 2025**, with a January 2026 revision. It constrains mixing across expanded residual streams to improve stability and scalability. It changes residual connectivity, not KV caching. These are designs to understand and evaluate, not assumptions to silently substitute into the baseline block.
 
 ## Tradeoff matrix
 
@@ -191,23 +238,30 @@ One more piece of arithmetic, because vocabulary size lands in two places and th
 
 1. **A long-context model that quietly degrades past its advertised window.** RoPE scaling was applied without fine-tuning, or the serving stack's scaling config does not match the checkpoint's. Retrieval accuracy collapses in the middle of the context while perplexity looks fine.
 2. **KV cache OOM under concurrency, not under length.** Capacity was sized from a single-request test. Cache is linear in batch and in sequence, so 15 users at 30K tokens is the same pressure as one user at 450K, and the failure arrives as a burst of evictions or 500s.
-3. **Deploying an MoE on hardware sized by its active parameter count.** Someone reads "12.9B active" and provisions a 13B-class GPU. All experts must be resident; the model does not load.
-4. **Expert collapse mid-training.** The load-balancing coefficient is too small or was disabled during fine-tuning, routing concentrates, and effective capacity silently drops to a fraction of the parameter count.
-5. **A tokenizer swap that invalidates every cost and latency estimate.** Moving between model families changes tokens-per-request by tens of percent. Prompt caching keys, context budgets and per-request cost models all need recomputing, and truncation logic based on character counts starts cutting mid-token.
-6. **Numeric drift from a "drop-in" attention kernel.** FlashAttention is exact in exact arithmetic but reorders floating-point accumulation, so bit-identical outputs are not guaranteed. Tests that assert exact logit equality across kernel versions fail for a reason that is not a bug.
+3. **Deploying an MoE on hardware sized by active parameters alone.** Provisioning for 12.9B active parameters does not allocate space for a 46.7B-parameter checkpoint. Size total weights and KV state; if using expert offload, include its transfer latency and throughput in the capacity test.
 
 ## Interview gotchas
 
 - **"Why RoPE over sinusoidal or learned position embeddings?"** Because the logit depends only on $n - m$: $(R_m q)^{\top}(R_n k) = q^{\top} R_{n-m} k$. Relative by construction, no parameters, and the frequency structure lets you interpolate or rebase to extend context after training. Learned embeddings have no value at all at unseen positions.
 - **"Is FlashAttention an approximation?"** No. It is exact and it does not reduce FLOPs. It reduces HBM reads and writes by tiling into SRAM with an online softmax, and peak memory from $O(n^2)$ to $O(n)$.
-- **"GQA vs MQA at 100K context, how much do you save?"** Cache scales as $n_{kv}$. For a 70B with 64 heads and 80 layers, MHA is 262 GB per sequence in fp16, GQA-8 is 33 GB, MQA is 4 GB. GQA-8 is the standard because it takes almost all the saving with almost no quality loss.
-- **"Does MoE reduce memory?"** No, it reduces per-token compute. All experts stay resident in VRAM. It changes your GPU count, not your latency, and it gets less attractive at large batch when a layer touches most experts anyway.
-- **"What does RMSNorm drop, and why is that safe?"** Mean subtraction and the learned bias. Re-centering contributes little in practice; the variance rescaling is what stabilizes. It saves a reduction pass on a bandwidth-bound layer.
-- **"Pre-norm or post-norm, and why?"** Pre-norm, because it leaves a clean additive residual path so gradients reach early layers without passing through a normalization Jacobian at every hop. Post-norm was the original and needs a careful warmup to survive depth.
-- **"Why does the FFN width look like 11008?"** SwiGLU uses three matrices instead of two, so $d_{ff}$ shrinks to $\frac83 d$ to hold parameters constant, then rounds up to a multiple of 256.
-- **"What risk does a general tokenizer create on legal or medical text?"** Domain terms fragment into many tokens, which inflates cost and latency, consumes context, and gives the model a weaker representation of exactly the vocabulary that matters. The fix is measurement first (tokens per document on your corpus), then vocabulary extension with continued pretraining if the multiple is bad.
-- **"How do models handle 128K context?"** Three separate things, and say all three: RoPE scaling for position, FlashAttention for the $O(n^2)$ memory, and GQA plus paged or quantized cache for the KV footprint. Naming only one is the common incomplete answer.
+- **"GQA vs MQA at 100K context, how much do you save?"** Cache scales as $n_{kv}$. For a 70B with 64 heads and 80 layers, MHA is 262 GB per sequence in fp16, GQA-8 is 33 GB, MQA is 4 GB. These are illustrative dimensions. Choose KV sharing jointly with task quality and the trained architecture; eight heads is not a universal optimum.
+- **"Does MoE reduce memory?"** Sparse routing reduces active arithmetic, not total checkpoint size. Residency or offload determines GPU memory. Each token remains sparse even when a batch visits every expert; routing balance, expert utilization and communication determine achieved latency.
 
 ## Take the quiz
 
 **[Take the quiz →](/c/c3/c3.2/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Ainslie et al. (2023), [GQA](https://arxiv.org/abs/2305.13245).
+- DeepSeek-AI (2024), [DeepSeek-V2](https://arxiv.org/abs/2405.04434) and [DeepSeek-V3](https://arxiv.org/abs/2412.19437), the latter revised in 2025.
+- Dao and Gu (2024), [Transformers are SSMs / Mamba-2](https://arxiv.org/abs/2405.21060).
+- DeepSeek-AI (2025), [Native Sparse Attention](https://arxiv.org/abs/2502.11089).
+- Dao et al. (2022), [FlashAttention](https://arxiv.org/abs/2205.14135); Shah et al. (2024), [FlashAttention-3](https://arxiv.org/abs/2407.08608); Zadouri et al. (2026 preprint), [FlashAttention-4](https://arxiv.org/abs/2603.05451).
+- Cheng et al. (2026 preprint), [Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models (Engram)](https://arxiv.org/abs/2601.07372).
+- Xie et al. (December 2025 preprint; January 2026 revision), [mHC](https://arxiv.org/abs/2512.24880).

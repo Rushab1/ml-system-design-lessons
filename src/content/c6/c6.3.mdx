@@ -9,7 +9,7 @@ estimatedMinutes: 55
 
 ## TL;DR
 
-Almost every eval number you will ever be shown is a point estimate with no error bar, computed on a sample small enough that the error bar would swallow the claim. "Model B got 72% versus model A's 70% on our 100-example set" is the canonical example: the 95% confidence interval on that 2-point gap runs from about $-11$ to $+15$ points. The data is equally consistent with B being ten points *worse*. To resolve a true 2-point difference with unpaired evaluation you need roughly 8,000 examples per model, not 100. That arithmetic converts an impression into a number, and a number can be argued with in a design review.
+Consider an illustrative unpaired evaluation: model B scores 72% and model A 70%, each on 100 independent examples. The approximate 95% interval for the 2-point difference is $-11$ to $+15$ percentage points, so the sample does not resolve its sign. Detecting a true 2-point difference near this baseline with 80% power at a two-sided 5% significance level requires roughly 8,000 examples per model. Paired evaluation can require fewer examples, depending on how often the models disagree.
 
 There are several ways out of that hole. **Paired comparison** — run both models on the same items and analyze the per-item differences — removes item difficulty from the variance and typically cuts the required sample by 3–7x. **Bootstrap** gives you a confidence interval for metrics like F1, recall@k or a rubric mean where no closed form exists. **Repeated sampling** handles the fact that an LLM's output is stochastic, and the variance decomposition tells you to buy more items before you buy more runs. **Multiple-comparison control** stops you from declaring a winner because you looked at twenty slices. **CUPED** and stratification buy you power for free. And in online A/B tests, power, minimum detectable effect and a pre-committed stopping rule are what separate a real readout from a peeked one.
 
@@ -232,7 +232,7 @@ One caveat in the other direction. Effect-size estimates carry sampling noise of
 
 #### The alarm is a proxy, and the proxy can fail in both directions
 
-The point worth saying out loud in a design review: **nobody cares about the input distribution.** What the business cares about is whether the model still performs. The joint distribution factors as $P(x, y) = P(x)\,P(y \mid x)$, where $x$ is the feature vector and $y$ the label. An input monitor sees $P(x)$ and only $P(x)$. Performance depends on both factors, so the monitor is watching one of the two terms and inferring the product.
+**An input-drift alert does not by itself measure a change in task performance.** The joint distribution factors as $P(x,y)=P(x)P(y\mid x)$. An input monitor observes $P(x)$; performance can change through either factor. Use drift as a reason to investigate affected slices, then measure task outcomes when labels or other valid checks become available.
 
 **Input drift with no damage.** $P(x)$ moves, $P(y \mid x)$ holds. A marketing push shifts the traffic mix between two segments. The model scores 93% on segment A and 92% on segment B, and it keeps doing exactly that, because the relationship between features and label has not changed. The mix goes from 60/40 to 20/80. Aggregate accuracy moves from $0.6(0.93) + 0.4(0.92) = 0.558 + 0.368 = 0.926$ to $0.2(0.93) + 0.8(0.92) = 0.186 + 0.736 = 0.922$. Four tenths of a point. Meanwhile PSI on the segment feature is $(0.2-0.6)\ln(0.2/0.6) + (0.8-0.4)\ln(0.8/0.4) = (-0.4)(-1.0986) + (0.4)(0.6931) = 0.4394 + 0.2773 = 0.717$, nearly three times the "act now" threshold. A screaming red drift alarm bought you a 0.4-point move that no retraining fixes, because the model was never wrong.
 
@@ -282,7 +282,7 @@ Two guardrails on the automation. A retrained model is a new model and needs the
 
 ## Production failure modes
 
-1. **The 100-example golden set that gates releases.** Its 95% CI is roughly $\pm 9$ points, so every ship decision under 9 points is a coin flip dressed as data. Nobody notices because the number always looks precise.
+1. **A small golden set cannot resolve every release difference.** For 100 independent binary outcomes with a success rate near 70%, a single rate has an approximate 95% interval of $\pm9$ percentage points. The interval for a change depends on the paired or unpaired design and, when paired, the discordant outcomes. Choose sample size and release thresholds for the effect you need to detect.
 2. **Unpaired comparison of paired data.** The team runs both models on the same set, then compares two aggregate percentages. They throw away most of their power and conclude "no difference."
 3. **Correlated items counted as independent.** 500 questions generated from 30 documents, or 2,000 turns from 150 sessions. Standard errors come out roughly $\sqrt{\text{cluster size}}$ too small, and "significant" wins evaporate in production.
 4. **Slice mining after the fact.** Twenty slices, one hits $p = 0.03$, it goes in the launch doc. It replicates a third of the time.

@@ -357,9 +357,9 @@ The invariant is $E[\text{out}] = x$ at training time. Each unit survives with p
 
 **(b)** The original formulation dropped units at train time without rescaling and instead multiplied activations by $(1-p)$ at inference. Same expectation, but the correction lives in the inference path, which means inference is no longer a plain forward pass, you must remember to apply it, and $p$ has to be carried to serving. Inverted dropout pushes all the bookkeeping into training and makes the deployed model a clean identity, which also makes it trivial to export or fuse. In an ML-coding round the graded part is exactly this: that train and inference compose to the identity in expectation, and that the backward pass uses the same mask.
 
-**(c)** In single-epoch pretraining over a corpus far larger than the parameter count, the model sees each token once. There is nothing to memorize, so there is no co-adaptation to break — dropout only injects gradient noise and slows convergence. Typical modern LLM pretraining configs set dropout to 0.0. If a pretraining run is "overfitting", something else is wrong: duplicated data, too many epochs over a small corpus, or a leaking eval set.
+**(c)** The cited [dropout study](https://arxiv.org/abs/2505.24788) found better results without dropout in its BERT-base and Pythia 160M/1.4B runs. Treat that as empirical guidance for comparable setups. A single pass still updates weights on training examples and does not preclude memorization; duplicated sequences also mean one corpus pass can expose the same text repeatedly. Compare held-out loss and downstream quality when choosing dropout, and use separate tests for memorized sequences.
 
-Dropout is still correct where the thing it was invented for actually happens: multi-epoch fine-tuning on a small labeled dataset, small models on small data, and some recommender and tabular settings. Answering "add dropout" reflexively dates you.
+Dropout remains a candidate for small-data or multi-epoch training. Compare held-out results rather than assuming that either enabling or disabling it must help.
 
 **(d)** Three mechanisms, all mundane:
 
@@ -415,9 +415,6 @@ The naive read — "the model is underfitting" — is wrong twice over, and the 
 </Quiz>
 
 ## Rapid-fire: training dynamics
-
-These 15 questions stand on their own, so you can study this section without reading anything above it. Each should take 2 to 5 minutes out loud. They are picked for how often they actually get asked in ML-fundamentals and ML-depth rounds, not for how interesting they are. Assume the interviewer chains "why?" two levels deeper on every one, so have a second and third layer ready.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Common optimizers** Walk from SGD to AdamW as a chain of fixes, naming the specific failure each stage repairs. Do not list optimizers; tell the story. Finish on what Adam's two moments actually estimate.
 2. **Adam versus SGD** Compare them on convergence speed and on generalization. Where does SGD with momentum still win, and why is essentially every large language model trained with AdamW instead?

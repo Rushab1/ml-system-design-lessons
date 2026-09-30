@@ -9,7 +9,7 @@ estimatedMinutes: 80
 
 ## TL;DR
 
-Clustering looks like a grab-bag of algorithms. It isn't. Every one of them is **a probabilistic generative model plus a hardening choice**, and once you see that, the keystone fact follows: **k-means is the hard-EM, infinite-precision (zero-variance), isotropic-shared-covariance limit of a Gaussian mixture**. Take that model seriously and you no longer have to memorize k-means's assumptions, failure modes, or the "how do I pick $k$?" advice. They all fall out of the model.
+A probabilistic model explains the relationship between two clustering methods: **k-means is the hard-assignment, zero-variance limit of a Gaussian mixture with equal mixture weights and shared isotropic covariance**. This connection makes their assumptions and failure modes explicit. Density-based and hierarchical methods use different constructions; the mixture interpretation does not characterize every clustering algorithm.
 
 The second half of the lesson is the dual reframe, for visualization. **t-SNE and UMAP optimize a divergence between neighbor-*probability* distributions, not a metric.** Nothing in either objective pins down a distance. So their axes, their cluster sizes, and the gaps between their clusters are optimization artifacts, not data. (Linear, variance-preserving PCA — with interpretable axes and faithful distances — is in c1.3; this lesson is clustering + the nonlinear embeddings.)
 

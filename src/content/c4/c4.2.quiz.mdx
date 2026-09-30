@@ -2,11 +2,11 @@
 lessonId: c4.2
 chapter: 4
 title: Quiz — Where agents break
-description: Compounding reliability, tool-call failures, loops, cost arithmetic, injection, guardrails and traces, tested as incidents rather than definitions.
-estimatedMinutes: 35
+description: Twelve worked questions on failure attribution, retries, permissions and repeat-run reliability.
+estimatedMinutes: 75
 ---
 
-These eight questions are all incident-shaped, because that is how this material is actually asked. Nobody will ask you to define an agent. They will hand you a broken one and watch whether you reach for a mechanism or for a bigger prompt. Answer each out loud before opening the model answer, and say a number wherever a number exists. The rapid-fire section at the bottom stands on its own and is the part worth rereading.
+Apply the derivations in [the lesson](/c/c4/c4.2) to failure attribution, retries, permissions and repeat-run reliability. Try each question before revealing its worked answer. Numerical scenarios are illustrative unless a source is named.
 
 <Quiz id="1">
 
@@ -51,7 +51,7 @@ $$
 
 40% to 75%, with no change to the model at all.
 
-**(c)** Deterministic code has $p = 1$, so only the 12 remaining LLM steps enter the exponent:
+**(c)** Assuming the deterministic operations implement their contracts correctly and tools do not fail, only the 12 remaining LLM decisions enter this simplified exponent:
 
 $$
 0.97^{12} = e^{-0.3655} = 0.694
@@ -68,7 +68,7 @@ So $p^n$ is not a prediction of your success rate. It is a **budgeting tool**. I
 **Rubric:**
 - Actually inverts and produces a number near 99.83% and translates it into "one in ~585." Candidates who say "each step must be very accurate" have not answered.
 - Gets 40% and 75% with real arithmetic, using $p' = p + (1-p)cp$ or an equivalent derivation.
-- Recognizes that orchestrator code enters as $p=1$, so it removes factors from the exponent rather than raising $p$.
+- Removes model-decision factors under an explicit correct-code assumption; does not claim deterministic software is infallible.
 - Names both directions of the independence failure. Naming only the pessimistic one is the common half-answer.
 - States that the model's use is budgeting, not prediction.
 
@@ -93,7 +93,7 @@ So $p^n$ is not a prediction of your success rate. It is a **budgeting tool**. I
 
 **(a)** Mode one is **malformed**: the model invents a tool that does not exist, drops a required field, or emits something that is not valid JSON. Mode two is **well-formed and semantically wrong**: every field type-checks and validates, and the call still does the wrong thing in the world. This incident is mode two. The schema was satisfied perfectly.
 
-**(b)** Structured output enforcement means constrained decoding against the tool's JSON Schema, so the sampler can only emit token sequences that parse into a valid call. It makes mode one close to unrepresentable, and it is cheap enough that there is no good reason not to run it. It does **nothing** for mode two, because a schema constrains the shape of the arguments, not their relationship to the user's request. Saying that second half unprompted is the thing being graded.
+**(b)** Schema-constrained decoding can prevent malformed calls within the provider's supported schema subset; the application should still validate parsed arguments. A valid schema does not establish that the values match the user's intent, that the selected resource is correct, or that the action is authorized. Those require semantic checks and permission enforcement.
 
 **(c)** Four layers:
 
@@ -155,7 +155,7 @@ It is a different control because it is about the *origin* of a value, not its *
 
 Any single cap leaves a hole shaped like the other three.
 
-**(d)** Premature termination. Mechanism one: **"done" was never defined as anything checkable**, so the model's own sense of closure is the entire stopping rule. Fix: a completion predicate the orchestrator evaluates independently — the ticket has a non-empty resolution field, the file exists and parses, the invoice reconciles to the cents. If you cannot write that predicate you also cannot evaluate the agent, which is a useful thing to notice out loud.
+**(d)** Premature termination. Mechanism one: **"done" was never defined as anything checkable**, so the model's own sense of closure is the entire stopping rule. Fix: a completion predicate the orchestrator evaluates independently — the ticket has a non-empty resolution field, the file exists and parses, the invoice reconciles to the cents. If no complete executable predicate exists, combine partial checks with a validated rubric or human evaluation and state what remains unverified.
 
 Mechanism two: **ambiguous tool responses**. A tool returns HTTP 200 with a body of `{"status": "queued"}` and the model reads 200 as success. Fix at the contract: return a typed result with an explicit state the model cannot misread and a `completed` boolean that stays false until the work actually finished. Ambiguity in a tool contract turns into a reasoning error in the agent, and the contract is the cheaper place to fix it.
 
@@ -251,20 +251,20 @@ They conflict because caching requires a byte-stable prefix and compaction rewri
 
 For this agent, the untrusted content is the whole point of the product, so that leg stays. The right cut is the **outward channel**: no generic HTTP tool, egress allowlisted to the specific domains the agent is supposed to browse, and no tool that both reads private data and writes anywhere external. If the agent must write, it writes into your own systems, and any action that leaves your perimeter carrying data goes through human approval. You can also cut the first leg by running the browsing sub-task with credentials that have no access to private data at all, and handing only its distilled output back to the privileged part of the run.
 
-**(c)** Refusal, two parts:
+**(c)** Scope the capability and evaluation separately:
 
 1. **Blast radius equals the credential.** A tool accepting arbitrary SQL can do everything that database connection can do, so your permission model collapses into the grant on that connection. One injected instruction plus one plausible-looking query is the entire exploit chain.
-2. **It makes evaluation impossible.** You cannot enumerate the action space, so you cannot build a golden set of correct behaviors, and you cannot write assertions about what the agent must never do. An unbounded tool is an unevaluatable agent.
+2. **It changes the evaluation problem.** An open action space cannot be exhaustively enumerated, but tasks can still have executable final-state checks, regression tests and permission invariants. SWE-agent and OSWorld illustrate this distinction. Measured performance on sampled tasks is not a universal safety guarantee.
 
-Counter-offer, because refusing without an alternative reads as obstruction: five to eight parameterized queries covering the demoed use cases, pointed at a read-only replica, with a hard row limit, a statement timeout, and an audit log. When a genuinely new query is needed, that is a request for a new tool, reviewed like any other API. Say the counter-offer in the same breath as the no.
+For this narrow workflow, offer parameterized queries, least-privilege roles, row limits, timeouts and audit logs. For a task genuinely requiring open-ended commands, specify a sandbox and evaluate outcomes, violations and recovery. Judge the capability against the task rather than declaring every broad tool untestable.
 
 **(d)** Not worthless, and be precise about why. A classifier is a **detection and rate-limiting** layer, not a boundary. It raises the cost of the common, unsophisticated attack, gives you telemetry on attempts, and is a reasonable trigger for "escalate this run to a human." What it cannot do is bound the damage of the attack it misses, and any classifier will miss some, because the input space is unbounded natural language and the attacker sees your product. So run it, alert on it, and never let its existence be the reason you granted the agent a capability you would otherwise have withheld. That last clause is the failure mode: defenses that are individually reasonable become dangerous when they are used to justify widening the boundary.
 
 **Rubric:**
 - Explains single-channel / no code-data separation mechanically, not as "the model can be tricked."
 - Reaches the three-leg framing and picks a specific leg to cut with a reason, rather than listing generic mitigations.
-- Gives both halves of the SQL refusal, especially the unevaluatability argument, which most candidates miss.
-- Delivers the counter-offer. A flat no with nothing attached is graded as obstruction.
+- Distinguishes broad action spaces from impossible evaluation; proposes execution checks and scoped capabilities.
+- Matches the interface to the task and explains the remaining limits of sampled evaluation.
 - On (d), classifies the classifier as defense-in-depth and names the trap of using it to justify a wider capability.
 
 </details>
@@ -323,7 +323,7 @@ Keep gates rare enough that each one carries information, and put **budgets** on
 
 **(a)** Give the procedure. Be specific about what you label on each trace.
 
-**(b)** Why is the labeling rule in (a) the thing being graded, and what does the common wrong answer look like?
+**(b)** How does labeling the first divergence change the diagnosis compared with labeling only the final symptom? When should you record additional contributing failures?
 
 **(c)** Your current logs record every tool call and its result. Name the four distinct failure classes you cannot separate with only that, and say what to add.
 
@@ -337,10 +337,10 @@ Keep gates rare enough that each one carries information, and put **budgets** on
 1. Pull 50 failing traces. Full traces, not summaries and not aggregate metrics.
 2. For each, label the **first step that diverged from what a competent human would have done**. Not the step where the task visibly failed.
 3. Bucket by that divergence point and cause. You now have a distribution over failure classes instead of one number.
-4. Fix the largest bucket. Agent failures concentrate hard; two or three causes typically account for most of the 20%.
+4. Prioritize buckets by frequency, severity and the cost of a plausible fix. Check the observed distribution instead of assuming that a few causes dominate.
 5. Convert every fixed bucket into a regression case in the eval set, so the fix is defended against the next prompt change.
 
-**(b)** Step 2 is the whole answer. A task that fails visibly at step 14 because of a bad retrieval at step 3 is a **step-3 failure**, and everything between is downstream noise that will disappear on its own when step 3 is fixed. Bucketing by observed symptom instead of first divergence produces fourteen buckets of one, none of which is actionable, and sends you optimizing the step where the error became visible.
+**(b)** If retrieval first misses required evidence at step 3 and the answer fails at step 14, label step 3 as the first divergence. This groups traces by the earliest observed defect instead of their final symptoms. Also record contributing failures, such as ignoring an evidence check or fabricating a citation: correcting retrieval does not prove those safeguards work. Re-run affected cases after each intervention.
 
 The common wrong answer is "I'd improve the prompt and add retries." It skips measurement entirely, it proposes a fix before knowing the distribution, and retries actively hurt in the correlated-error case because they re-run a step that was already reasoning from poisoned context.
 
@@ -353,7 +353,7 @@ The common wrong answer is "I'd improve the prompt and add retries." It skips me
 
 Four different fixes — tool descriptions, schema and provenance, the tool's own reliability, and the tool's response format respectively — and you cannot tell them apart. Add, per span: the fully rendered prompt or a hash plus the pieces to reconstruct it, the model ID and exact version, sampling parameters, the raw completion including the emitted tool call with its arguments verbatim, the typed status of the result, plus tokens, latency and cost.
 
-The line that lands in an interview: **the important failure usually happens before execution.** A trace of effects tells you what your system did, not what your model decided, and the decision is the thing that broke.
+**Log both decisions and effects.** A final state alone does not show whether tool selection, argument construction, execution or interpretation first went wrong. Use the observable action and context record; private chain-of-thought is not required.
 
 **(d)** Two layers:
 
@@ -367,7 +367,7 @@ Afterward the bucket becomes an eval set: those 22 traces, plus their correct ou
 - Labels the **first divergent step**, and explains why with the step-3-causes-step-14 example.
 - Names the correct wrong answer ("improve the prompt, add retries") and why it fails.
 - Lists all four indistinguishable classes and connects each to a different fix.
-- Says the important failure happens before execution.
+- Explains why decision context and execution results are both needed for failure attribution.
 - On (d), splits recall from ranking rather than saying "improve retrieval," and closes the loop by turning the bucket into regression cases.
 
 </details>
@@ -395,7 +395,7 @@ Three other sources: **model versions move** under floating aliases like `-lates
 
 **(b)** Pin what is pinnable: explicit model version strings, never a floating alias; sampling parameters; tool and schema versions, recorded in the trace so a run can be attributed to a configuration.
 
-Then make **record/replay a first-class mode**. Record every tool call and its result in the trace. A replay run serves tool results from the recording instead of hitting the world. The orchestrator becomes deterministic even though the model is not, which lets you test a prompt change, a new cap, or a schema change against 200 recorded runs in seconds instead of re-running against production systems. It also gives you the ability to fork a run at step $k$ with an edited context, which is the single most useful debugging affordance an agent system can have. Nothing else on this list buys as much per unit of engineering time.
+Add **record/replay** for controlled debugging: store tool calls, arguments and results, then serve recorded results when a replay makes a matching call. This can test orchestration changes without repeating external side effects. Forking at step $k$ with edited context helps isolate a suspected failure. If a new prompt chooses different calls, the old recording may no longer apply; use a simulator or a fresh sandbox run for those branches. Recording tool outputs alone does not make model responses deterministic.
 
 **(c)** The observed pass rate is $\hat p = 34/40 = 0.85$, the hat marking an estimate from a sample rather than the true rate. Standard error:
 
@@ -434,10 +434,80 @@ And be explicit about what offline evals are for. They are a regression gate. Th
 
 </Quiz>
 
+<Quiz id="9">
+
+**Q9. One success versus every success.** At independent per-run success $p=0.8$, compute pass@5 and pass⁵. On one task with four successes in five recorded trials, compute the empirical all-two and at-least-one-of-two subset scores. Why not exponentiate a pooled mean across tasks?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+The idealized five-run values are $1-0.2^5=0.99968$ and $0.8^5=0.32768$. From the recorded trials, all-two is $\binom42/\binom52=6/10=0.6$; at-least-one is $1-\binom12/\binom52=1$. Different task difficulties make pooling nonlinear: average per-task estimates and attach uncertainty. Trial dependence and changed environment state require additional care.
+
+**Rubric:**
+
+- Computes all four values and names what each asks.
+- Explains task heterogeneity and controlled initial states.
+
+</details>
+
+</Quiz>
+
+<Quiz id="10">
+
+**Q10. Evaluate an open action space.** A refund agent says “done”; a computer-use agent says it saved a report. Build execution checks without enumerating every tool sequence. Include a retry after an unknown commit outcome.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+For the refund, inspect the correct order/tenant ledger, exact authorized amount, unique operation and unchanged unrelated rows. Inject a timeout after commit and verify the retry returns the prior result rather than duplicating the refund. For the report, inspect its saved path and contents in a resettable environment, rather than trusting the final message. Record permission violations separately. These checks test sampled task outcomes; they do not prove every possible shell command safe.
+
+**Rubric:**
+
+- Tests environment effects and idempotent recovery.
+- Rejects both “large action space is unevaluable” and universal-safety claims.
+
+</details>
+
+</Quiz>
+
+<Quiz id="11">
+
+**Q11. A defense that refuses everything.** On 100 paired tasks, clean success is 90, successful attacks are 8, and defended legitimate-task success under attack is 72. State the metrics and denominators. Would zero successful attacks be enough to ship?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+With all 100 tasks/attacks in the denominator, the rates are 90%, 8% and 72%. A report restricted to clean-solvable tasks needs a separate numerator and denominator; do not silently call it the same 8%. Zero attack success can be achieved by refusing all tasks, so utility must be measured alongside resistance. Include adaptive attacks, policy violations and confidence intervals. This is the joint-evaluation lesson of AgentDojo.
+
+**Rubric:**
+
+- Reports all three rates with explicit denominators.
+- Rejects zero utility as a successful defense and includes adaptive testing.
+
+</details>
+
+</Quiz>
+
+<Quiz id="12">
+
+**Q12. Accuracy rises; reliability does not.** A multi-agent release raises mean pass rate but doubles severe policy violations and often loses constraints at handoff. Design the scorecard and the first debugging step.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Measure consistency over repeated reset trials, robustness to controlled perturbations, predictability of errors through calibrated escalation signals, and safety as both violation frequency and severity. Mean accuracy alone cannot trade away an unacceptable violation. Label the first lost constraint, then distinguish system design, inter-agent misalignment and verification/termination errors. Keep paired cases and intervals so a noisy improvement is not mistaken for a release gain.
+
+**Rubric:**
+
+- Uses the four reliability dimensions with concrete measurements.
+- Locates the first handoff divergence and keeps severity separate from average success.
+
+</details>
+
+</Quiz>
+
 ## Rapid-fire: where agents break
 
-These 17 questions stand on their own, so you can study this section without reading anything above it. Each should take 2 to 5 minutes out loud. They are picked purely on how often this exact shape shows up in agentic-system-design and AI-engineer rounds, not on how interesting they are. Almost all of them are handed to you as an incident, so answer with a mechanism and at least one number, and assume the interviewer chains "why?" two levels deeper on every one.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Why agents are worse than chatbots** A model that answers single questions at 97% accuracy feels great, and the agent built on it feels broken. Explain why with arithmetic, then name the three categories every fix falls into and which one you'd reach for first.
 2. **Debug a 20% failure rate** Your agent fails 20% of the time in production. Walk through how you'd debug it in a week. Be specific about what you look at and what you label on each failing case before you propose any fix.

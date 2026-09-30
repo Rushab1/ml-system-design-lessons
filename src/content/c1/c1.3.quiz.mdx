@@ -142,7 +142,7 @@ $$
 
 The trace sums the component variances. OLS is unbiased, but when $X^\top X$ has small eigenvalues, $\operatorname{Cov}(\hat\beta_{\text{OLS}})=\sigma^2(X^\top X)^{-1}$ can have a very large trace. Ridge shrinks coefficients toward zero, creating bias, while sharply reducing variance along those poorly identified directions. For an appropriate $\lambda>0$, the reduction in $\operatorname{tr}(\operatorname{Cov}(\hat\beta))$ can exceed the increase in squared bias, giving ridge lower total coefficient MSE. OLS minimizes variance only within the class of linear unbiased estimators.
 
-**The intuition (skip the theorem).** With many noisy coefficients, shrinking them all toward zero gives up a little bias to buy a large cut in variance — so on *total* MSE the shrunk estimate can beat the unbiased one. That is the whole reason ridge is principled and not a hack. There is a celebrated formal result making this precise for a high-dimensional Gaussian mean, but no interviewer will ask you to reproduce it — if you want the exact statement and proof, ask an AI assistant (Claude or ChatGPT) to walk you through it.
+**The shrinkage comparison.** Ridge can reduce variance enough to offset squared bias. The [James–Stein result](/c/c1/c1.3) makes a uniform improvement precise for a spherical Gaussian mean with known variance and at least three coordinates, using a data-dependent shrinkage factor. Fixed-penalty ridge is a different estimator; compare its MSE under the regression assumptions rather than importing that guarantee.
 
 **Rubric:**
 - $X^\top X$ PSD; $+\lambda I$ shifts eigenvalues to $\ge\lambda>0$ → positive-definite → always invertible (even $p>n$)
@@ -473,9 +473,6 @@ As $n\to\infty$, $\hat\beta$ converges to $\lambda\beta$, not to $\beta$. The es
 </Quiz>
 
 ## Rapid-fire: Linear regression
-
-These 18 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Write down OLS** Write the OLS solution $\hat\beta = (X^\top X)^{-1}X^\top y$ and say in one line where it comes from. When does that inverse not exist, and what does scikit-learn actually return in that case?
 2. **Which assumption buys what** List the assumptions behind OLS and map each one to what breaks when it fails: whether $\hat\beta$ still exists, whether it is unbiased, or only whether the standard errors are valid. Which single failure makes the coefficient itself wrong?

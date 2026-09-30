@@ -441,9 +441,6 @@ The mean predicted probability equals the empirical base rate **exactly**, for f
 
 ## Rapid-fire: Logistic regression
 
-These 14 questions do not depend on the numbered questions above, so you can study this section on its own.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
 1. **Linear in what** Logistic regression is called a linear model. Linear in what, exactly? Then give the two concrete things that break if you skip the sigmoid and just run OLS on a 0/1 target.
 2. **Bernoulli to cross-entropy** Start from $y \mid x \sim \text{Bernoulli}(p(x))$ plus the modeling choice $\log\frac{p}{1-p} = w^\top x + b$, in which $w$ is the weight vector and $b$ the intercept. Write the likelihood over $n$ labelled points and say why maximizing it is exactly minimizing binary cross-entropy.
 3. **Reading a coefficient** A fitted model has $\hat\beta_j = 0.7$ on a binary feature. State exactly what that number means, say what $e^{0.7}$ is in plain words, and explain why "the probability goes up by 0.7" is wrong.

@@ -3,18 +3,16 @@ id: c4.2
 chapter: 4
 title: Where agents break
 subtitle: Per-step reliability compounds, context rots, and the model cannot tell your instructions from a web page — the mechanisms behind every agent incident question
-refs: []
-estimatedMinutes: 50
+estimatedMinutes: 65
 ---
 
 ## TL;DR
 
-An agent is a loop that multiplies. If each step succeeds with probability $p$ and the task needs $n$ steps, the naive end-to-end success rate is $p^n$, and that single expression explains why demos work and production does not. At $p = 0.95$ and $n = 20$ steps you finish 36% of tasks. Everything you can do about it falls into three buckets: **raise $p$, cut $n$, or break the independence** by catching and recovering from failures mid-run. Guardrails, step caps, idempotency keys, sandboxes and traces are all instances of one of those three.
+An agent is a loop that multiplies. If each step succeeds with probability $p$ and the task needs $n$ steps, the naive end-to-end success rate is $p^n$, under independent identical step probabilities. It illustrates a reliability pressure, not a prediction for a recovering, stateful system. At $p = 0.95$ and $n = 20$ steps you finish 36% of tasks. Everything you can do about it falls into three buckets: **raise $p$, cut $n$, or break the independence** by catching and recovering from failures mid-run. Guardrails, step caps, idempotency keys, sandboxes and traces are all instances of one of those three.
 
-The second organizing fact is that the model has one input channel. Your system prompt, the user's message, and the HTML a tool just fetched all arrive as tokens in the same context, with no hardware-level separation between instruction and data. That is why prompt injection cannot be fixed by prompting, why the answer to "expose a generic SQL tool" is no, and why the trace you need is a record of what the model *decided*, not just what your tools *did*. These failures rarely arrive as definitions. They arrive as incidents — "your agent fails 20% of the time" — and the work is locating the mechanism underneath.
+The second organizing fact is that the model has one input channel. Your system prompt, the user's message, and the HTML a tool just fetched all arrive as tokens in the same context, with no hardware-level separation between instruction and data. That is why prompt injection cannot be fixed by prompting, why broad tools need enforced capability limits and execution checks, and why the trace you need is a record of what the model *decided*, not just what your tools *did*. These failures rarely arrive as definitions. They arrive as incidents — "your agent fails 20% of the time" — and the work is locating the mechanism underneath.
 
 ## What you'll be able to do after this lesson
-
 - Compute the per-step reliability an agent needs to hit a given end-to-end target, and show how much a verify-and-retry step buys.
 - Explain context rot in a long trajectory mechanically, and name the fix that does not involve a bigger context window.
 - Separate tool-call hallucination into the part structured output enforcement fixes and the part it does not touch at all.
@@ -22,6 +20,7 @@ The second organizing fact is that the model has one input channel. Your system 
 - Do the token arithmetic for an agent loop and show why cost is quadratic in step count.
 - Argue why prompt injection is a capability-boundary problem, and design a permission scheme by reversibility and blast radius.
 - Design a trace that makes a failing agent debuggable, and say precisely what "deterministic" can and cannot mean here.
+- Distinguish pass@k from pass^k, verify environment state and report utility, robustness, predictability and safety.
 
 ## Part 1 — The arithmetic of compounding
 
@@ -47,7 +46,7 @@ Your per-step error budget is 0.53%. Roughly one mistake in 190 tool calls, whic
 
 **Raise $p$.** Better tool schemas, fewer tools, a stronger model on the hard steps. Real but slow, and it has a ceiling.
 
-**Cut $n$.** This is the underrated one. If the agent needs 20 calls to do something a single deterministic function could do, replace the 20 calls with the function. Every step you move out of the LLM's decision surface and into orchestrator code is a step with $p = 1$. "Which logic belongs in the orchestrator versus the LLM" is the same question as "which steps can I delete from the exponent."
+**Cut $n$.** This is the underrated one. If the agent needs 20 calls to do something a single deterministic function could do, replace the 20 calls with the function. Moving a step into validated deterministic code removes that model decision; software bugs, stale state and tool failures can still make it fail. "Which logic belongs in the orchestrator versus the LLM" is the same question as "which steps can I delete from the exponent."
 
 **Break the independence.** Add a check after each step that catches a fraction $c$ of errors, and retry once. A step now succeeds in two ways: it was right the first time, with probability $p$; or it was wrong (probability $1 - p$), the checker caught it (probability $c$), and the retry landed (probability $p$). Adding the two disjoint cases gives the effective per-step success rate $p'$, where the prime marks the rate after the check-and-retry rather than the raw model rate:
 
@@ -56,6 +55,12 @@ p' = p + (1 - p)\,c\,p
 $$
 
 With $p = 0.95$ and a checker that catches 80% of failures: $p' = 0.95 + 0.05 \times 0.8 \times 0.95 = 0.988$. Over 20 steps, $0.988^{20} = e^{-0.2415} = 0.786$. You went from 36% to 79% without touching the model. This is why "verify, then retry" beats "prompt harder," and it is the quantitative case for the whole guardrail apparatus.
+
+The repair calculation assumes the checker never damages a correct result and that repair succeeds with the original probability $p$. More generally, let $h$ be the probability that checking/repair turns an initially correct result into failure, and let $r$ be repair success conditional on a detected error. Then
+
+$$p'=p(1-h)+(1-p)c r.$$
+
+For $p=0.95$, $c=0.8$, $r=0.5$, $h=0.02$, this is $0.931+0.020=0.951$: almost no improvement. Diagnose errors and measure conditional repair success; repeating the same failing approach is not an independent fresh draw.
 
 > **Stop and think.** The independence assumption is doing a lot of work. Name one mechanism that makes real agents *worse* than $p^n$, and one that makes them *better*. Hint: think about what a bad step leaves behind in the context, and what a model does when a tool returns an error message.
 
@@ -114,7 +119,7 @@ And cap everything, in four independent units: **steps**, **wall-clock time**, *
 
 The mirror image, and worse, because it looks like success. The agent stops at step 3 of 7 and reports done.
 
-Two mechanisms dominate. The first is that "done" was never defined as anything checkable, so the model's own sense of closure is the only stopping rule. The fix is a completion predicate the orchestrator evaluates: the ticket has a resolution field, the file exists, the invoice reconciles. If you cannot write the predicate, you cannot evaluate the agent either.
+Two mechanisms dominate. The first is that "done" was never defined as anything checkable, so the model's own sense of closure is the only stopping rule. The fix is a completion predicate the orchestrator evaluates: the ticket has a resolution field, the file exists, the invoice reconciles. Where a complete executable predicate is unavailable, combine partial state checks with a validated human or judge rubric; make that evaluation limit explicit.
 
 The second is ambiguous tool responses. A tool returns HTTP 200 with a body of `{"status": "queued"}` and the model reads 200 as success. Return typed results — an explicit `state` the model cannot misread, and a `completed` boolean that is false until the work actually finished. Ambiguity in a tool contract becomes a reasoning error in the agent, and the cheapest place to fix it is the contract.
 
@@ -148,15 +153,13 @@ A serious exfiltration needs three legs at once: access to private data, exposur
 
 Concretely: per-run credentials scoped to the acting user rather than a service account with everything; allowlisted network egress; structured tool parameters instead of free-form command strings; and human approval on any action that both leaves your system and carries data.
 
-### The generic SQL or shell tool
+### Broad tools need bounded execution and observable outcomes
 
-Product wants a `run_sql` or `run_shell` tool because it demos beautifully. The answer is no, and the reason has two parts.
+**Goal — distinguish a large action space from an untestable system.** Prefer parameterized operations for narrow business workflows: read-only database roles, row limits, statement timeouts and action-specific validation make their effects easier to constrain. A general shell can still be appropriate for software tasks when it runs with scoped filesystem access, resource limits and controlled network/credential access.
 
-**Blast radius equals the credential.** A tool that accepts arbitrary SQL can do everything that connection can do, which means your permission model is now the database grant and nothing else. One injected instruction and one plausible-looking query is the whole exploit chain.
+You do not have to enumerate every command to evaluate outcomes. [SWE-agent](https://arxiv.org/abs/2405.15793) and [OSWorld](https://arxiv.org/abs/2404.07972) use environments with execution checks. Tests can assert that the requested file changed, a program passes a test suite, or an application reached the required state. They can also check sampled policy invariants. Passing those tasks measures performance under those conditions; it does not prove universal safety over every possible command.
 
-**It makes evaluation impossible.** You cannot enumerate the action space, so you cannot build a golden set of correct behaviors or write assertions about what the agent must never do. An unbounded tool is an unevaluatable agent.
-
-Then counter-offer, because refusing without an alternative reads as obstruction: five to eight parameterized queries covering the demoed use cases, a read-only replica, a hard row limit, a statement timeout, and an audit log. If a query is genuinely needed that the parameterized set does not cover, that is a request for a new tool, reviewed like any other API.
+**Blast radius follows capability.** Prompt instructions do not narrow a database grant or a shell credential. Enforce permissions in the execution environment, and evaluate task success and violations separately.
 
 ## Part 4 — Guardrails that survive contact with users
 
@@ -181,7 +184,7 @@ The failure mode of guardrails is **approval fatigue**. Gate everything and huma
 
 Record a run as a tree of timed, nested units of work — spans, in tracing vocabulary. The run is the root span, each step is a child, and inside a step sit the LLM call and the tool calls it triggered. For every **LLM call**, record model ID and version, sampling parameters, the fully rendered prompt (or a hash plus the pieces needed to reconstruct it), the raw completion including the tool call it emitted, token counts and latency. For every **tool call**, record the name, the arguments verbatim, the result, a typed status, latency and cost.
 
-The load-bearing point: **the important failure usually happens before execution.** If you only log tool effects, you cannot distinguish "the model chose the wrong tool," "the model chose right but passed a bad argument," "the tool returned garbage," and "the tool was correct and the model misread it." Those four have four different fixes. Log the decision, not just the effect.
+**Decision logs and execution logs reveal different failures.** Record the selected tool, arguments, available evidence, returned result and subsequent action. Together they help distinguish wrong tool selection, incorrect arguments, a bad tool response and misinterpretation of a correct response. The first observed divergence guides investigation; later safeguards may have failed too.
 
 ### Debugging a 20% failure rate
 
@@ -206,6 +209,39 @@ So aim at the achievable targets instead.
 **Make replay a first-class mode.** Record every tool call and result in the trace; a replay run serves tool results from the recording instead of hitting the world. Now the orchestrator is deterministic even though the model is not, and you can test a prompt change or a cap change against 200 recorded runs in seconds. This is the single highest-leverage debuggability investment, and it also gives you the ability to fork a run at any step $k$ with an edited context.
 
 **Evaluate distributionally.** With a nondeterministic system, one pass or fail is a sample. Run each case several times and report a rate with an interval. Twenty runs, sixteen passes gives an observed pass rate of $\hat p = 0.8$ — the hat marks an estimate from a sample rather than the true rate — and a standard error of $\sqrt{0.8 \times 0.2 / 20} = 0.089$, so the 95% interval is roughly $[0.62, 0.98]$. A twenty-case eval set cannot detect a five-point regression. Write $\delta$ for the smallest difference in pass rate you want to detect, five points here, so $\delta = 0.05$. Comparing two rates at that resolution, with the conventional 95% confidence and 80% power, needs roughly $16\,\hat p(1-\hat p)/\delta^2 \approx 1000$ cases per arm; the 16 is the constant those two conventions produce. Knowing that your eval is underpowered is worth more than a precise-looking number from it.
+
+## Part 6 — Measure success, consistency, and harm
+
+**Goal — turn “the agent succeeded” into an executable, repeatable claim.** [tau-bench](https://arxiv.org/abs/2406.12045) evaluates tool-using agents against environment outcomes and policy constraints. For a refund task, our own test fixture can require: the correct tenant's order has exactly one refund, the ledger amount is 2,999 cents, and another tenant's rows remain unchanged. “I processed your refund” in the final message proves none of those conditions. Reset state between trials and inject a timeout after commit to test idempotent recovery.
+
+<ResearchFlow variant="execution" />
+
+Now distinguish two repeated-sampling questions. Under an **illustrative independent, identical** per-run success probability $p$:
+
+$$\operatorname{pass@}k=1-(1-p)^k,\qquad \operatorname{pass}^{k}=p^k.$$
+
+The first asks whether **at least one** of $k$ attempts succeeds; the second whether **all** $k$ succeed. At $p=0.8$, $k=5$, those are 99.968% and 32.768%. Production users need more than the possibility of finding a success after several failures.
+
+<ResearchBars variant="consistency" />
+
+For $n$ recorded trials with $s$ successes on one task, the all-$k$ subset estimate is $\binom{s}{k}/\binom{n}{k}$, and the at-least-one estimate is $1-\binom{n-s}{k}/\binom{n}{k}$, for $k\leq n$. Average per-task estimates and report uncertainty; raising a pooled mean to the $k$th power conceals heterogeneous task difficulty. Real retries can also change the world, so reset-based consistency and live recovery are separate experiments.
+
+### Utility and prompt-injection resistance belong together
+
+**Goal — prevent a system that refuses every task from looking like a successful defense.** [AgentDojo](https://arxiv.org/abs/2406.13352) evaluates useful tasks alongside adversarial instructions in tool outputs. In an illustrative 100-task paired test, report clean success (e.g. 90/100), attacker-goal success under attack (e.g. 8/100 attack trials), and legitimate-task success with the defense under attack (e.g. 72/100). State whether attack success is measured over all attempts or only clean-solvable tasks; changing that denominator changes the number. Test adaptive attacks as well as a fixed regression set.
+
+### A reliability scorecard beyond average accuracy
+
+**Goal — make operational weaknesses visible even when the headline pass rate rises.** [Rabanser et al. (ICML 2026)](https://arxiv.org/abs/2602.16666) distinguish consistency, robustness, predictability and safety; their experiments show that capability gains need not bring comparable reliability gains. An applied scorecard can record:
+
+| Dimension | Controlled measurement | Failure hidden by a mean pass rate |
+|---|---|---|
+| Consistency | Repeat each task from the same initial state | Occasional wins conceal frequent retries |
+| Robustness | Meaning-preserving wording changes, tool delays and irrelevant content | Small perturbations derail the trajectory |
+| Predictability | Calibrated confidence or escalation signal before action | Agent expresses confidence on failures |
+| Safety | Violation frequency plus severity and affected scope | A rare severe side effect disappears in the average |
+
+For multi-agent traces, [Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657) separates system-design problems, inter-agent misalignment, and verification/termination failures. Label the first divergence with that distinction: a worker with a correct local result can still participate in a failed system if the handoff loses a constraint. Keep paired cases and uncertainty intervals as taught in [c6.1](/c/c6/c6.1); public task benchmarks complement your private workflow tests.
 
 ## Tradeoff matrix
 
@@ -239,12 +275,21 @@ So aim at the achievable targets instead.
 - **"Your agent picks the right tool but the wrong parameters."** Narrow types to enums and bounds, require IDs to have provenance in a prior tool result, add preconditions inside the tool, and dry-run high-stakes calls. Then check whether the parameter is even well-specified in the schema description.
 - **"The model retried a partially successful action and duplicated side effects."** Idempotency key per (run, step) enforced server-side; prepare-then-commit across systems; make the tool's error responses distinguish "did not happen" from "unknown."
 - **"How do you sandbox tool execution?"** Container with no default egress, read-only mounts, CPU/memory/time limits, per-run credentials, fresh environment per run. The point is that a successful injection costs you one container.
-- **"Product wants a generic SQL or shell tool."** No: blast radius becomes the credential, and an unbounded action space cannot be evaluated. Counter-offer parameterized queries on a read-only replica with row limits and an audit log.
-- **"Your agent deleted a production database."** Classify by reversibility and blast radius, gate irreversible-and-large behind approval that shows the arguments, remove destructive capability from the tool surface entirely where possible, and give the agent credentials that cannot do it.
-- **"Your chatbot loses context after 10 turns."** Name the mechanism: raw observations crowd out instructions, and stale state distracts. Compact and summarize, store artifacts by reference, re-anchor the goal near the end of the context. A bigger window delays the problem rather than fixing it.
-- **"How do you handle non-determinism?"** Temperature zero is not determinism; batching, model versions and the world all move. Pin versions, record and replay tool calls so the orchestrator is testable, and evaluate distributionally with intervals rather than single pass/fail runs.
-- **"What do you log for an agent?"** Prompt, model version, sampling params, the emitted tool call with arguments, the result and typed status, tokens, latency, cost — per span. Then the line that lands: the most important failures happen before execution, so a trace of effects alone cannot tell you what went wrong.
+- **"Product wants a generic SQL or shell tool."** Match capabilities to the task. Prefer scoped parameterized operations for narrow workflows; sandbox broader tools when required. Evaluate final state and policy invariants without pretending to enumerate every possible command.
 
 ## Take the quiz
 
 **[Take the quiz →](/c/c4/c4.2/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Yao et al. (2024), [tau-bench](https://arxiv.org/abs/2406.12045).
+- Yang et al. (2024), [SWE-agent](https://arxiv.org/abs/2405.15793); Xie et al. (2024), [OSWorld](https://arxiv.org/abs/2404.07972).
+- Debenedetti et al. (2024), [AgentDojo](https://arxiv.org/abs/2406.13352).
+- Cemri et al. (2025), [Why Do Multi-Agent LLM Systems Fail?](https://arxiv.org/abs/2503.13657).
+- Rabanser et al. (ICML 2026; first posted February, revised June), [Towards a Science of AI Agent Reliability](https://arxiv.org/abs/2602.16666).

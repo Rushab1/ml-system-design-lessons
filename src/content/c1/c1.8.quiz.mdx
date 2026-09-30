@@ -196,15 +196,19 @@ Here $x^{\otimes k}$ is the $k$-fold tensor power of $x$: the block of coordinat
 
 $$R^\star \le R \le 2R^\star(1 - R^\star) \le 2R^\star$$
 
-(The general $M$-class form carries an extra $M/(M-1)$ factor; for the exact statement, ask an AI assistant — an interviewer wants the $2R^\star$ takeaway, not the constant.)
+For $M\ge2$ classes, the [Cover–Hart bound](https://isl.stanford.edu/~cover/papers/transIT/0021cove.pdf) is
 
-**Interpretation of $R \le 2R^\star$.** Even the crudest possible classifier — "copy the label of the single closest point" — has asymptotic error no worse than **twice** the best achievable error of *any* classifier (the Bayes classifier, which knows the true $P(y\mid x)$). Put differently, at least **half the achievable information about the label is contained in the single nearest neighbor**. That's a remarkable guarantee for a method that does no training at all.
+$$R^\star\le R\le R^\star\left(2-\frac{M}{M-1}R^\star\right).$$
+
+Here $R$ is the limiting 1-NN risk for IID labeled samples and an independent test point under conditions ensuring that the nearest neighbor's class probabilities approach those at the query, such as almost-everywhere continuity on a Euclidean feature space. This is an asymptotic result, not a finite-sample guarantee.
+
+**Interpretation of $R\le2R^\star$.** Under the stated assumptions, limiting 1-NN error is at most twice the Bayes error. This does not mean that the error is always twice optimal or that a nearest neighbor contains half the mutual information about the label.
 
 **$k \to \infty,\ k/n \to 0$.** With $k$ growing (so the vote averages over many neighbors → variance $\to 0$) but slowly enough that the neighborhood still shrinks to the query point ($k/n \to 0$ → bias $\to 0$), kNN becomes **Bayes-consistent**: $R \to R^\star$. So 1-NN pays a factor-of-2 price for using only one neighbor; letting $k$ grow appropriately recovers the optimal error in the limit.
 
 **Rubric:**
 - State the bound (general $M$ and binary $R\le 2R^\star(1-R^\star)\le 2R^\star$)
-- Interpret: 1-NN ≤ 2× Bayes; half the info is in the nearest neighbor
+- Interprets an asymptotic risk bound under the stated assumptions, without treating it as an information-theoretic identity
 - $k\to\infty$, $k/n\to0$ ⇒ variance→0 and bias→0 ⇒ Bayes-consistent ($R\to R^\star$)
 
 </details>
@@ -634,9 +638,6 @@ Here $x_{ij}$ is the count of word $j$ in training document $i$, $d$ is the voca
 </Quiz>
 
 ## Rapid-fire: SVM, kNN & Naive Bayes
-
-These 16 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **What an SVM maximizes** An SVM picks the separating hyperplane with the widest margin. Say what the margin is geometrically, what it works out to in terms of $\|w\|$, and why widest margin is a sensible thing to want when many hyperplanes separate the data perfectly.
 2. **The kernel trick** Explain the kernel trick to someone who knows linear models. Why can an RBF SVM produce a boundary in a very high-dimensional feature space without anyone ever computing that feature vector, and what do you pay instead?

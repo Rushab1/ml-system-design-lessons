@@ -62,12 +62,13 @@ OLS, PCA, estimators, stationarity and portfolio math is deliberate, not acciden
 ## Rapid-fire ordering convention
 
 **Rapid-fire is the only section actually studied**, so its order carries the triage. Within
-every `## Rapid-fire` section the questions are sorted by **interview importance, most important
-first**, against this contract:
+every `## Rapid-fire` section the questions are sorted by **editorial interview priority,
+most important first**:
 
-- **Top 5 = ~80% of that lesson's interview value.** These are the questions a loop opens with.
-  They have to be bang on.
-- **Top 10 = ~95%+.** Everything past 10 is genuine but lower-frequency depth.
+- **First five:** the core mechanisms and calculations to prioritize.
+- **Next five:** broader tradeoffs, assumptions and diagnostic questions.
+- **Remaining questions:** additional depth. This ordering is editorial judgment, not a
+  measured percentage of interview coverage.
 
 Nothing is deleted to achieve this — the full set stays on the page, reordered. A reader with
 one evening does the top 5 per lesson; a reader with a week does all of them.

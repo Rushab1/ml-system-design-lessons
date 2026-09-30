@@ -945,9 +945,6 @@ So $\log\text{softmax} \approx [\,-2.408,\ -1.408,\ -0.408\,]$, and $\text{softm
 
 ## Rapid-fire: Loss functions
 
-These 12 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
 1. **Mean or median** An MSE-trained and an MAE-trained regression model on the same skewed target give noticeably different predictions. Say which conditional statistic each one converges to, then explain the robustness difference by describing what each loss does to the gradient when one residual is huge.
 2. **Prediction minus target** For softmax with cross-entropy, what is the gradient of the loss with respect to the logits? Say what $q - y$ means in plain terms, and why that clean form is convenient during training.
 3. **Logits, not probabilities** Why does PyTorch's `CrossEntropyLoss` take raw logits rather than probabilities? Describe what actually goes wrong if you apply a softmax yourself first, and why nothing raises an error.

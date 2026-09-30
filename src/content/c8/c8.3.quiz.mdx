@@ -255,7 +255,7 @@ So at least $500 - 59 = 441$ eigenvalues are exactly zero. The matrix is singula
 
 Diagnose by magnitude. An eigenvalue around $10^{-16}$ times the trace is floating-point noise on a truly zero eigenvalue and is a numerical matter. An eigenvalue at $-0.02$ times the trace is structural and means the construction is wrong.
 
-Fixes, and you are expected to produce at least one name. Nearest positive semi-definite projection: clip negative eigenvalues to zero and reconstruct (Higham 1988). Random matrix theory clipping: replace everything below the Marchenko-Pastur edge with its average, preserving the trace. Or shrinkage, pulling the matrix partway toward something you trust more: $\hat\Sigma_{\text{shrunk}} = \delta F + (1-\delta)\hat\Sigma$ with $F$ a structured target such as constant correlation, a scaled identity, or a factor model, and $\delta \in [0,1]$ setting how far you move. **Ledoit-Wolf** picks $\delta$ analytically, choosing the value that minimizes the expected squared elementwise distance to the true covariance, the Frobenius loss. Shrinkage guarantees invertibility because the target is positive definite. Nobody asks you to derive it; everybody expects the name. And the honest first move is still to fix the estimator that produced the broken matrix rather than to patch the output.
+Possible repairs depend on the source of the invalid matrix. Projection onto the positive semidefinite cone clips negative eigenvalues and reconstructs the matrix (Higham 1988); this need not preserve a unit diagonal. Random-matrix methods adjust the estimated noise spectrum under their modeling assumptions. Shrinkage uses $\hat\Sigma_{\text{shrunk}}=\delta F+(1-\delta)\hat\Sigma$ for a structured target $F$. Ledoit–Wolf estimates shrinkage intensity to target expected Frobenius loss. A positive-definite target and $\delta>0$ ensure invertibility when the starting estimate is positive semidefinite; an indefinite starting matrix can require more shrinkage. First investigate why the original estimator produced an invalid covariance matrix.
 
 **Rubric:**
 - 125,250 parameters against 30,000 observations
@@ -309,9 +309,6 @@ What would distinguish them: rolling-window parameter stability, since an overfi
 </Quiz>
 
 ## Rapid-fire: track records, backtests and multiple testing
-
-These 18 questions stand alone and do not depend on anything above. Each should take 2 to 5 minutes out loud. They are chosen for how often they get asked, not for how interesting they are, and several of them are asked in almost exactly this wording. Answer them speaking, with arithmetic said aloud.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Sharpe to t-stat cold** Your backtest has Sharpe 1.5 over 3 years of daily data. Is it statistically significant? Give the formula, the number, and the assumption the formula rests on.
 2. **The best-of-200 follow-up** Same backtest, and now you are told it was the best of 200 configurations you tried. Redo the significance question. What Sharpe would it have needed, and what do you ask the researcher for before believing any number?

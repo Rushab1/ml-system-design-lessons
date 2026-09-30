@@ -220,7 +220,7 @@ $$w_j^\star = \frac{\sum_{i\in I_j} r_i}{n_j + \lambda} = \frac{n_j\,\bar r_j}{n
 
 **GBDT overfits; RF does not.**
 
-**RF (doesn't).** The trees are i.i.d. draws from the same randomized procedure (bootstrap + feature subsampling). Averaging $B$ such trees, the generalization error converges almost surely as $B\to\infty$ (a strong-law-of-large-numbers result — Breiman 2001): more trees drive the Monte Carlo averaging error to zero and the error settles at a fixed limit (the $\rho\sigma^2$-floor regime). Adding trees can only *reduce* the averaging variance — it never increases test error. So RF needs no early stopping.
+**RF averaging.** Conditional on a fixed training set, trees drawn independently from the same randomized procedure approximate an infinite-forest prediction as $B$ grows. Their finite-$B$ Monte Carlo variance decreases with $B$; a correlation floor can remain when averaging over training sets. Convergence does not imply that each added tree improves realized test error, especially after thresholding probabilities for classification. Choose $B$ for stability and computational cost, and tune the tree-building parameters for generalization.
 
 **GBDT (does).** Boosting is *sequential* and *adaptive*: each round fits the negative gradient of the residual loss, monotonically reducing training loss. Past the point where the signal is captured, additional rounds fit noise — training loss keeps falling while test loss turns up. So more rounds overfit, and early stopping on a validation set is essential.
 
@@ -228,7 +228,7 @@ $$w_j^\star = \frac{\sum_{i\in I_j} r_i}{n_j + \lambda} = \frac{n_j\,\bar r_j}{n
 
 **Rubric:**
 - GBDT overfits, RF doesn't
-- RF: i.i.d. trees → LLN convergence → more trees never hurt (Breiman)
+- RF: conditional independent draws converge to the infinite-forest prediction; this does not imply monotone improvement of realized test error
 - GBDT: sequential bias reduction → eventually fits noise → early stop
 - Corollary: RF deep (low-bias to average), GBDT shallow (weak learners)
 
@@ -332,9 +332,6 @@ $$w_j^\star = \frac{\sum_{i\in I_j} r_i}{n_j + \lambda} = \frac{n_j\,\bar r_j}{n
 </Quiz>
 
 ## Rapid-fire: Trees & ensembles
-
-These 17 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Bagging vs boosting** In under a minute: does bagging attack bias or variance, and does boosting attack bias or variance? Say which one trains its trees independently and which trains them sequentially, and explain why that structural difference forces the answer.
 2. **Why forests beat plain bagging** Averaging $B$ trees only helps so much, because the trees are correlated with each other. Given that, what does a random forest do that plain bagging does not, and what does it buy you? What goes wrong if you push `max_features` all the way down to 1?

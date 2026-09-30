@@ -85,7 +85,7 @@ $$
 
 <Quiz id="3">
 
-**Q3. Why more trees never hurt a forest and more rounds eventually hurt a boosted model.** (a) State the update rule for gradient boosting and say which term of the decomposition each round attacks. (b) Explain, in terms of the ensemble's algebraic form, why the correlation-floor argument does not apply. (c) Sketch the two test-error curves and say what each does as its tree count grows. (d) Give the interaction between the learning rate $\nu$ and the number of rounds $M$, and state the validation protocol that keeps the stopping round honest.
+**Q3. Why averaging more trees differs from adding boosting rounds.** (a) State the update rule for gradient boosting and say which term of the decomposition each round attacks. (b) Explain, in terms of the ensemble's algebraic form, why the correlation-floor argument does not apply. (c) Sketch the two test-error curves and say what each does as its tree count grows. (d) Give the interaction between the learning rate $\nu$ and the number of rounds $M$, and state the validation protocol that keeps the stopping round honest.
 
 <details>
 <summary>Model answer + rubric</summary>
@@ -274,7 +274,6 @@ The protocol has two comparisons in a fixed order. Training error against the fl
 ## Rapid-fire: model families
 
 Thirteen questions on where each family sits on the two axes, and which knob moves it.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **The correlation floor** Derive the variance of an average of $B$ identically distributed trees with pairwise correlation $\rho$. Identify the floor, and then answer: does adding more trees to a random forest cause overfitting? Say which knob moves the floor and what it costs.
 2. **Collinearity, precisely** Two features are correlated at 0.99. Compute the variance inflation factor. Then answer the follow-up carefully: does collinearity raise the variance of the predictions, the coefficients, or both? Explain the difference using the trace of the hat matrix.

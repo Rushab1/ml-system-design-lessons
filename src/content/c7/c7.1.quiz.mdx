@@ -274,7 +274,7 @@ The resolution is that the theorem's conditions fail. The stopping time is finit
 
 The production version of this: any strategy whose backtest shows a small steady gain and a rare enormous loss looks like a martingale violation, and usually is one. Check whether the loss tail is bounded before believing the mean.
 
-**(c) When to use which.** Lead with the difference equation, because it shows you can solve the problem from first principles and it generalizes to the biased case and to duration without needing a new martingale. Then offer the optional-stopping version as a 30-second check. Doing it in the other order risks the interviewer thinking you memorized a trick, and it leaves you stuck if they perturb the problem in a way that breaks the martingale you named.
+**(c) When to use which.** Difference equations extend directly to biased transitions and expected duration. A suitable martingale can give a shorter independent check through optional stopping, provided its conditions hold. If the transition law changes, verify the martingale property and stopping assumptions again.
 
 **Rubric:**
 - Correct definition of martingale as a conditional expectation
@@ -288,9 +288,6 @@ The production version of this: any strategy whose backtest shows a small steady
 </Quiz>
 
 ## Rapid-fire: probability techniques
-
-These 14 questions stand alone, so you can drill this section without reading anything above it. Each should take 2 to 5 minutes to answer out loud, with arithmetic done in your head or on one line of scratch paper. They are picked for how often they get asked, not for how interesting they are.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Rare disease positive test** A disease affects 1 in 10,000. A test is 99% accurate in both directions. You test positive. Probability you are sick? Do it in natural frequencies out loud.
 2. **Expected flips to HHT** Flip a fair coin until you see H, H, T in a row. Give the expected number of flips, and show the state equations you used. Then say what the answer is for HTH and why the two differ.

@@ -2,11 +2,11 @@
 lessonId: c3.1
 chapter: 3
 title: Quiz — Attention and the transformer block
-description: Seven questions on the attention derivation, the scaling argument, masking, and what one block costs.
-estimatedMinutes: 60
+description: Twelve worked questions on attention scaling, tensor shapes, masking and positional information.
+estimatedMinutes: 75
 ---
 
-These seven questions test whether you can rebuild attention and price it, not whether you can recite the formula. Work each one on paper or in an editor before opening the answer. The rapid-fire section at the bottom stands alone and is the part to drill out loud.
+Apply the derivations in [the lesson](/c/c3/c3.1) to attention scaling, tensor shapes, masking and positional information. Try each question before revealing its worked answer. Numerical scenarios are illustrative unless a source is named.
 
 <Quiz id="1">
 
@@ -31,13 +31,13 @@ A saturated softmax is flat, so a nudge to any logit barely moves the probabilit
 
 $$\frac{\partial p_i}{\partial z_j} = p_i(\delta_{ij} - p_j)$$
 
-At $p = 0.99999$ the diagonal term is $p(1-p) \approx 1.2 \times 10^{-5}$. With the divisor, the same one-standard-deviation gap becomes a gap of 1 in logit space, giving $p \approx 0.73$ and a Jacobian term of $0.73 \times 0.27 \approx 0.2$. That is a factor of roughly 16,000 in the gradient reaching $W_Q$ and $W_K$.
+At $p = 0.99999$ the diagonal term is $p(1-p) \approx 1.2 \times 10^{-5}$. With the divisor, the same one-standard-deviation gap becomes a gap of 1 in logit space, giving $p \approx 0.73$ and a Jacobian term of $0.73 \times 0.27 \approx 0.2$. That is roughly 16,000× in the softmax Jacobian with respect to its input logits. Backpropagating to unscaled scores also introduces the $1/\sqrt{d_k}$ factor; parameter gradients require the rest of the chain rule.
 
 The failure mode this describes: at initialization the unscaled model picks an essentially random hard assignment over positions and then receives almost no gradient to revise it. It is stuck, not merely noisy.
 
 **(c) Why "numerical stability" is wrong.** Numerical stability would mean overflow or precision loss, and the standard softmax implementation already subtracts the row max, which handles that. The real problem happens in exact arithmetic: the softmax saturates, and a saturated softmax has a vanishing Jacobian, so learning stops. It is an optimization argument about gradient flow, not a floating-point argument. (fp16 overflow in the score matrix is a genuine and separate problem, but it is not the reason the $\sqrt{d_k}$ constant exists.)
 
-**(d) Drift.** The derivation assumed unit-variance components. If keys drift to per-component standard deviation 3, then $\mathrm{Var}(q \cdot k) = 9 d_k$ and the effective softmax temperature has moved by a factor of 3 in standard deviation, 9 in variance. Nothing in the architecture pushes it back, so attention can slowly saturate mid-training and the model plateaus or diverges. The fix adopted in several 2024-2026 recipes is QK-norm: apply an explicit RMSNorm or LayerNorm to Q and K after projection, which re-imposes the assumption the constant was derived under.
+**(d) Drift.** Holding query-component variance at 1, key standard deviation 3 gives $\mathrm{Var}(q\cdot k)=9d_k$. After division by $\sqrt{d_k}$, logit standard deviation is 3: equivalent to dividing temperature by 3. Nine is the variance multiplier, not the temperature multiplier. Q/K normalization acts after their learned projections; normalizing the residual input does not fix those projected scales.
 
 **Rubric:**
 - States the independence and unit-variance assumption before using it
@@ -269,10 +269,98 @@ Parameters per layer: attention has $4d^2$ ($W_Q, W_K, W_V, W_O$), the FFN has $
 
 </Quiz>
 
+<Quiz id="8">
+
+**Q8. Budget a growing generation.** Derive total dense-attention work for generating $n$ tokens by recomputing the whole prefix versus using a KV cache. Explain why “the cache makes generation linear” is wrong.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+At step $t$, recomputation costs $O(t^2)$ attention work; $\sum_{t=1}^n t^2=O(n^3)$. Cached attention uses one new query over $t$ keys, so $\sum_{t=1}^n t=O(n^2)$. Add the initial prompt prefill and separately count projections/FFNs. Linear describes cached attention at a fixed step as a function of prefix length, not total growing-generation attention.
+
+**Rubric:**
+
+- States per-step and total costs separately.
+- Includes prefill and avoids applying dense-attention scaling to all architectures.
+
+</details>
+
+</Quiz>
+
+<Quiz id="9">
+
+**Q9. A symmetric score is not symmetric attention.** Construct a symmetric two-token score matrix whose row-softmax attention matrix is asymmetric. What does this change about the argument for separate Q and K projections?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Take $S=\begin{pmatrix}0&1\\1&2\end{pmatrix}$. Both rows have probabilities approximately $(0.269,0.731)$, so $A_{12}=0.731$ and $A_{21}=0.269$ even though $S_{12}=S_{21}$. Row normalization uses different denominators. Separate Q/K maps remove a restriction on the **unnormalized bilinear scores**; symmetry of those scores never implied reciprocal attention probabilities.
+
+**Rubric:**
+
+- Gives a symmetric matrix and unequal off-diagonal probabilities.
+- Locates the restriction before softmax.
+
+</details>
+
+</Quiz>
+
+<Quiz id="10">
+
+**Q10. An all-masked row.** Your padding mask and causal mask jointly exclude every key for one query row. What does subtracting the maximum do, and how would you define and test the behavior?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+All scores are negative infinity, so subtracting the row maximum produces an undefined infinity-minus-infinity operation and can yield NaNs. Define whether this row should be omitted, have a zero output, or always have a valid designated key. Implement that policy explicitly, rather than unmasking arbitrary padding. Test normal causal rows, padded rows, batch mixing and absence of NaNs; confirm the chosen semantics match training.
+
+**Rubric:**
+
+- Identifies an undefined normalization, not just small probabilities.
+- Defines an explicit padding policy and meaningful boundary cases.
+
+</details>
+
+</Quiz>
+
+<Quiz id="11">
+
+**Q11. Merge two softmax tiles.** Tile A has running maximum 2 and exponential sum 3 relative to that maximum. Tile B has maximum 4 and sum 5. Compute the merged maximum and denominator; explain why output accumulators need the same rescaling.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+The new maximum is 4. The denominator is $3e^{2-4}+5e^{4-4}=3e^{-2}+5\approx5.406$. Multiply A’s value-weighted numerator by $e^{-2}$ before adding B’s numerator, then divide by the merged denominator. Rescaling numerator and denominator consistently preserves dense softmax in real arithmetic. Reordered floating-point operations may differ in the last bits.
+
+**Rubric:**
+
+- Gets maximum 4 and denominator about 5.406.
+- Rescales both numerator and denominator; distinguishes algebraic and bitwise equivalence.
+
+</details>
+
+</Quiz>
+
+<Quiz id="12">
+
+**Q12. Challenge the baseline.** A design review treats “attention,” “cache compression” and “recurrent state” as interchangeable speed optimizations. Construct a measurement that distinguishes them without relying on model names.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Inspect retained tensors while increasing context length, then time one decode step at fixed batch and dtype. A shared-head or latent token cache normally grows with context; a fixed-width recurrent state does not. An IO-aware dense kernel still computes dense attention, whereas sparse selection changes accessed positions. Also measure long-range evidence retrieval: changing history access can change quality. These measurements identify mechanisms; throughput alone cannot.
+
+**Rubric:**
+
+- Measures state growth and work separately.
+- Includes a quality check and explains why labels or speed alone are insufficient.
+
+</details>
+
+</Quiz>
+
 ## Rapid-fire: attention and the transformer block
 
-These 15 questions do not depend on anything above, so this section stands on its own. Each should take 2 to 5 minutes to answer out loud, and they are chosen for how often they actually get asked, not for how interesting they are. If you only drill one part of this quiz, drill this one.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Attention from scratch** Implement scaled dot-product self-attention — $\mathrm{softmax}(QK^\top/\sqrt{d_k})V$ — in PyTorch or NumPy, no library attention call. Narrate the shape at each step.
 2. **Q, K and V** Explain query, key and value in attention. Say what each one is for, why there are three separate projections instead of one, and which parts of the setup are convention versus load-bearing.

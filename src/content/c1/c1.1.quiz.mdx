@@ -820,9 +820,6 @@ from sklearn.model_selection import HalvingRandomSearchCV
 
 ## Rapid-fire: Data, splits & validation
 
-These 17 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
 1. **Leakage in one sentence** Define data leakage in terms of what information actually exists at prediction time. Then say whether each of these counts: an `account_status = closed` column in a churn model, a `StandardScaler` fit before the split, and one user's rows appearing in both train and test.
 2. **The random split that lied** A churn model splits a year of history randomly 80/20 and reports test AUC 0.91. Live, it does 0.74. Explain the mechanism, and say what the split should have been.
 3. **Where you fit the scaler** Which preprocessing steps have to be fit on training data only? Explain why fitting a `StandardScaler` on the full dataset barely moves your metric, while fitting a target encoder on the full dataset can inflate AUC by ten points.

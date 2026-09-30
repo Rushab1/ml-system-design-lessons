@@ -2,11 +2,11 @@
 lessonId: c5.1
 chapter: 5
 title: Quiz — Retrieval fundamentals
-description: Scenario questions on the RAG decision, embeddings, chunking, indexes, BM25 and hybrid fusion.
-estimatedMinutes: 70
+description: Twelve worked questions on chunking, hybrid retrieval, nearest-neighbor search and evidence coverage.
+estimatedMinutes: 75
 ---
 
-These seven questions are shaped like the interview, not like a textbook: a broken system, four plausible fixes, and only one that addresses the stage that actually failed. Almost every one ends in the same follow-up: how would you know the fix worked. Try each before revealing the model answer.
+Apply the derivations in [the lesson](/c/c5/c5.1) to chunking, hybrid retrieval, nearest-neighbor search and evidence coverage. Try each question before revealing its worked answer. Numerical scenarios are illustrative unless a source is named.
 
 <Quiz id="1">
 
@@ -105,7 +105,7 @@ Fuse with reciprocal rank fusion so the incomparable score scales never have to 
 
 **(c)** Two parts. First, on the merits: semantic chunking (embed sentence by sentence, cut where consecutive-sentence similarity drops) costs real compute at index time and, over documents that already have structure, is usually a modest win over just splitting on the document's own headings. Structural chunking is free and respects meaning by construction, so it is the better default. Parent-child — index small precise chunks for matching, return the enclosing section for reading — is the higher-leverage move than either, because it stops one chunk from doing two conflicting jobs.
 
-Second, and this is the part being graded: **"better" is not a claim either of us can settle by arguing.** Take 30 to 50 questions from real traffic, label which chunks contain the answer, and sweep the strategies against recall@k. Reciting a chunking taxonomy without attaching a measurement to it is the single most common way this question is failed. Note the labels must come from real queries — an eval set written by reading the chunks inherits the same phrasing and the same segmentation assumptions and will score 95% while users complain.
+Compare chunking strategies on labeled questions sampled from the target traffic. An initial set might contain 30–50 questions, with larger samples needed for precise comparisons or rare slices. Label source evidence spans, map those spans to each chunking strategy, and measure recall@k under matched budgets. Questions written by looking at the chunks can inherit their phrasing and boundaries, making the evaluation easier than real queries.
 
 **Rubric:**
 - Uses stride $= 500 - 75 = 425$, gets ~236 chunks/doc and ~1.88M vectors, computes ~7.7 GB
@@ -137,7 +137,7 @@ Worth saying explicitly: flat was the right call at 5 QPS. Exact recall, no inde
 
 **(b)** Approximate nearest neighbour, in practice HNSW. It builds a layered proximity graph: a sparse top layer with long-range edges, denser and shorter-range layers going down, everything at the bottom. Search enters at the top, greedily walks toward the query, drops a layer, repeats. The long edges cover distance in a few hops and the short ones refine, so search time grows roughly logarithmically in the number of vectors $N$ instead of linearly. You give up exactness — you will miss a small fraction of true neighbours — and you pay memory for the graph edges on top of the 6.14 GB, plus slow index builds and awkward deletions.
 
-The sentence to own is that **recall, latency and memory are one three-way tradeoff and every ANN knob only slides you along it**. Then stop. Reciting graph-construction hyperparameters when the interviewer wants to discuss evaluation reads as deflection, unless you actually owned vector infrastructure.
+**Recall, latency and memory must be measured together.** For HNSW, search breadth affects recall and query latency, while graph connectivity affects index size and construction cost as well as recall. Compare configurations on the same vectors, queries and recall target before choosing one.
 
 **(c)** **Pre-filter**: restrict the candidate set to what the user may see, then search within it. The cost is real — an aggressive filter can disconnect the proximity graph so the greedy walk cannot reach the surviving nodes, and you may need a fallback to brute force over the filtered subset when it is small. Take that cost anyway.
 
@@ -185,7 +185,7 @@ Final ranking: **C, B, A, F, D/G (tied), E.**
 
 **(c)** Because the two numbers are not on the same scale and never will be. Cosine on normalized vectors lives in $[-1, 1]$ and is roughly comparable across queries. BM25 is an unbounded sum over query terms whose magnitude depends on how many terms the query has, on the corpus's document frequencies, and on average document length. A three-word query and a fifteen-word query produce BM25 scores an order of magnitude apart on the same corpus. Add them and BM25 silently dominates on long queries and vanishes on short ones. RRF's whole trick is discarding the scores and keeping only the ranks, which are commensurable by construction.
 
-Use a weighted sum $\alpha \cdot \text{dense} + (1-\alpha) \cdot \text{sparse}$, with $\alpha$ between 0 and 1 weighting the dense list, over *min-max normalized* scores when you know your traffic leans one way and you want the dial — a codebase search where nearly everything is identifier-shaped wants $\alpha$ low. The condition attached to that answer: the only defensible way to set $\alpha$ is by sweeping it against a labelled eval set and reading recall@k. If you cannot say that out loud, use RRF, which has no such parameter to get wrong.
+For weighted fusion, normalize the dense and sparse scores and tune $\alpha$ in $\alpha\cdot\text{dense}+(1-\alpha)\cdot\text{sparse}$ against a labeled evaluation set. Check ranking quality and evidence recall on the relevant query slices. Compare RRF as a baseline when score calibration or tuning data is limited; RRF still has a rank constant and retrieval-depth choices to validate.
 
 **Rubric:**
 - Correct arithmetic and correct final order C, B, A, F, D/G, E
@@ -268,10 +268,98 @@ The discipline being tested is that you **attribute the failure to a stage befor
 
 </Quiz>
 
+<Quiz id="8">
+
+**Q8. Choose what to train.** Candidates miss domain synonyms; a reranker discards correct candidates; the generator ignores supplied evidence; the system searches unnecessarily. Map each failure to a possible intervention and one controlled measurement.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Try retriever training on query/evidence pairs and hard negatives for missing synonyms; measure candidate recall. Train or replace the reranker for discarded candidates; measure ranking with candidates held fixed. Use evidence-conditioned generator training or prompting for ignored evidence; measure support and correctness with context fixed. Train or engineer a retrieval policy for unnecessary search; measure search decisions, quality and cost. First check ingestion and split leakage; no intervention guarantees the next stage.
+
+**Rubric:**
+
+- Maps all four failures to distinct components.
+- Holds upstream inputs fixed when isolating a stage.
+
+</details>
+
+</Quiz>
+
+<Quiz id="9">
+
+**Q9. High recall, insufficient evidence.** A question needs three facts, including a units header. Every result contains two facts and omits the header. Compute evidence recall and complete-set success. Explain why one-gold-chunk hit rate is misleading.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Evidence recall is 2/3, while complete-evidence-set success is zero for this fixture. A hit metric that labels only the table row as gold can report 100%, concealing the missing unit. Label required supporting spans or acceptable alternative evidence sets, then remap them when chunking changes. Test the answer’s units and citations as well as retrieval.
+
+**Rubric:**
+
+- Computes 2/3 and zero.
+- Defines gold evidence independently of one favored chunking layout.
+
+</details>
+
+</Quiz>
+
+<Quiz id="10">
+
+**Q10. Test hybrid on text and tables.** Construct a controlled sparse/dense/hybrid comparison motivated by T2-RAGBench. A team uses only gold contexts and claims it evaluated its RAG retriever. Identify the missing experiment.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Use questions requiring both text and table evidence, with shared corpus, access filters and final context budget across retrievers. Report candidate evidence recall, complete-set recall, downstream numerical accuracy, latency and cost. Gold-context evaluation tests the reader with retrieval failures removed; add actual retrieval to measure the full system. The benchmark’s strong hybrid BM25 result is evidence for a baseline in its setting, not a guarantee for every corpus.
+
+**Rubric:**
+
+- Controls context budget and includes actual retrieval.
+- Separates reader quality from retrieval and bounds the published finding.
+
+</details>
+
+</Quiz>
+
+<Quiz id="11">
+
+**Q11. Does retrieval guarantee privacy?.** A product claims that using RAG guarantees documents never enter training and makes deletion immediate. Identify the contracts and data paths needed before those claims can be made.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+RAG specifies evidence access, not provider retention or training policy. Check the deployed model/search services and their contracts, access controls, logs, caches and indexing copies. Propagate deletion through source tombstones, retrieval indexes and allowed caches, with a measured freshness bound. Test revoked access at retrieval and answer delivery. A stored source URI alone does not enforce any of these properties.
+
+**Rubric:**
+
+- Separates architecture from service guarantees.
+- Includes caches, derived stores and measurable deletion/access behavior.
+
+</details>
+
+</Quiz>
+
+<Quiz id="12">
+
+**Q12. Authority is not a rank score.** The customer’s live subscription row ranks second in SQL results, while an old policy page ranks first in both dense and lexical search. Would ordinary reciprocal-rank fusion settle which plan they currently have? Design the route and its evaluation.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+No: RRF combines relevance ranks, not factual authority. Route current-account-state queries to the authorized live account system, and use policy documents for explanations of plan rules. Validate identity and record freshness; do not let corroborating stale pages outvote the authoritative row. Label source-routing decisions separately from within-source recall and include ambiguous queries requiring clarification.
+
+**Rubric:**
+
+- Distinguishes authority from agreement among ranked lists.
+- Measures routing separately and preserves authorization/freshness.
+
+</details>
+
+</Quiz>
+
 ## Rapid-fire: Retrieval fundamentals
 
-These 17 questions stand on their own — you can study this section without reading anything above it. Each should take two to five minutes to answer out loud, and they are chosen because they get asked, not because they are interesting. If your answer to any of them does not end in a number you would measure, it is not finished.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Walk me through a RAG system** Describe the pipeline end to end in two phases, indexing and query time, naming every stage and what it produces. This is the near-universal opener, so it should come out clean and unprompted, and you should be able to say which stage you would build first.
 2. **What is hybrid search** Define dense and sparse retrieval, give one query type each one wins on and one it loses on, and explain reciprocal rank fusion well enough that someone could implement it from your description. Then say why you cannot simply add the two scores together.

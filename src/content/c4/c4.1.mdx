@@ -3,18 +3,16 @@ id: c4.1
 chapter: 4
 title: How agents actually work
 subtitle: The loop, the tool call, and the arithmetic that decides whether it survives production
-refs: []
-estimatedMinutes: 45
+estimatedMinutes: 60
 ---
 
 ## TL;DR
 
-An agent is a while-loop. Your code calls a model, the model returns either a final answer or a request to call a tool, your code executes the tool and appends the result, and you go around again. That is the entire mechanism. Everything people call "agentic" — ReAct, planning, memory, multi-agent — is a variation on where you put state and who decides what happens next.
+An agent is a while-loop. Your code calls a model, the model returns either a final answer or a request to call a tool, your code executes the tool and appends the result, and you go around again. That is the core control mechanism; perception, memory and coordination determine what information reaches it. Everything people call "agentic" — ReAct, planning, memory, multi-agent — is a variation on where you put state and who decides what happens next.
 
-One idea organizes the rest: **the model chooses the next action, and your orchestrator decides everything else.** Termination, budgets, retries, what goes into context, which side effects are allowed — all of that is deterministic code you write, not behavior you prompt for. That boundary is where systems assembled out of a framework come apart. The other half of the story is arithmetic: token cost grows quadratically in turn count, latency accumulates serially, and end-to-end success decays geometrically. Those three facts explain most production agent failures.
+One idea organizes the rest: **the model chooses the next action, and your orchestrator decides everything else.** Termination, budgets, retries, what goes into context, which side effects are allowed — all of that is deterministic code you write, not behavior you prompt for. That boundary is where systems assembled out of a framework come apart. The other half of the story is arithmetic: token cost grows quadratically in turn count, latency accumulates serially, and end-to-end success decays geometrically. Those three models expose important design pressures; their assumptions must be checked against actual traces.
 
 ## What you'll be able to do after this lesson
-
 - Write the agent loop from memory and name which line owns each failure mode.
 - Explain how a tool schema reaches the model and what shape the tool call comes back in.
 - Derive the total token cost of an $n$-turn loop and compute it for a real example.
@@ -23,6 +21,7 @@ One idea organizes the rest: **the model chooses the next action, and your orche
 - Choose between a single loop and a planner-executor, and say when planning is pure overhead.
 - Distinguish context window, scratchpad, and external memory, and design long-term memory that does not get polluted.
 - Give the honest answer on multi-agent, and the one-paragraph pitch for MCP.
+- Evaluate observation interfaces, shared user–agent state and recursive context access with controlled baselines.
 
 ## Part 1 — The loop, stripped
 
@@ -48,6 +47,10 @@ The model terminates by *choosing not to call a tool*. That is a soft signal —
 The no-progress detector is the one people forget. Hash `(tool_name, canonical_json(args))` on each call and keep a counter. Three identical calls in a row means the agent is stuck, not working — the tool is returning something the model does not know how to act on, and it is retrying by reflex. Break the loop and surface the state rather than burning the remaining budget.
 
 > **Stop and think.** The loop above appends every tool result to `messages` and never removes anything. What happens to the input token count on turn 12 versus turn 2, and is that growth linear or something worse? Hint: count what gets re-sent, not what gets added.
+
+<ResearchFlow variant="agent" />
+
+The planning, memory and action decomposition is developed in the surveys by [Wang et al. (2024)](https://arxiv.org/abs/2308.11432) and [Xi et al. (2025)](https://arxiv.org/abs/2309.07864), both first posted in 2023. A taxonomy helps locate a failure; it is not evidence that adding every component improves a system.
 
 ## Part 2 — Tool calling: how the schema goes in and the call comes back
 
@@ -77,6 +80,12 @@ The model does not execute anything. It emits a structured block naming a tool a
 
 **Second: schema-valid is not semantically valid.** Structured-output enforcement (constrained decoding against the schema) guarantees you get an integer for `amount_cents`. It does not guarantee the integer is the order total rather than the item price, or that the order is refundable at all. Enums and tight types buy you a lot — `reason` can never be a free-text hallucination — but the remaining errors are business-logic errors and belong in the tool, not the prompt. Validate inside `execute()`, and on failure return a `tool_result` marked as an error with a message the model can act on ("amount_cents 4999 exceeds order total 2999"). A failed tool call that returns a useful message is a recoverable turn; one that throws is a dead agent.
 
+### The observation interface is part of the agent
+
+**Goal — treat what the model can see as a design variable.** [SWE-agent](https://arxiv.org/abs/2405.15793) shows the importance of an agent-computer interface: file navigation, bounded search results, editing operations and feedback shape whether a model can complete repository tasks. A shell with enormous raw output and a structured file editor are different experimental systems, even with the same model.
+
+Suppose an edit introduces a syntax error. Returning the affected lines and a parser error gives the next step a repair target; returning a bare nonzero status with 20,000 unrelated log lines may hide it. Compare interfaces with the model, task set and budget held fixed. Track first successful edit, repair attempts and final tests, not just valid tool-call JSON.
+
 ## Part 3 — The arithmetic that decides everything
 
 **Goal: put numbers on the three quantities every agent design is priced in — tokens, seconds, and end-to-end success.**
@@ -95,13 +104,13 @@ $$
 T_{\text{in}} = 12(3000) + 700\cdot\frac{12 \cdot 11}{2} = 36{,}000 + 46{,}200 = 82{,}200
 $$
 
-The conversation itself only ever contained $12 \times 700 = 8400$ tokens of content. You paid for 82,200 because of the re-sends. At a mid-tier frontier model's 2026 list price of 3 USD per million input tokens, that is 0.247 USD per task in input alone, before output. Double the turns to 24 and the input cost roughly quadruples to 0.94 USD, because the growth is in $n^2$, not $n$.
+The 12 generated call/result increments total $12\times700=8400$ tokens, but the repeated inputs total 82,200. At an **illustrative** USD 3 per million input tokens, that is USD 0.2466 before output costs. At 24 turns, $24(3000)+700(24\times23/2)=265{,}200$ input tokens, or USD 0.7956: 3.23× the cost. Doubling approaches 4× only when the quadratic term dominates.
 
-Two levers follow mechanically from the formula. **Prompt caching** attacks $n\,p_0$: the fixed prefix is cached after the first turn and re-read at roughly a tenth of the price, since it is byte-identical each turn (which is exactly why you must not interpolate a timestamp into the system prompt). **Compaction and context editing** attack the $a\,n^2/2$ term: summarize or drop old tool results so the history stops growing linearly. Neither is optional at $n = 30$.
+Two levers follow from the formula. **Prefix caching** can reuse both the fixed instructions and a growing unchanged conversation prefix, depending on provider cache rules, minimum lengths and hit rates. It changes billed work and prefill, not the logical input-token count. **Compaction** changes what is resent by dropping or summarizing old observations. Evaluate the information lost during compaction and avoid changing the prefix unnecessarily; caching and compaction interact.
 
 ### Latency accumulates serially
 
-Turns are sequential by construction — turn $k+1$ cannot start until turn $k$'s observation exists. With model latency $\ell_m$ and tool latency $\ell_t$, total latency is $n(\ell_m + \ell_t)$. At $\ell_m = 1.8$ s and $\ell_t = 0.4$ s, a 12-turn task takes 26.4 seconds. There is no clever caching that fixes this. The only real lever is fewer turns: batch related work into one tool, run independent tool calls in parallel within a turn, and delete tools that exist to fetch something you could have put in the prompt.
+Turns are sequential by construction — turn $k+1$ cannot start until turn $k$'s observation exists. With model latency $\ell_m$ and tool latency $\ell_t$, total latency is $n(\ell_m + \ell_t)$. At $\ell_m = 1.8$ s and $\ell_t = 0.4$ s, a 12-turn task takes 26.4 seconds. Caching can reduce model latency, but it does not remove the dependency between turns. A structural lever is fewer serial decisions: batch related work into one tool, run independent tool calls in parallel within a turn, and delete tools that exist to fetch something you could have put in the prompt.
 
 ### Reliability decays geometrically
 
@@ -111,7 +120,7 @@ $$
 0.95^{10} = 0.599, \qquad 0.95^{20} = 0.358
 $$
 
-A 95% step reliability — which sounds excellent — gives you a 40% failure rate on a 10-step task. Invert it: to hit 90% end-to-end over 10 steps you need $p = 0.9^{1/10} = 0.9895$, so 99% per step. **This is the single most useful number in agent design**, because it reframes every architecture decision as "how do I reduce $n$, or raise $p$." Shortening the trajectory raises end-to-end success more cheaply than any prompt tweak. So does making steps recoverable: a step that fails, returns a legible error, and is retried successfully is not a failed step, which is why error-returning tools change the exponent's base.
+A 95% step reliability — which sounds excellent — gives you a 40% failure rate on a 10-step task. Invert it: to hit 90% end-to-end over 10 steps you need $p = 0.9^{1/10} = 0.9895$, so 99% per step. **This is an illustrative independence model, not a forecast of measured completion**, because it reframes every architecture decision as "how do I reduce $n$, or raise $p$." Shortening the trajectory raises end-to-end success more cheaply than any prompt tweak. So does making steps recoverable: a step that fails, returns a legible error, and is retried successfully is not a failed step, which is why error-returning tools change the exponent's base.
 
 ## Part 4 — ReAct, and what it actually contributed
 
@@ -119,7 +128,7 @@ A 95% step reliability — which sounds excellent — gives you a 40% failure ra
 
 Reasoning and acting are two different things a model can put in a trace, and the productive move is to alternate them: the model writes a thought, takes an action, observes the result, and repeats, with each observation feeding the next thought. That interleaving is ReAct (Yao et al., 2022). Its contribution was showing that neither half works alone — chain-of-thought reasoning, meaning the model writes out its intermediate steps before answering, hallucinates facts it cannot check when it has no actions available, and action-only prompting has no mechanism for deciding what to do next when the plan needs revising. Interleaving lets the trace be corrected by contact with the environment.
 
-The honest part is that the loop in Part 1 *is* ReAct. Native tool calling absorbed the pattern: the model's internal reasoning plays the role of the "Thought" line, the tool call is "Action", and the appended tool result is "Observation". You do not implement the paper's text format anymore, and you should not claim to. Say what it contributed, add that it is now the default loop shape, and move on. Its benchmark results are not the part that matters.
+The honest part is that the loop in Part 1 *is* ReAct. Native tool calling absorbed the pattern: the model's internal reasoning plays the role of the "Thought" line, the tool call is "Action", and the appended tool result is "Observation". Native tool APIs can implement this interaction pattern without reproducing the paper’s textual Thought/Action format. Log actions, observations and concise decision records; do not assume that visible reasoning text is a faithful explanation of the model’s internal computation.
 
 ## Part 5 — Planning: when it pays and when it is overhead
 
@@ -127,11 +136,13 @@ The honest part is that the loop in Part 1 *is* ReAct. Native tool calling absor
 
 A **single loop** decides one step at a time, with full knowledge of every observation so far. A **planner-executor** produces a full plan up front, then executes the steps, then optionally replans.
 
-Planning up front buys you three things. You can *show the plan to a human before anything executes*, which is the only clean approval point in an autonomous workflow. You can *parallelize* independent steps because you know in advance that they do not depend on each other. And you can *estimate the budget* before spending it. Those are real, and they are why planner-executor dominates in long-horizon, high-blast-radius workflows.
+Planning up front buys you three things. You can *show the plan to a human before anything executes*, and place any required approval before the relevant side effect. You can *parallelize* independent steps because you know in advance that they do not depend on each other. And you can *estimate the budget* before spending it. Those are real, and they are why planner-executor dominates in long-horizon, high-blast-radius workflows.
 
-Planning costs you adaptivity. A plan written at step 0 was written with the least information you will ever have. If step 1's result invalidates steps 2 through 6, you have paid for a plan you must now throw away — and a naive executor will march through the stale steps anyway. So the rule: **plan when steps are independent or the horizon is long enough that drift is the main risk; skip planning when each step's result determines the next.** For a three-step task, planning is pure overhead — an extra model call and an extra thousand tokens to produce something the loop would have discovered for free.
+Planning costs you adaptivity. A plan written at step 0 was written with the least information you will ever have. If step 1's result invalidates steps 2 through 6, you have paid for a plan you must now throw away — and a naive executor will march through the stale steps anyway. So the rule: **plan when steps are independent or the horizon is long enough that drift is the main risk; skip planning when each step's result determines the next.** For a short, predictable task, an additional planning call may buy too little to justify its tokens and latency; test that against the risk of an omitted dependency.
 
 Replanning is the middle ground: keep the plan, but re-derive it whenever an observation contradicts an assumption the plan rested on. Trigger it explicitly (a step failed, a precondition turned out false, the budget forecast blew out), not on every turn, or you have paid for planning and gotten a single loop.
+
+[Agentless](https://arxiv.org/abs/2407.01489) (2024) provides a concrete reason to keep a simple baseline: a structured localization, repair and validation pipeline was competitive on its evaluated software tasks without a fully autonomous loop. That is a historical, benchmark-specific comparison. On your workload, compare a fixed workflow, a single agent and a planner at matched model, tool access, token budget and latency limits.
 
 ## Part 6 — Memory: three places state can live
 
@@ -145,19 +156,31 @@ Replanning is the middle ground: keep the plan, but re-derive it whenever an obs
 
 Long-term memory pollutes in a specific, predictable way: the agent writes a wrong inference once, retrieves it later as established fact, reasons from it, and writes a second wrong fact downstream. The defenses are all about the write path, not the read path. **Gate writes** — only persist facts a user confirmed or a tool verified, never the model's unverified inference. **Store provenance and timestamps** so a later reader can tell a confirmed fact from a guess. **Deduplicate on write** — update the existing note rather than appending a contradicting one. **Decay**, so stale preferences expire instead of accumulating. And keep a read path that lets you show a user what is stored and delete it.
 
-## Part 7 — Multi-agent, and the answer that reads as senior
+### External context can be a program input
 
-**Goal: know when the correct answer is "no."**
+**Goal — explain recursive context access without claiming unlimited memory or reasoning.** [Recursive Language Models](https://arxiv.org/abs/2512.24601), first posted on 31 December 2025 and revised in 2026, places long context in an external environment the model can inspect programmatically and query through recursive model calls. This changes the access strategy rather than enlarging each invocation's context window. Track what spans were inspected, cap recursive depth and total tokens, and preserve evidence pointers: decomposition can miss a cross-part dependency or lose it in a summary. Contrast this editable/external memory with Engram's architectural lookup memory in [c3.2](/c/c3/c3.2).
 
-A multi-agent system is one agent calling others as tools, or an orchestrator handing sub-tasks to specialized workers. The genuine reason to do it is **context isolation**: a sub-agent that reads forty files reports back a two-paragraph summary, so the orchestrator's context absorbs 400 tokens instead of 40,000. That is a real win, and it is the only argument that survives scrutiny.
+## Part 7 — Multi-agent: measure what the extra agents buy
 
-The costs are concrete. Each sub-agent re-establishes its own context from scratch, so you pay the fixed prefix $p_0$ once per agent instead of once per task. Anthropic's published write-up of its multi-agent research system reported roughly 15× the token usage of a plain chat interaction — that order of magnitude is the number to have in your head. Then apply Part 3's reliability arithmetic: coordination adds steps, and each handoff is a lossy translation where the sub-agent lacks context the orchestrator never thought to pass.
+**Goal — separate useful parallel work from coordination overhead.** A multi-agent system delegates work to other model-controlled loops. Three plausible benefits are **parallelism**, **context isolation**, and **complementary evidence or skills**. None follows merely from increasing agent count.
 
-So the answer is subtractive: **default to a single agent; go multi-agent only when the sub-tasks are genuinely separable, read-heavy, and parallelizable.** Research fan-out qualifies. A five-step customer-support flow does not — splitting it into "intent agent", "lookup agent" and "response agent" is a pipeline you could have written as three function calls, now with a language model between each pair and a new class of failure where one link's output does not parse.
+For an illustrative four-part research task, four independent 4-second searches take 16 seconds serially, or about 4 seconds plus 2 seconds to combine results when run in parallel. If each search needs the previous result, the dependency chain still takes 16 seconds and coordination adds delay. Repeated prefixes, worker traces and synthesis also consume tokens; isolated contexts help only if summaries preserve the evidence needed by the parent.
+
+<ResearchBars variant="parallel" />
+
+The controlled study [Towards a Science of Scaling Agent Systems](https://arxiv.org/abs/2512.08296) (December 2025) finds task- and topology-dependent gains, including regressions on sequential work. Its empirical thresholds belong to its tested configurations. The February 2026 preprint [Understanding Agent Scaling via Diversity](https://arxiv.org/abs/2602.03794) finds that correlated homogeneous agents saturate sooner than configurations bringing complementary information. Different role names alone do not demonstrate independent evidence.
+
+Keep a single-agent baseline. Hold total compute and tool access fixed, then measure success, critical-path latency, token cost and first handoff failure. A second agent earns its place when those measurements improve the intended tradeoff, rather than when a diagram looks more sophisticated.
 
 ## Part 8 — MCP, in one paragraph
 
 Without a shared convention, every agent framework writes its own connector to every system it touches: with $n$ agent frameworks and $m$ systems that is $n \times m$ integrations, so ten of each means a hundred. A shared protocol collapses it — each system ships one server, each agent ships one client, ten plus ten. MCP (Model Context Protocol, introduced by Anthropic in November 2024) is that protocol: an open standard for exposing tools and data sources to models over a uniform interface. That is the whole pitch. Know that it makes integrations portable, know that it does not change anything about the loop in Part 1, and do not memorize the transport layer.
+
+## Part 9 — Users and agents can change the same world
+
+**Goal — distinguish a coordination mistake from a tool or perception failure.** [tau2-bench](https://arxiv.org/abs/2506.07982) (2025) models a user and an agent acting in a shared environment. In a support scenario, the agent changes an account setting while the user resets a device. The next diagnostic step must check both outcomes: “I sent the instruction” is not evidence that the reset happened. Use observable state, acknowledgments and preconditions before continuing.
+
+[OSWorld](https://arxiv.org/abs/2404.07972) (2024) adds another distinction for computer-use agents: a click can be well formed but aimed at the wrong visible control. Label failures separately as **perception/grounding** (wrong control), **action execution** (correct target, operation failed), or **coordination** (user and agent acted on incompatible state). Final-state checks and step traces make those diagnoses possible. See [c4.2](/c/c4/c4.2) for repeated-run evaluation.
 
 ## Tradeoff matrix
 
@@ -189,12 +212,22 @@ Without a shared convention, every agent framework writes its own connector to e
 - **"Your agent picks the wrong tool among many."** Diagnose before fixing: log the chosen tool and args on every call, and look at whether the *right* tool is even plausible from its description. Usually it is a description overlap. Then narrow descriptions with trigger conditions, merge near-duplicates, and if the catalog is large, retrieve schemas per request instead of loading all of them.
 - **"Right tool, wrong arguments."** Tighten the schema first (enums, required fields, formats in descriptions) and turn on structured-output enforcement. Then validate semantics inside the tool and return an actionable error so the model can correct on the next turn. Add a couple of example calls to the description if the argument shape is unusual.
 - **"When is an agent the wrong solution?"** When the steps are known in advance. If you can draw the flowchart, write the flowchart — you get determinism, lower cost, lower latency, and a debuggable stack trace. The refusal is the answer, not a caveat.
-- **"When do you go multi-agent?"** Default single. Go multi only for separable, read-heavy, parallelizable sub-tasks where context isolation is the actual win — and price it, since it can cost an order of magnitude more tokens.
-- **"Explain ReAct."** Reason, act, observe, repeat, with observations feeding the next reasoning step; its contribution was showing reasoning and acting fail separately. Native tool calling has absorbed it, and it is now just the default loop.
-- **"Planner-executor or single loop?"** Plan when steps are independent, the horizon is long, or a human must approve before execution. Single loop when each observation determines the next step. Replan on contradiction, not on every turn.
-- **"How do you keep long-term memory clean?"** Gate the write path: persist only verified or user-confirmed facts, attach provenance and timestamps, deduplicate on write, decay old entries, and give the user a way to inspect and delete.
-- **"What is MCP?"** A uniform protocol for exposing tools and data to models, so integrations are $n+m$ instead of $n \times m$. One paragraph, then stop.
+- **"When do you go multi-agent?"** Compare a single-agent baseline with separable parallel work, context isolation or complementary evidence. Measure success and latency at matched total budgets; extra coordination and correlated errors can negate the gain.
 
 ## Take the quiz
 
 **[Take the quiz →](/c/c4/c4.1/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Wang et al. (2024 journal; 2023 preprint), [A Survey on Large Language Model based Autonomous Agents](https://arxiv.org/abs/2308.11432); Xi et al. (2025 journal; 2023 preprint), [The Rise and Potential of Large Language Model Based Agents](https://arxiv.org/abs/2309.07864).
+- Yao et al. (2022 preprint; ICLR 2023), [ReAct](https://arxiv.org/abs/2210.03629).
+- Yang et al. (2024), [SWE-agent](https://arxiv.org/abs/2405.15793); Xia et al. (2024), [Agentless](https://arxiv.org/abs/2407.01489).
+- Xie et al. (2024), [OSWorld](https://arxiv.org/abs/2404.07972); Barres et al. (2025), [tau2-bench](https://arxiv.org/abs/2506.07982).
+- [Towards a Science of Scaling Agent Systems](https://arxiv.org/abs/2512.08296) (December 2025 preprint); Yang et al. (February 2026 preprint), [Understanding Agent Scaling in LLM-Based Multi-Agent Systems via Diversity](https://arxiv.org/abs/2602.03794).
+- Zhang et al. (December 2025 preprint; revised 2026), [Recursive Language Models](https://arxiv.org/abs/2512.24601).

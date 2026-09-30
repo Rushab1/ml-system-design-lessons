@@ -48,9 +48,9 @@ export default async function HomePage() {
             Machine Learning System Design
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            Staff+ lessons synthesized from each chapter&apos;s references. Every
-            lesson is a ~30-minute deep read for a senior engineer — math from
-            first principles, with click-to-expand deep dives.
+            Lessons on machine learning, AI systems and quantitative research,
+            with first-principles derivations, worked examples and paired quizzes.
+            Each lesson lists its estimated reading time.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
@@ -68,7 +68,7 @@ export default async function HomePage() {
             )}
             <span className="inline-flex items-center gap-2">
               <span className="size-1 rounded-full bg-border" />
-              Interview-ready depth
+              Derivations and worked examples
             </span>
           </div>
         </div>

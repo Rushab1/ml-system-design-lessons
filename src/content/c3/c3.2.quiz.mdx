@@ -2,11 +2,11 @@
 lessonId: c3.2
 chapter: 3
 title: Quiz — What changed since the original paper
-description: Eight hard questions on pre-norm, RMSNorm, RoPE and context extension, SwiGLU, GQA/MQA cache arithmetic, MoE economics, FlashAttention, and tokenization.
-estimatedMinutes: 45
+description: Twelve worked questions on KV-cache designs, sparse models, attention kernels and gated feed-forward layers.
+estimatedMinutes: 75
 ---
 
-These eight questions test whether each architectural edit is load-bearing for you, not whether you can list it. Almost every one ends in arithmetic, because that is where the interview follow-up goes. Answer out loud first, including the number, and only then open the model answer.
+Apply the derivations in [the lesson](/c/c3/c3.2) to KV-cache designs, sparse models, attention kernels and gated feed-forward layers. Try each question before revealing its worked answer. Numerical scenarios are illustrative unless a source is named.
 
 <Quiz id="1">
 
@@ -142,16 +142,16 @@ GQA-8: divide by 8, about **33 GB**. MQA: divide by 64, about **4.1 GB**.
 
 The headline comparison to make out loud: under MHA, one user's cache at 100K is nearly twice the size of the entire 140 GB model.
 
-**(c)** 640 GB minus 140 GB of weights leaves roughly 500 GB, and in practice less after activations, fragmentation and workspace. MHA gives you one concurrent 100K request, and not comfortably. GQA-8 gives you about fifteen. MQA would give you over a hundred if quality held. That is the entire argument for why every 70B-plus model since Llama 2 uses GQA, and it is why the question is always asked as "how much does it save," never "what is it."
+**(c)** 640 GB minus 140 GB of weights leaves roughly 500 GB before activations, fragmentation and workspace. The cache arithmetic allows roughly one concurrent 100K request with MHA, fifteen with GQA-8, or over a hundred with MQA, subject to those other allocations. GQA trades fewer KV heads for higher concurrency while keeping all query heads. MLA pursues cache compression through a latent representation instead; neither design is a universal choice for large models.
 
-**(d)** You give up representational diversity in keys and values: fewer distinct subspaces for the attention pattern to use. MQA measurably degrades quality and is less stable to train. GQA at 8 groups captures nearly the full memory saving at close to no quality cost, which is the empirical reason 8 became the default. If Multi-head Latent Attention comes up, one sentence: DeepSeek compresses KV into a low-rank latent rather than sharing heads. Same goal, different mechanism.
+**(d)** Sharing KV projections reduces the number of distinct key/value subspaces. The effect on quality depends on architecture, training and the number of groups, so compare matched evaluations across MHA, GQA and MQA. MLA instead compresses KV information into a latent state, as derived in Q9; its cache savings have different architectural and implementation requirements.
 
 **Rubric:**
 - `n_kv_heads` vs `n_heads` stated crisply, GQA defined as sharing KV across query-head groups
 - Formula written with the factor of 2 and per-layer term
 - 262 GB / 33 GB / 4 GB computed, with the comparison to 140 GB of weights
 - Converts to concurrency on a real node
-- Names the quality tradeoff and why 8 is the sweet spot
+- Explains the quality tradeoff without treating eight KV groups as a universal optimum
 
 </details>
 
@@ -159,7 +159,7 @@ The headline comparison to make out loud: under MHA, one user's cache at 100K is
 
 <Quiz id="5">
 
-**Q5. Why is the FFN width 11008?** Llama-family model cards list feed-forward widths like 11008 and 14336 rather than $4d$. (a) Write the original FFN and the SwiGLU replacement, and say what the gate buys. (b) Derive the $\frac83$ rule and show it produces 11008 for $d = 4096$. (c) Why is this a satisfying interview answer even though nobody asks it directly very often?
+**Q5. Why is the FFN width 11008?** Consider a model with width $d=4096$ and an FFN dimension rounded upward to a multiple of 256. (a) Write the original FFN and the SwiGLU replacement, and say what the gate buys. (b) Derive the $\frac83$ rule for matching parameter counts. (c) Compute the rounded dimension and its parameter overhead, ignoring biases.
 
 <details>
 <summary>Model answer + rubric</summary>
@@ -178,9 +178,9 @@ $$
 3 d\, d_{ff} = 8d^2 \implies d_{ff} = \tfrac{8}{3} d
 $$
 
-For $d = 4096$: $\frac83 \times 4096 = 10922.7$, and Llama ships 11008, the nearest multiple of 256 for kernel and tensor-parallel alignment. Without the parameter match you would be adding 50% to the FFN, which dominates the parameter count in a transformer, and any quality gain would be confounded with the extra capacity.
+For $d = 4096$: $\frac83 \times 4096 = 10922.7$, and Llama ships 11008, the next multiple of 256 under the stated alignment rule. Without the parameter match you would be adding 50% to the FFN, which dominates the parameter count in a transformer, and any quality gain would be confounded with the extra capacity.
 
-**(c)** Because it demonstrates the habit interviewers are actually testing: you saw a strange number on a model card and reconstructed the constraint that produced it. The same move is what makes the KV-cache and MoE answers land. Nobody wants the trivia; they want to see that architectural choices resolve into arithmetic for you.
+**(c)** The unrounded dimension is $10922.\overline{6}$. Rounding upward gives $256\lceil10922.\overline{6}/256\rceil=11008$. The SwiGLU block then has $3\times4096\times11008=135{,}266{,}304$ parameters, compared with $8\times4096^2=134{,}217{,}728$ for the original FFN. The extra $1{,}048{,}576$ parameters are a $0.78125\%$ overhead. Alignment therefore slightly relaxes the parameter match.
 
 **Rubric:**
 - Writes both forms, notes three matrices instead of two
@@ -201,9 +201,9 @@ For $d = 4096$: $\frac83 \times 4096 = 10922.7$, and Llama ships 11008, the near
 
 **(a)** Replace the single FFN in a block with $E$ parallel FFNs plus a router, a small linear layer producing $E$ logits. Take the top $k$ (usually 2), softmax over just those $k$ scores, run the token through those experts, and sum their outputs weighted by the normalized scores. Routing is **per token per layer**, not per sequence: the same sentence uses different experts at different depths, and adjacent tokens routinely take different experts.
 
-**(b)** Total parameters and per-token FLOPs decouple. A forward pass costs roughly $2N$ FLOPs per token when $N$ parameters are active, so Mixtral costs like a 13B model per token and stores like a 47B one, roughly a 3.6x FLOP saving. In fp16 that is about 94 GB of weights you must hold resident, versus 26 GB for the dense 13B whose speed you are getting.
+**(b)** Total parameters and per-token FLOPs decouple. A forward pass costs roughly $2N$ FLOPs per token when $N$ parameters are active, so Mixtral costs like a 13B model per token and stores like a 47B one, roughly a 3.6x FLOP saving. In fp16 that is about 94 GB of weights you must hold resident, versus 26 GB for the dense 13B whose active arithmetic is comparable, without a guarantee of matching its speed.
 
-So: **MoE buys compute, not memory.** Every expert has to be in VRAM because you cannot predict which tokens will need which. It changes your GPU count, not your per-token latency. Candidates get this backwards constantly, usually by saying MoE "makes the model smaller."
+Sparse activation lowers per-token arithmetic while total weights remain large. Expert offloading can reduce residency at the cost of transfers. Achieved latency also depends on expert utilization, routing imbalance and communication; it is not guaranteed to match a dense 13B model.
 
 **(c) Expert collapse.** The router is trained jointly with the experts, so an expert picked slightly more often early gets more gradient, gets better, and is picked more. Left alone, routing concentrates on a few overloaded experts and the rest become dead parameters. The auxiliary loss:
 
@@ -213,7 +213,7 @@ $$
 
 where $\alpha$ is a small coefficient scaling the term, $E$ is the number of experts, $f_i$ is the fraction of batch tokens routed to expert $i$, and $P_i$ is the mean router probability for expert $i$ over that batch. The product is minimized when both are uniform. Using $P_i$ rather than $f_i$ alone keeps the term differentiable, since $f_i$ comes from a hard top-$k$ selection. Implementations also set a **capacity factor**, a hard cap on tokens per expert per batch; tokens over the cap are dropped and their residual passes through unchanged. Newer models bias the router logits based on recent load instead of adding a loss, which avoids the auxiliary gradient perturbing quality.
 
-**(d)** First, **memory-constrained serving**: if you are fitting a model onto a fixed GPU budget, MoE gives you the worst of it, since you pay full VRAM for the total parameter count. Second, **large-batch throughput serving**: at high batch a single layer's tokens collectively touch most experts anyway, so the FLOP saving erodes while you still move many expert weight matrices per step. MoE's advantage is sharpest at low-to-moderate batch where per-token FLOPs dominate.
+**(d)** A dense model can win when its quality is competitive and its smaller total weights fit a memory budget the MoE exceeds. It can also win when expert dispatch, imbalance or inter-device communication dominates. A large batch touching every expert does **not** erase per-token sparsity: each token still activates k experts. Larger batches may improve matrix utilization; measure throughput and latency rather than inferring them from active parameters alone.
 
 **Rubric:**
 - Routing described per token per layer, with top-$k$ then softmax over selected scores
@@ -239,7 +239,7 @@ where $\alpha$ is a small coefficient scaling the term, $E$ is the number of exp
 
 **(c)** FlashAttention tiles $Q$, $K$ and $V$ into blocks sized to fit in SRAM and never materializes $S$. For a block of queries it walks over key blocks, maintaining a running maximum $m$ of that row's scores so far (a different $m$ from the RoPE position index), a running softmax denominator $\ell$, and a running output accumulator. When a new block raises the maximum from $m$ to $m'$, the accumulated numerator and denominator are multiplied by $e^{m-m'}$ before the new block's contribution is added: everything accumulated so far was exponentiated against the old maximum, and that one factor re-bases it to the new one. This is exactly the online-softmax identity. At the end you have the same weighted sum you would have gotten from the full matrix. The backward pass recomputes tiles from the stored $m$ and $\ell$ instead of reading back a saved attention matrix.
 
-**(d)** It is **exact**, not an approximation: same values up to floating-point associativity, not a sparse or low-rank stand-in for softmax attention. And it does **not reduce FLOPs**; it slightly increases them, because the backward recomputes. What it reduces is HBM traffic, from $O(n^2)$ to roughly $O(n^2 d/M)$ with $d$ the head dimension and $M$ the SRAM size, and peak memory from $O(n^2)$ to $O(n)$. Two to four times faster on typical shapes, and the memory change is what makes long context feasible at all.
+**(d)** It is **exact**, not an approximation: same values up to floating-point associativity, not a sparse or low-rank stand-in for softmax attention. And it does **not reduce FLOPs**; it slightly increases them, because the backward recomputes. What it reduces is HBM traffic, from $O(n^2)$ to roughly $O(n^2 d^2/M)$ with $d$ the head dimension and $M$ the SRAM size, and peak memory from $O(n^2)$ to $O(n)$. Two to four times faster on typical shapes, and the memory change is what makes long context feasible at all.
 
 **(e)** Because it reorders floating-point accumulation, outputs are not bit-identical to the naive kernel. Regression tests that assert exact logit equality across kernel or library versions start failing, and that is not a bug. Sampling at temperature can then diverge into a visibly different completion from a tiny last-bit difference, which reads as a model change to whoever is looking at the output.
 
@@ -280,10 +280,80 @@ where $\alpha$ is a small coefficient scaling the term, $E$ is the number of exp
 
 </Quiz>
 
+<Quiz id="9">
+
+**Q9. Derive an MLA allocation.** An ideal compressed MLA cache has 48 layers, latent width 384, positional-key width 64, batch 2, context 32,000 and 2-byte elements. Compute its bytes and compare GQA with eight KV heads of width 128. Name a serving implementation that invalidates the ideal bound.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+MLA stores $48\times32{,}000\times2\times(384+64)\times2=2{,}752{,}512{,}000$ bytes, about 2.75 GB. GQA stores $2\times48\times8\times128\times32{,}000\times2\times2=12{,}582{,}912{,}000$ bytes, about 12.58 GB: 4.57× as much. Persistently materializing expanded K/V, replicating state across devices or padding allocations changes the comparison. This is memory arithmetic, not a quality comparison.
+
+**Rubric:**
+
+- Uses latent plus positional width without a second full K/V factor.
+- Gets both allocations and names a concrete implementation caveat.
+
+</details>
+
+</Quiz>
+
+<Quiz id="10">
+
+**Q10. Dense, sparse and recurrent.** A model swaps half its attention layers for Mamba-2 layers; another uses Native Sparse Attention; a third only changes to FlashAttention. Predict which state or computation changes and design a fair comparison.
+
+<details>
+<summary>Model answer + rubric</summary>
+
+The hybrid removes the token cache for its recurrent layers but retains context-growing KV in its attention layers. Native Sparse Attention combines compression, selected blocks and local attention, changing what is attended to; bounded cache storage does not follow from sparsity alone. FlashAttention changes IO and scheduling for dense attention. Compare quality, actual state bytes and latency at matched hardware, dtype, context and batch; include tasks requiring distant exact evidence.
+
+**Rubric:**
+
+- Distinguishes model changes from a dense kernel change.
+- Recognizes remaining hybrid KV growth and measures evidence retrieval.
+
+</details>
+
+</Quiz>
+
+<Quiz id="11">
+
+**Q11. Explain V3 without a parameter-count shortcut.** A teammate attributes all V3 efficiency to 37B active parameters. Separate router balancing, FP8 training and multi-token prediction from that explanation. Does a batch visiting all experts remove sparse arithmetic?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Active parameters approximate selected arithmetic. Router-bias balancing addresses uneven expert load; V3 also retains a sequence-wise auxiliary term. FP8 mixed-precision training changes supported arithmetic/storage during training. Multi-token prediction is a training objective and can assist drafting, but does not itself prove speculative samples preserve a target distribution. A batch visiting all experts still routes each token to only selected experts; dispatch and memory traffic determine realized speed.
+
+**Rubric:**
+
+- Names all three distinct mechanisms.
+- Preserves per-token sparsity and distinguishes MTP from verification.
+
+</details>
+
+</Quiz>
+
+<Quiz id="12">
+
+**Q12. Read a new architecture claim carefully.** Classify Engram, mHC and FlashAttention-4 by the mechanism changed. Which are new 2026 papers, and what evidence would justify adopting each?
+
+<details>
+<summary>Model answer + rubric</summary>
+
+Engram adds conditional lookup memory for local patterns; it is not document retrieval or an editable agent note. mHC constrains mixing of expanded residual streams. It first appeared in December 2025, with a January 2026 revision. FlashAttention-4 is a March 2026 kernel study targeting Blackwell’s shifting compute, softmax and memory bottlenecks. Engram first appeared in January 2026. Require matched-quality, matched-resource experiments and deployment-specific benchmarks; publication date or a peak kernel speedup alone is insufficient.
+
+**Rubric:**
+
+- Correctly locates the three changes and distinguishes first publication from revision.
+- Requests relevant quality, stability and end-to-end measurements.
+
+</details>
+
+</Quiz>
+
 ## Rapid-fire: What changed since the original paper
 
-These 16 questions stand on their own, so you can study this section without reading anything above it. Each should take two to five minutes to answer out loud, and most of them expect a number somewhere in the answer. They are chosen for how often they get asked, not for how interesting they are.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **The diff since 2017** Walk me through what a 2026 production LLM changed relative to the original Transformer paper. Give the edits in order of how much serving cost they touch, and for each one say what constraint forced it rather than just naming it.
 2. **RoPE over the alternatives** Why did rotary embeddings replace learned and sinusoidal absolute position encodings? Give the algebraic property that makes RoPE relative, and say why learned tables fail past the training length in a different way than sinusoids do.

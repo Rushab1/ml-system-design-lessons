@@ -33,7 +33,7 @@ A classification loss is the **same maximum-likelihood story as regression**, sp
 
 ## Why losses come before models
 
-Open any notebook. In Chapter 1 of every ML course (and most production code), the first piece of code anyone writes is `model.fit(X, y)`. Nobody stops to ask what `.fit` is minimizing. The choice of *what `.fit` is actually optimizing* — the loss function — usually defaults to whatever the library picked. That default is the wrong answer twice:
+A library's default loss need not match the deployment objective. Before calling `model.fit(X, y)`, identify what it minimizes and which assumptions justify that objective:
 
 1. **The loss is the spec.** It's the formal statement of what "good predictions" means. Two models with the same architecture trained with different losses are different functions of the data.
 2. **The loss encodes assumptions about the noise.** When the noise model is wrong, the "optimal" model is the wrong model — and the failure modes (sensitivity to outliers, biased predictions, training instability) follow directly from the mismatch.
@@ -436,7 +436,7 @@ $\log \text{softmax}(z)_k = z_k - \operatorname{logsumexp}(z)$, and $\operatorna
 
 ### Why CE beats MSE for classification — two arguments
 
-You could put squared error on top of a sigmoid. It's a valid function, it's differentiable, it has a minimum in the right place. Nobody does, for two reasons.
+Squared error on sigmoid probabilities is a valid, differentiable loss. Cross-entropy has two advantages in the setup below: its likelihood interpretation and its gradient with respect to the logit.
 
 **1. Vanishing gradients.** With sigmoid + squared error, $\mathcal{L} = \tfrac12(\sigma(z) - y)^2$ gives $\partial \mathcal{L}/\partial z = (\sigma(z) - y)\,\sigma'(z)$, and $\sigma'(z) = \sigma(1-\sigma) \to 0$ when the unit saturates. That extra $\sigma'(z)$ factor is the one that cancelled away under CE. Now watch what it does. A **confidently wrong** example ($z = -10$, $y = 1$) has gradient magnitude $\approx e^{-10} \approx 4.5\times 10^{-5}$ — the model that most needs to learn barely moves. Cross-entropy's gradient is $\sigma(z) - y \to -1$ in that same situation: maximal push exactly when most wrong. Same example, same wrongness; one loss shrugs and the other shoves.
 
@@ -458,7 +458,7 @@ Hold $x$ fixed and ask which constant forecast $q$ minimizes the expected loss $
 
 If CE's minimizer is the truth, why do trained networks lie?
 
-## Calibration: the part everyone skips
+## Calibration: interpreting predicted probabilities
 
 > **Goal — judge a classifier the way a quant does: the argmax has to be right, and the 0.9 has to really be a 0.9.**
 
@@ -722,7 +722,7 @@ These are the shapes the mistakes actually take once code is running. Most of th
 
 - **"Why cross-entropy and not MSE for classification?"** — the gradient-saturation argument *and* the convexity argument. Bonus: CE is the MLE / a proper scoring rule.
 - **"Derive the softmax–CE gradient."** — $q - y$; be ready to show the Jacobian cancellation.
-- **"Is your model calibrated, and how would you check/fix it?"** — reliability diagram + ECE; temperature scaling (and that it doesn't change accuracy). This separates strong candidates.
+- **"Is your model calibrated, and how would you check/fix it?"** — reliability diagram + ECE; temperature scaling, which preserves the predicted class under a shared positive temperature.
 - **"What does $\gamma$ do in focal loss, and does focal only help with imbalance?"** — down-weights easy examples; **no** — Mukhoti et al. (2020) show it improves *calibration* on balanced data, because it implicitly regularizes confidence.
 - **"You have a click loss and a watch-time loss. How do you weight them?"** — the answer that scores is refusing the premise. Give the units argument ($\beta$ is nats per minute squared, so a minutes-to-seconds relabel moves the gradient by $60^2 = 3600$), then propose separate calibrated heads on a shared trunk with an expected-value formula at serving time. Be ready for the pushback on gradient interference, label delay, and testing the serving formula, and be able to say why GradNorm and uncertainty weighting are optimization tools rather than a place to put business preferences.
 - **"Reweighting vs. resampling vs. just fixing the classifier?"** — name the decoupling result: Kang et al. (2020) found imbalance barely hurts representation learning; retraining only the classifier (cRT / $\tau$-normalization) beats elaborate reweighted losses on long-tail benchmarks. Menon et al. (2021) **logit adjustment** — predict with $z_y + \log \pi_y$, where $\pi_y$ is class $y$'s base rate in the training data — is the Bayes-consistent, theoretically-grounded alternative to heuristic reweighting. The sophisticated answer is that the loss is often *not* the best lever.

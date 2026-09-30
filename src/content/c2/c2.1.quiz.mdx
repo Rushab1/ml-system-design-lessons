@@ -332,9 +332,6 @@ Why the loss plateaus rather than diverging: the surviving units compensate as f
 
 ## Rapid-fire: neural networks and backpropagation
 
-These 15 questions stand alone. Each should take two to five minutes to answer out loud, and they are picked for how often they get asked, not for how interesting they are. Several are ML-coding prompts where the graded content is shapes and numerical stability, so say the shapes out loud as you write.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
 1. **Backprop in NumPy** Write the forward and backward pass for a 2-layer MLP with ReLU, softmax and cross-entropy, vectorized, no frameworks. Annotate every line with its shape, and say where you divide by the batch size and why exactly once.
 2. **Softmax and cross-entropy** Why do these two get paired? Derive the gradient at the logits, and separately say what you must do to the logits before exponentiating and what breaks in production if you skip it.
 3. **How do you prevent vanishing or exploding gradients** Give the full remedy set in order, then say which of them treat the symptom and which fix the underlying conditioning. Be ready for the interviewer to say "and?" after you mention clipping.

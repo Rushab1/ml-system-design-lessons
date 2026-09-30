@@ -196,9 +196,6 @@ What I would actually do: **pre-register one primary metric** and one primary sl
 
 ## Rapid-fire: statistical rigor in evals
 
-These 17 questions stand alone. Each should take 2 to 5 minutes to answer out loud. They are chosen for how often they come up when someone has to defend an eval result.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
 1. **Two points on a hundred items.** Model B scores 72% against A's 70% on 100 shared eval items and your teammate wants to ship. Compute the interval on that gap and say what you actually know. What is the smallest difference a 100-item set can resolve?
 2. **How many examples.** Derive the sample size needed for a $\pm w$ confidence interval on a pass rate, and give the pocket version when you have no prior on $p$. Roughly how many items for 1% precision, and for 3%?
 3. **Paired beats unpaired.** You ran both models on the same items. Explain what pairing cancels, why only the discordant items carry information, and roughly how much power it buys. Which test would you actually run for a binary pass/fail?

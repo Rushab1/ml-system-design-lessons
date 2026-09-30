@@ -1,0 +1,3123 @@
+{
+  "audit_date": "2026-09-24",
+  "repository_commit": "06f5fe8",
+  "purpose": "Citation discovery evidence, not a global most-cited ranking. Counts belong to individual OpenAlex records; versions are not summed. Some queries have rate-limit errors or irrelevant/misdated results. Semantic Scholar returned HTTP 429 in two attempts.",
+  "broad_query_template": "https://api.openalex.org/works?filter=from_publication_date:2024-01-01,to_publication_date:2025-12-31,title.search:{term}&sort=cited_by_count:desc&per-page=50&select=id,title,publication_year,cited_by_count,doi",
+  "broad_terms": [
+    "transformer",
+    "attention",
+    "retrieval augmented generation",
+    "agent",
+    "language model"
+  ],
+  "target_query_template": "https://api.openalex.org/works?filter=title.search:{term}&sort=cited_by_count:desc&per-page=5&select=id,title,publication_year,cited_by_count,doi",
+  "chapter_sha256": {
+    "src/content/c3/c3.1.mdx": "ea6596d757d5379df9077586a979925d36833598eccd210eae7564cc70b378f0",
+    "src/content/c3/c3.1.quiz.mdx": "804125c90d8334f275ded56dedb561bbb3c12e9b88c26609acf73653ba32da8c",
+    "src/content/c3/c3.2.mdx": "54c22944f90c3d36c99afc8d0ae62d79fb5da066f1dab6920843949a0c2211ed",
+    "src/content/c3/c3.2.quiz.mdx": "479eb8eb3f1b9d4909a973c36b600b8e97c6d054888d95e981c23e0e22fedc58",
+    "src/content/c3/c3.3.mdx": "293845503a957f40bbf0ccaeb873ac1da84280a45afa24630b6a526960e5a5e2",
+    "src/content/c3/c3.3.quiz.mdx": "850804a029b13203845d454a9260b55df9fe6a43cf450b3ec8cd9bbf9d78c9dc",
+    "src/content/c4/c4.1.mdx": "3d35043d0615bb9a6fc5bbf400af88a3a96bdde74dabb443166dca4011257a2e",
+    "src/content/c4/c4.1.quiz.mdx": "21629be55fd14eaebcaae3a8d2015d8576e8c5c5bc2ab1761ad6782b35142de1",
+    "src/content/c4/c4.2.mdx": "55b7cc4cd3de48d2a77084627dcfb3fa7da4bc53f532e0ad52b449e5cf042ea3",
+    "src/content/c4/c4.2.quiz.mdx": "22b02318bdc4b1e488c0ca0a10325388dc72b8fa21127b725a6d0db65004dd1f",
+    "src/content/c5/c5.1.mdx": "562f06f75bbee4937a927c45be0cef804b71ea2cc4fd58d33affdd95ea7d54d7",
+    "src/content/c5/c5.1.quiz.mdx": "f3a7f2098a454e666826f3892fb2b4c6f61b049b91250a13bab8c61bff55122b",
+    "src/content/c5/c5.2.mdx": "43f7a91badba0ca49a8503575a7e8e71522a5ab062550dc5ac300057dae252e5",
+    "src/content/c5/c5.2.quiz.mdx": "1da031422c427d212b1f39efedd26a75c94e0fe58d2af077c2d7fbeedc19575d"
+  },
+  "captures": [
+    {
+      "capture": "research-audit-agents.json",
+      "response": {
+        "meta": {
+          "count": 79110,
+          "db_response_time_ms": 60,
+          "page": 1,
+          "per_page": 50,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (agent) and date >= (2024-01-01) and date <= (2025-12-31)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "agent",
+                  "operator": "has"
+                },
+                {
+                  "column_id": "from_publication_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "column_id": "to_publication_date",
+                  "value": "2025-12-31"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:agent,from_publication_date:2024-01-01,to_publication_date:2025-12-31&per_page=50"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4393065402",
+            "title": "A survey on large language model based autonomous agents",
+            "publication_year": 2024,
+            "cited_by_count": 1627,
+            "doi": "https://doi.org/10.1007/s11704-024-40231-1"
+          },
+          {
+            "id": "https://openalex.org/W4406728221",
+            "title": "Agentic AI: Autonomous Intelligence for Complex Goals\u2014A Comprehensive Survey",
+            "publication_year": 2025,
+            "cited_by_count": 657,
+            "doi": "https://doi.org/10.1109/access.2025.3532853"
+          },
+          {
+            "id": "https://openalex.org/W4406800520",
+            "title": "The rise and potential of large language model based agents: a survey",
+            "publication_year": 2025,
+            "cited_by_count": 615,
+            "doi": "https://doi.org/10.1007/s11432-024-4222-0"
+          },
+          {
+            "id": "https://openalex.org/W4402684050",
+            "title": "ChatDev: Communicative Agents for Software Development",
+            "publication_year": 2024,
+            "cited_by_count": 368,
+            "doi": "https://doi.org/10.18653/v1/2024.acl-long.810"
+          },
+          {
+            "id": "https://openalex.org/W4403203873",
+            "title": "A survey on LLM-based multi-agent systems: workflow, infrastructure, and challenges",
+            "publication_year": 2024,
+            "cited_by_count": 363,
+            "doi": "https://doi.org/10.1007/s44336-024-00009-2"
+          },
+          {
+            "id": "https://openalex.org/W4401194380",
+            "title": "Advances in silver nanoparticles: a comprehensive review on their potential as antimicrobial agents and their mechanisms of action elucidated by proteomics",
+            "publication_year": 2024,
+            "cited_by_count": 332,
+            "doi": "https://doi.org/10.3389/fmicb.2024.1440065"
+          },
+          {
+            "id": "https://openalex.org/W4399041134",
+            "title": "Plant-Based Extracts as Reducing, Capping, and Stabilizing Agents for the Green Synthesis of Inorganic Nanoparticles",
+            "publication_year": 2024,
+            "cited_by_count": 331,
+            "doi": "https://doi.org/10.3390/resources13060070"
+          },
+          {
+            "id": "https://openalex.org/W4403925918",
+            "title": "Empowering biomedical discovery with AI agents",
+            "publication_year": 2024,
+            "cited_by_count": 295,
+            "doi": "https://doi.org/10.1016/j.cell.2024.09.022"
+          },
+          {
+            "id": "https://openalex.org/W4393863377",
+            "title": "Microbial food spoilage: impact, causative agents and control strategies",
+            "publication_year": 2024,
+            "cited_by_count": 277,
+            "doi": "https://doi.org/10.1038/s41579-024-01037-x"
+          },
+          {
+            "id": "https://openalex.org/W4404782209",
+            "title": "Encouraging Divergent Thinking in Large Language Models through Multi-Agent Debate",
+            "publication_year": 2024,
+            "cited_by_count": 266,
+            "doi": "https://doi.org/10.18653/v1/2024.emnlp-main.992"
+          },
+          {
+            "id": "https://openalex.org/W4402901320",
+            "title": "Large language models empowered agent-based modeling and simulation: a survey and perspectives",
+            "publication_year": 2024,
+            "cited_by_count": 263,
+            "doi": "https://doi.org/10.1057/s41599-024-03611-3"
+          },
+          {
+            "id": "https://openalex.org/W4401023556",
+            "title": "Large Language Model Based Multi-agents: A Survey of Progress and Challenges",
+            "publication_year": 2024,
+            "cited_by_count": 261,
+            "doi": "https://doi.org/10.24963/ijcai.2024/890"
+          },
+          {
+            "id": "https://openalex.org/W4410197190",
+            "title": "The role of agentic AI in shaping a smart future: A systematic review",
+            "publication_year": 2025,
+            "cited_by_count": 253,
+            "doi": "https://doi.org/10.1016/j.array.2025.100399"
+          },
+          {
+            "id": "https://openalex.org/W4405185373",
+            "title": "A review of large language models and autonomous agents in chemistry",
+            "publication_year": 2024,
+            "cited_by_count": 246,
+            "doi": "https://doi.org/10.1039/d4sc03921a"
+          },
+          {
+            "id": "https://openalex.org/W4408121828",
+            "title": "GPCR drug discovery: new agents, targets and indications",
+            "publication_year": 2025,
+            "cited_by_count": 244,
+            "doi": "https://doi.org/10.1038/s41573-025-01139-y"
+          },
+          {
+            "id": "https://openalex.org/W4408164074",
+            "title": "Agent-Based Modeling in Economics and Finance: Past, Present, and Future",
+            "publication_year": 2025,
+            "cited_by_count": 235,
+            "doi": "https://doi.org/10.1257/jel.20221319"
+          },
+          {
+            "id": "https://openalex.org/W4402473949",
+            "title": "Generative AI Agents With Large Language Model for Satellite Networks via a Mixture of Experts Transmission",
+            "publication_year": 2024,
+            "cited_by_count": 219,
+            "doi": "https://doi.org/10.1109/jsac.2024.3459037"
+          },
+          {
+            "id": "https://openalex.org/W4413427262",
+            "title": "AI Agents vs. Agentic AI: A Conceptual taxonomy, applications and challenges",
+            "publication_year": 2025,
+            "cited_by_count": 214,
+            "doi": "https://doi.org/10.1016/j.inffus.2025.103599"
+          },
+          {
+            "id": "https://openalex.org/W4399087766",
+            "title": "Plozasiran, an RNA Interference Agent Targeting APOC3, for Mixed Hyperlipidemia",
+            "publication_year": 2024,
+            "cited_by_count": 206,
+            "doi": "https://doi.org/10.1056/nejmoa2404143"
+          },
+          {
+            "id": "https://openalex.org/W4403944333",
+            "title": "Agent Attention: On the Integration of Softmax and Linear Attention",
+            "publication_year": 2024,
+            "cited_by_count": 204,
+            "doi": "https://doi.org/10.1007/978-3-031-72973-7_8"
+          },
+          {
+            "id": "https://openalex.org/W4394630908",
+            "title": "A contemporary review on chatbots, AI-powered virtual conversational agents, ChatGPT: Applications, open challenges and future research directions",
+            "publication_year": 2024,
+            "cited_by_count": 204,
+            "doi": "https://doi.org/10.1016/j.cosrev.2024.100632"
+          },
+          {
+            "id": "https://openalex.org/W4406325768",
+            "title": "LLM-Based Multi-Agent Systems for Software Engineering: Literature Review, Vision, and the Road Ahead",
+            "publication_year": 2025,
+            "cited_by_count": 198,
+            "doi": "https://doi.org/10.1145/3712003"
+          },
+          {
+            "id": "https://openalex.org/W4407389811",
+            "title": "Integrating Artificial Intelligence Agents with the Internet of Things for Enhanced Environmental Monitoring: Applications in Water Quality and Climate Data",
+            "publication_year": 2025,
+            "cited_by_count": 192,
+            "doi": "https://doi.org/10.3390/electronics14040696"
+          },
+          {
+            "id": "https://openalex.org/W4407236106",
+            "title": "AI Agents Under Threat: A Survey of Key Security Challenges and Future Pathways",
+            "publication_year": 2025,
+            "cited_by_count": 190,
+            "doi": "https://doi.org/10.1145/3716628"
+          },
+          {
+            "id": "https://openalex.org/W4398179753",
+            "title": "New-generation advanced PROTACs as potential therapeutic agents in cancer therapy",
+            "publication_year": 2024,
+            "cited_by_count": 185,
+            "doi": "https://doi.org/10.1186/s12943-024-02024-9"
+          },
+          {
+            "id": "https://openalex.org/W4394822274",
+            "title": "Potentials and future perspectives of multi-target drugs in cancer treatment: the next generation anti-cancer agents",
+            "publication_year": 2024,
+            "cited_by_count": 183,
+            "doi": "https://doi.org/10.1186/s12964-024-01607-9"
+          },
+          {
+            "id": "https://openalex.org/W4412505619",
+            "title": "AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges",
+            "publication_year": 2025,
+            "cited_by_count": 174,
+            "doi": "https://doi.org/10.70777/si.v2i3.15161"
+          },
+          {
+            "id": "https://openalex.org/W4402753874",
+            "title": "CogAgent: A Visual Language Model for GUI Agents",
+            "publication_year": 2024,
+            "cited_by_count": 173,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.01354"
+          },
+          {
+            "id": "https://openalex.org/W4414023998",
+            "title": "The Rise of Agentic AI: A Review of Definitions, Frameworks, Architectures, Applications, Evaluation Metrics, and Challenges",
+            "publication_year": 2025,
+            "cited_by_count": 171,
+            "doi": "https://doi.org/10.3390/fi17090404"
+          },
+          {
+            "id": "https://openalex.org/W4390788068",
+            "title": "MTR++: Multi-Agent Motion Prediction With Symmetric Scene Modeling and Guided Intention Querying",
+            "publication_year": 2024,
+            "cited_by_count": 171,
+            "doi": "https://doi.org/10.1109/tpami.2024.3352811"
+          },
+          {
+            "id": "https://openalex.org/W4405787555",
+            "title": "SMART-LLM: Smart Multi-Agent Robot Task Planning using Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 168,
+            "doi": "https://doi.org/10.1109/iros58592.2024.10802322"
+          },
+          {
+            "id": "https://openalex.org/W4405079446",
+            "title": "LLM-based agentic systems in medicine and healthcare",
+            "publication_year": 2024,
+            "cited_by_count": 166,
+            "doi": "https://doi.org/10.1038/s42256-024-00944-1"
+          },
+          {
+            "id": "https://openalex.org/W4390967609",
+            "title": "Priming agents transiently reduce the clearance of cell-free DNA to improve liquid biopsies",
+            "publication_year": 2024,
+            "cited_by_count": 164,
+            "doi": "https://doi.org/10.1126/science.adf2341"
+          },
+          {
+            "id": "https://openalex.org/W4395478645",
+            "title": "Nanoparticles incorporated hydrogels for delivery of antimicrobial agents: developments and trends",
+            "publication_year": 2024,
+            "cited_by_count": 164,
+            "doi": "https://doi.org/10.1039/d4ra00631c"
+          },
+          {
+            "id": "https://openalex.org/W4391919254",
+            "title": "A survey on multi-agent reinforcement learning and its application",
+            "publication_year": 2024,
+            "cited_by_count": 161,
+            "doi": "https://doi.org/10.1016/j.jai.2024.02.003"
+          },
+          {
+            "id": "https://openalex.org/W4393153034",
+            "title": "Green synthesis of nanomaterials by using plant extracts as reducing and capping agents",
+            "publication_year": 2024,
+            "cited_by_count": 158,
+            "doi": "https://doi.org/10.1007/s11356-024-32983-x"
+          },
+          {
+            "id": "https://openalex.org/W4400189600",
+            "title": "Role of Omega-3 fatty acids eicosapentaenoic (EPA) and docosahexaenoic (DHA) as modulatory and anti-inflammatory agents in noncommunicable diet-related diseases \u2013 Reports from the last 10 years",
+            "publication_year": 2024,
+            "cited_by_count": 155,
+            "doi": "https://doi.org/10.1016/j.clnesp.2024.06.053"
+          },
+          {
+            "id": "https://openalex.org/W4411100445",
+            "title": "Development and validation of an autonomous artificial intelligence agent for clinical decision-making in oncology",
+            "publication_year": 2025,
+            "cited_by_count": 153,
+            "doi": "https://doi.org/10.1038/s43018-025-00991-6"
+          },
+          {
+            "id": "https://openalex.org/W4409737900",
+            "title": "AI Agents and Agentic Systems: A Multi-Expert Analysis",
+            "publication_year": 2025,
+            "cited_by_count": 150,
+            "doi": "https://doi.org/10.1080/08874417.2025.2483832"
+          },
+          {
+            "id": "https://openalex.org/W4390638728",
+            "title": "A survey of multi-agent deep reinforcement learning with communication",
+            "publication_year": 2024,
+            "cited_by_count": 148,
+            "doi": "https://doi.org/10.1007/s10458-023-09633-6"
+          },
+          {
+            "id": "https://openalex.org/W4409269467",
+            "title": "Next-generation agentic AI for transforming healthcare",
+            "publication_year": 2025,
+            "cited_by_count": 147,
+            "doi": "https://doi.org/10.1016/j.infoh.2025.03.001"
+          },
+          {
+            "id": "https://openalex.org/W4393305455",
+            "title": "ChatEDA: A Large Language Model Powered Autonomous Agent for EDA",
+            "publication_year": 2024,
+            "cited_by_count": 144,
+            "doi": "https://doi.org/10.1109/tcad.2024.3383347"
+          },
+          {
+            "id": "https://openalex.org/W4416209823",
+            "title": "Agentic AI: a comprehensive survey of architectures, applications, and future directions",
+            "publication_year": 2025,
+            "cited_by_count": 143,
+            "doi": "https://doi.org/10.1007/s10462-025-11422-4"
+          },
+          {
+            "id": "https://openalex.org/W4412709685",
+            "title": "The Virtual Lab of AI agents designs new SARS-CoV-2 nanobodies",
+            "publication_year": 2025,
+            "cited_by_count": 143,
+            "doi": "https://doi.org/10.1038/s41586-025-09442-9"
+          },
+          {
+            "id": "https://openalex.org/W4392499083",
+            "title": "Dynamic Event-Triggered Consensus Control for Interval Type-2 Fuzzy Multi-Agent Systems",
+            "publication_year": 2024,
+            "cited_by_count": 142,
+            "doi": "https://doi.org/10.1109/tcsi.2024.3371492"
+          },
+          {
+            "id": "https://openalex.org/W4393867901",
+            "title": "Evaluating large language models as agents in the clinic",
+            "publication_year": 2024,
+            "cited_by_count": 140,
+            "doi": "https://doi.org/10.1038/s41746-024-01083-y"
+          },
+          {
+            "id": "https://openalex.org/W2801314571",
+            "title": "Tackling the Algorithmic Control Crisis -- the Technical, Legal, and Ethical Challenges of Research into Algorithmic Agents",
+            "publication_year": 2025,
+            "cited_by_count": 134,
+            "doi": "https://doi.org/10.48550/arxiv.2510.25337"
+          },
+          {
+            "id": "https://openalex.org/W4407203427",
+            "title": "The rise of agentic AI teammates in medicine",
+            "publication_year": 2025,
+            "cited_by_count": 133,
+            "doi": "https://doi.org/10.1016/s0140-6736(25)00202-8"
+          },
+          {
+            "id": "https://openalex.org/W4405599065",
+            "title": "SciAgents: Automating Scientific Discovery Through Bioinspired Multi\u2010Agent Intelligent Graph Reasoning",
+            "publication_year": 2024,
+            "cited_by_count": 133,
+            "doi": "https://doi.org/10.1002/adma.202413523"
+          },
+          {
+            "id": "https://openalex.org/W4399989878",
+            "title": "Adaptive fault-tolerant control for a class of nonlinear multi-agent systems with multiple unknown time-varying control directions",
+            "publication_year": 2024,
+            "cited_by_count": 132,
+            "doi": "https://doi.org/10.1016/j.automatica.2024.111802"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-attention.json",
+      "response": {
+        "meta": {
+          "count": 60853,
+          "db_response_time_ms": 22,
+          "page": 1,
+          "per_page": 50,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (attention)\n  and date >= (2024-01-01)\n  and date <= (2025-12-31)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "attention",
+                  "operator": "has"
+                },
+                {
+                  "column_id": "from_publication_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "column_id": "to_publication_date",
+                  "value": "2025-12-31"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:attention,from_publication_date:2024-01-01,to_publication_date:2025-12-31&per_page=50"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W2626778328",
+            "title": "Attention Is All You Need",
+            "publication_year": 2025,
+            "cited_by_count": 7679,
+            "doi": "https://doi.org/10.65215/2q58a426"
+          },
+          {
+            "id": "https://openalex.org/W1582594879",
+            "title": "Attention And Cognitive Control 1",
+            "publication_year": 2024,
+            "cited_by_count": 2320,
+            "doi": "https://doi.org/10.4324/9781032722450-4"
+          },
+          {
+            "id": "https://openalex.org/W4391092744",
+            "title": "DEA-Net: Single Image Dehazing Based on Detail-Enhanced Convolution and Content-Guided Attention",
+            "publication_year": 2024,
+            "cited_by_count": 926,
+            "doi": "https://doi.org/10.1109/tip.2024.3354108"
+          },
+          {
+            "id": "https://openalex.org/W4399114252",
+            "title": "Attention and Interpretation",
+            "publication_year": 2024,
+            "cited_by_count": 909,
+            "doi": "https://doi.org/10.4324/9781032661230-8"
+          },
+          {
+            "id": "https://openalex.org/W4403658645",
+            "title": "Attention and performance",
+            "publication_year": 2024,
+            "cited_by_count": 633,
+            "doi": "https://doi.org/10.4324/9781003582885-4"
+          },
+          {
+            "id": "https://openalex.org/W4402716243",
+            "title": "EMCAD: Efficient Multi-Scale Convolutional Attention Decoding for Medical Image Segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 503,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.01118"
+          },
+          {
+            "id": "https://openalex.org/W4396545724",
+            "title": "ASF-YOLO: A novel YOLO model with attentional scale sequence fusion for cell instance segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 499,
+            "doi": "https://doi.org/10.1016/j.imavis.2024.105057"
+          },
+          {
+            "id": "https://openalex.org/W2963668159",
+            "title": "Hierarchical Question-Image Co-Attention for Visual Question Answering",
+            "publication_year": 2024,
+            "cited_by_count": 438,
+            "doi": "https://doi.org/10.57702/uhdmfu1r"
+          },
+          {
+            "id": "https://openalex.org/W4400073289",
+            "title": "Channel prior convolutional attention for medical image segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 334,
+            "doi": "https://doi.org/10.1016/j.compbiomed.2024.108784"
+          },
+          {
+            "id": "https://openalex.org/W4392057793",
+            "title": "Attention-deficit/hyperactivity disorder",
+            "publication_year": 2024,
+            "cited_by_count": 332,
+            "doi": "https://doi.org/10.1038/s41572-024-00495-0"
+          },
+          {
+            "id": "https://openalex.org/W4396973073",
+            "title": "DA-TransUNet: integrating spatial and channel dual attention with transformer U-net for medical image segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 325,
+            "doi": "https://doi.org/10.3389/fbioe.2024.1398237"
+          },
+          {
+            "id": "https://openalex.org/W4408250502",
+            "title": "SCSA: Exploring the synergistic effects between spatial and channel attention",
+            "publication_year": 2025,
+            "cited_by_count": 311,
+            "doi": "https://doi.org/10.1016/j.neucom.2025.129866"
+          },
+          {
+            "id": "https://openalex.org/W4407759488",
+            "title": "YOLOv12: Attention-Centric Real-Time Object Detectors",
+            "publication_year": 2025,
+            "cited_by_count": 284,
+            "doi": "https://doi.org/10.52202/085713-2627"
+          },
+          {
+            "id": "https://openalex.org/W4391502258",
+            "title": "Improved multistep ahead photovoltaic power prediction model based on LSTM and self-attention with weather forecast data",
+            "publication_year": 2024,
+            "cited_by_count": 279,
+            "doi": "https://doi.org/10.1016/j.apenergy.2024.122709"
+          },
+          {
+            "id": "https://openalex.org/W4404412261",
+            "title": "How to Do Nothing: Resisting the Attention Economy",
+            "publication_year": 2024,
+            "cited_by_count": 270,
+            "doi": "https://doi.org/10.5465/amle.2024.0313"
+          },
+          {
+            "id": "https://openalex.org/W4402192457",
+            "title": "Graph Attention Networks: A Comprehensive Review of Methods and Applications",
+            "publication_year": 2024,
+            "cited_by_count": 263,
+            "doi": "https://doi.org/10.3390/fi16090318"
+          },
+          {
+            "id": "https://openalex.org/W4394566113",
+            "title": "Visual attention methods in deep learning: An in-depth survey",
+            "publication_year": 2024,
+            "cited_by_count": 262,
+            "doi": "https://doi.org/10.1016/j.inffus.2024.102417"
+          },
+          {
+            "id": "https://openalex.org/W4394596865",
+            "title": "Beyond Self-Attention: Deformable Large Kernel Attention for Medical Image Segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 247,
+            "doi": "https://doi.org/10.1109/wacv57701.2024.00132"
+          },
+          {
+            "id": "https://openalex.org/W4403944333",
+            "title": "Agent Attention: On the Integration of Softmax and Linear Attention",
+            "publication_year": 2024,
+            "cited_by_count": 204,
+            "doi": "https://doi.org/10.1007/978-3-031-72973-7_8"
+          },
+          {
+            "id": "https://openalex.org/W4390990495",
+            "title": "Dual residual attention network for image denoising",
+            "publication_year": 2024,
+            "cited_by_count": 192,
+            "doi": "https://doi.org/10.1016/j.patcog.2024.110291"
+          },
+          {
+            "id": "https://openalex.org/W4391906391",
+            "title": "A performance degradation prediction model for PEMFC based on bi-directional long short-term memory and multi-head self-attention mechanism",
+            "publication_year": 2024,
+            "cited_by_count": 189,
+            "doi": "https://doi.org/10.1016/j.ijhydene.2024.02.181"
+          },
+          {
+            "id": "https://openalex.org/W4391418547",
+            "title": "Residual-based attention in physics-informed neural networks",
+            "publication_year": 2024,
+            "cited_by_count": 187,
+            "doi": "https://doi.org/10.1016/j.cma.2024.116805"
+          },
+          {
+            "id": "https://openalex.org/W4394625816",
+            "title": "MEGANet: Multi-Scale Edge-Guided Attention Network for Weak Boundary Polyp Segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 185,
+            "doi": "https://doi.org/10.1109/wacv57701.2024.00780"
+          },
+          {
+            "id": "https://openalex.org/W4391333878",
+            "title": "Channel attention & temporal attention based temporal convolutional network: A dual attention framework for remaining useful life prediction of the aircraft engines",
+            "publication_year": 2024,
+            "cited_by_count": 168,
+            "doi": "https://doi.org/10.1016/j.aei.2024.102372"
+          },
+          {
+            "id": "https://openalex.org/W4401328675",
+            "title": "CamoFormer: Masked Separable Attention for Camouflaged Object Detection",
+            "publication_year": 2024,
+            "cited_by_count": 167,
+            "doi": "https://doi.org/10.1109/tpami.2024.3438565"
+          },
+          {
+            "id": "https://openalex.org/W4391783171",
+            "title": "DNNAM: Image inpainting algorithm via deep neural networks and attention mechanism",
+            "publication_year": 2024,
+            "cited_by_count": 164,
+            "doi": "https://doi.org/10.1016/j.asoc.2024.111392"
+          },
+          {
+            "id": "https://openalex.org/W4392828127",
+            "title": "Quality Prediction Modeling for Industrial Processes Using Multiscale Attention-Based Convolutional Neural Network",
+            "publication_year": 2024,
+            "cited_by_count": 155,
+            "doi": "https://doi.org/10.1109/tcyb.2024.3365068"
+          },
+          {
+            "id": "https://openalex.org/W4392365138",
+            "title": "Transformer-based multivariate time series anomaly detection using inter-variable attention mechanism",
+            "publication_year": 2024,
+            "cited_by_count": 155,
+            "doi": "https://doi.org/10.1016/j.knosys.2024.111507"
+          },
+          {
+            "id": "https://openalex.org/W4394625750",
+            "title": "Training-Free Layout Control with Cross-Attention Guidance",
+            "publication_year": 2024,
+            "cited_by_count": 153,
+            "doi": "https://doi.org/10.1109/wacv57701.2024.00526"
+          },
+          {
+            "id": "https://openalex.org/W4393971547",
+            "title": "A self-attention-based CNN-Bi-LSTM model for accurate state-of-charge estimation of lithium-ion batteries",
+            "publication_year": 2024,
+            "cited_by_count": 152,
+            "doi": "https://doi.org/10.1016/j.est.2024.111524"
+          },
+          {
+            "id": "https://openalex.org/W4392172875",
+            "title": "Hybrid Convolutional and Attention Network for Hyperspectral Image Denoising",
+            "publication_year": 2024,
+            "cited_by_count": 146,
+            "doi": "https://doi.org/10.1109/lgrs.2024.3370299"
+          },
+          {
+            "id": "https://openalex.org/W4409986137",
+            "title": "SAT-Net: Structure-Aware Transformer-Based Attention Fusion Network for Low-Quality Retinal FunduImages Enhancement",
+            "publication_year": 2025,
+            "cited_by_count": 139,
+            "doi": "https://doi.org/10.1109/tmm.2025.3565935"
+          },
+          {
+            "id": "https://openalex.org/W4403561290",
+            "title": "A novel heat load prediction model of district heating system based on hybrid whale optimization algorithm (WOA) and CNN-LSTM with attention mechanism",
+            "publication_year": 2024,
+            "cited_by_count": 139,
+            "doi": "https://doi.org/10.1016/j.energy.2024.133536"
+          },
+          {
+            "id": "https://openalex.org/W4402904185",
+            "title": "Multi-scale Attention Network for Single Image Super-Resolution",
+            "publication_year": 2024,
+            "cited_by_count": 137,
+            "doi": "https://doi.org/10.1109/cvprw63382.2024.00602"
+          },
+          {
+            "id": "https://openalex.org/W4391686575",
+            "title": "State of charge estimation of lithium-ion batteries based on PSO-TCN-Attention neural network",
+            "publication_year": 2024,
+            "cited_by_count": 136,
+            "doi": "https://doi.org/10.1016/j.est.2024.110806"
+          },
+          {
+            "id": "https://openalex.org/W4405614453",
+            "title": "End-to-end multi-scale residual network with parallel attention mechanism for fault diagnosis under noise and small samples",
+            "publication_year": 2024,
+            "cited_by_count": 134,
+            "doi": "https://doi.org/10.1016/j.isatra.2024.12.023"
+          },
+          {
+            "id": "https://openalex.org/W4394894548",
+            "title": "Government environmental attention, credit supply and firms' green investment",
+            "publication_year": 2024,
+            "cited_by_count": 133,
+            "doi": "https://doi.org/10.1016/j.eneco.2024.107547"
+          },
+          {
+            "id": "https://openalex.org/W4402782221",
+            "title": "FastComposer: Tuning-Free Multi-subject Image Generation with Localized Attention",
+            "publication_year": 2024,
+            "cited_by_count": 132,
+            "doi": "https://doi.org/10.1007/s11263-024-02227-z"
+          },
+          {
+            "id": "https://openalex.org/W4394797470",
+            "title": "Unsupervised Bidirectional Contrastive Reconstruction and Adaptive Fine-Grained Channel Attention Networks for image dehazing",
+            "publication_year": 2024,
+            "cited_by_count": 132,
+            "doi": "https://doi.org/10.1016/j.neunet.2024.106314"
+          },
+          {
+            "id": "https://openalex.org/W4393128698",
+            "title": "DICAM: Deep Inception and Channel-wise Attention Modules for underwater image enhancement",
+            "publication_year": 2024,
+            "cited_by_count": 132,
+            "doi": "https://doi.org/10.1016/j.neucom.2024.127585"
+          },
+          {
+            "id": "https://openalex.org/W4402716004",
+            "title": "Style Aligned Image Generation via Shared Attention",
+            "publication_year": 2024,
+            "cited_by_count": 130,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00457"
+          },
+          {
+            "id": "https://openalex.org/W4390588437",
+            "title": "Enhancing heart disease prediction using a self-attention-based transformer model",
+            "publication_year": 2024,
+            "cited_by_count": 130,
+            "doi": "https://doi.org/10.1038/s41598-024-51184-7"
+          },
+          {
+            "id": "https://openalex.org/W4407948335",
+            "title": "An Attention-Driven Spatio-Temporal Deep Hybrid Neural Networks for Traffic Flow Prediction in Transportation Systems",
+            "publication_year": 2025,
+            "cited_by_count": 129,
+            "doi": "https://doi.org/10.1109/tits.2025.3540852"
+          },
+          {
+            "id": "https://openalex.org/W4406202718",
+            "title": "Is policy pilot a viable path to sustainable development? Attention allocation perspective",
+            "publication_year": 2025,
+            "cited_by_count": 124,
+            "doi": "https://doi.org/10.1016/j.irfa.2025.103923"
+          },
+          {
+            "id": "https://openalex.org/W4402727429",
+            "title": "Video-P2P: Video Editing with Cross-Attention Control",
+            "publication_year": 2024,
+            "cited_by_count": 123,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00821"
+          },
+          {
+            "id": "https://openalex.org/W4390610528",
+            "title": "STGAFormer: Spatial\u2013temporal Gated Attention Transformer based Graph Neural Network for traffic flow forecasting",
+            "publication_year": 2024,
+            "cited_by_count": 123,
+            "doi": "https://doi.org/10.1016/j.inffus.2024.102228"
+          },
+          {
+            "id": "https://openalex.org/W4407128430",
+            "title": "Attention Enhanced InceptionNeXt-Based Hybrid Deep Learning Model for Lung Cancer Detection",
+            "publication_year": 2025,
+            "cited_by_count": 122,
+            "doi": "https://doi.org/10.1109/access.2025.3539122"
+          },
+          {
+            "id": "https://openalex.org/W4402085698",
+            "title": "Stacking integration algorithm based on CNN-BiLSTM-Attention with XGBoost for short-term electricity load forecasting",
+            "publication_year": 2024,
+            "cited_by_count": 122,
+            "doi": "https://doi.org/10.1016/j.egyr.2024.08.078"
+          },
+          {
+            "id": "https://openalex.org/W4393153637",
+            "title": "An Attentive Inductive Bias for Sequential Recommendation beyond the Self-Attention",
+            "publication_year": 2024,
+            "cited_by_count": 120,
+            "doi": "https://doi.org/10.1609/aaai.v38i8.28747"
+          },
+          {
+            "id": "https://openalex.org/W4392349400",
+            "title": "An intelligent bearing fault diagnosis framework: one-dimensional improved self-attention-enhanced CNN and empirical wavelet transform",
+            "publication_year": 2024,
+            "cited_by_count": 118,
+            "doi": "https://doi.org/10.1007/s11071-024-09389-y"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-llm.json",
+      "response": {
+        "meta": {
+          "count": 67333,
+          "db_response_time_ms": 40,
+          "page": 1,
+          "per_page": 50,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (language model)\n  and date >= (2024-01-01)\n  and date <= (2025-12-31)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "language model",
+                  "operator": "has"
+                },
+                {
+                  "column_id": "from_publication_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "column_id": "to_publication_date",
+                  "value": "2025-12-31"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:language model,from_publication_date:2024-01-01,to_publication_date:2025-12-31&per_page=50"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4391136507",
+            "title": "A Survey on Evaluation of Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 2801,
+            "doi": "https://doi.org/10.1145/3641289"
+          },
+          {
+            "id": "https://openalex.org/W4404534210",
+            "title": "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",
+            "publication_year": 2024,
+            "cited_by_count": 2091,
+            "doi": "https://doi.org/10.1145/3703155"
+          },
+          {
+            "id": "https://openalex.org/W4393065402",
+            "title": "A survey on large language model based autonomous agents",
+            "publication_year": 2024,
+            "cited_by_count": 1627,
+            "doi": "https://doi.org/10.1007/s11704-024-40231-1"
+          },
+          {
+            "id": "https://openalex.org/W4391876619",
+            "title": "Lost in the Middle: How Language Models Use Long Contexts",
+            "publication_year": 2024,
+            "cited_by_count": 1314,
+            "doi": "https://doi.org/10.1162/tacl_a_00638"
+          },
+          {
+            "id": "https://openalex.org/W4390692489",
+            "title": "Unifying Large Language Models and Knowledge Graphs: A Roadmap",
+            "publication_year": 2024,
+            "cited_by_count": 1198,
+            "doi": "https://doi.org/10.1109/tkde.2024.3352100"
+          },
+          {
+            "id": "https://openalex.org/W4392353733",
+            "title": "A survey on large language model (LLM) security and privacy: The Good, The Bad, and The Ugly",
+            "publication_year": 2024,
+            "cited_by_count": 1010,
+            "doi": "https://doi.org/10.1016/j.hcc.2024.100211"
+          },
+          {
+            "id": "https://openalex.org/W4406152279",
+            "title": "Toward expert-level medical question answering with large language models",
+            "publication_year": 2025,
+            "cited_by_count": 952,
+            "doi": "https://doi.org/10.1038/s41591-024-03423-7"
+          },
+          {
+            "id": "https://openalex.org/W4402665833",
+            "title": "Large Language Models for Software Engineering: A Systematic Literature Review",
+            "publication_year": 2024,
+            "cited_by_count": 910,
+            "doi": "https://doi.org/10.1145/3695988"
+          },
+          {
+            "id": "https://openalex.org/W4392947532",
+            "title": "A visual-language foundation model for computational pathology",
+            "publication_year": 2024,
+            "cited_by_count": 901,
+            "doi": "https://doi.org/10.1038/s41591-024-02856-4"
+          },
+          {
+            "id": "https://openalex.org/W4392172801",
+            "title": "Vision-Language Models for Vision Tasks: A Survey",
+            "publication_year": 2024,
+            "cited_by_count": 898,
+            "doi": "https://doi.org/10.1109/tpami.2024.3369699"
+          },
+          {
+            "id": "https://openalex.org/W4399803256",
+            "title": "Detecting hallucinations in large language models using semantic entropy",
+            "publication_year": 2024,
+            "cited_by_count": 846,
+            "doi": "https://doi.org/10.1038/s41586-024-07421-0"
+          },
+          {
+            "id": "https://openalex.org/W4391855109",
+            "title": "A Review on Large Language Models: Architectures, Applications, Taxonomies, Open Issues and Challenges",
+            "publication_year": 2024,
+            "cited_by_count": 826,
+            "doi": "https://doi.org/10.1109/access.2024.3365742"
+          },
+          {
+            "id": "https://openalex.org/W4392193048",
+            "title": "Adapted large language models can outperform medical experts in clinical text summarization",
+            "publication_year": 2024,
+            "cited_by_count": 762,
+            "doi": "https://doi.org/10.1038/s41591-024-02855-5"
+          },
+          {
+            "id": "https://openalex.org/W4406440058",
+            "title": "Simulating 500 million years of evolution with a language model",
+            "publication_year": 2025,
+            "cited_by_count": 757,
+            "doi": "https://doi.org/10.1126/science.ads0018"
+          },
+          {
+            "id": "https://openalex.org/W4401857375",
+            "title": "A Survey on RAG Meeting LLMs: Towards Retrieval-Augmented Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 750,
+            "doi": "https://doi.org/10.1145/3637528.3671470"
+          },
+          {
+            "id": "https://openalex.org/W4404356490",
+            "title": "A survey on multimodal large language models",
+            "publication_year": 2024,
+            "cited_by_count": 743,
+            "doi": "https://doi.org/10.1093/nsr/nwae403"
+          },
+          {
+            "id": "https://openalex.org/W4396723768",
+            "title": "Augmenting large language models with chemistry tools",
+            "publication_year": 2024,
+            "cited_by_count": 738,
+            "doi": "https://doi.org/10.1038/s42256-024-00832-8"
+          },
+          {
+            "id": "https://openalex.org/W4391836235",
+            "title": "Structured information extraction from scientific text with large language models",
+            "publication_year": 2024,
+            "cited_by_count": 719,
+            "doi": "https://doi.org/10.1038/s41467-024-45563-x"
+          },
+          {
+            "id": "https://openalex.org/W4400324908",
+            "title": "Evaluation and mitigation of the limitations of large language models in clinical decision-making",
+            "publication_year": 2024,
+            "cited_by_count": 711,
+            "doi": "https://doi.org/10.1038/s41591-024-03097-1"
+          },
+          {
+            "id": "https://openalex.org/W4411403346",
+            "title": "A Comprehensive Overview of Large Language Models",
+            "publication_year": 2025,
+            "cited_by_count": 708,
+            "doi": "https://doi.org/10.1145/3744746"
+          },
+          {
+            "id": "https://openalex.org/W4403813762",
+            "title": "Large Language Model Influence on Diagnostic Reasoning",
+            "publication_year": 2024,
+            "cited_by_count": 669,
+            "doi": "https://doi.org/10.1001/jamanetworkopen.2024.40969"
+          },
+          {
+            "id": "https://openalex.org/W4399528455",
+            "title": "Bias and Fairness in Large Language Models: A Survey",
+            "publication_year": 2024,
+            "cited_by_count": 658,
+            "doi": "https://doi.org/10.1162/coli_a_00524"
+          },
+          {
+            "id": "https://openalex.org/W4390490761",
+            "title": "Explainability for Large Language Models: A Survey",
+            "publication_year": 2024,
+            "cited_by_count": 627,
+            "doi": "https://doi.org/10.1145/3639372"
+          },
+          {
+            "id": "https://openalex.org/W4406800520",
+            "title": "The rise and potential of large language model based agents: a survey",
+            "publication_year": 2025,
+            "cited_by_count": 615,
+            "doi": "https://doi.org/10.1007/s11432-024-4222-0"
+          },
+          {
+            "id": "https://openalex.org/W4403420208",
+            "title": "Testing and Evaluation of Health Care Applications of Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 611,
+            "doi": "https://doi.org/10.1001/jama.2024.21700"
+          },
+          {
+            "id": "https://openalex.org/W4406779522",
+            "title": "Can Open Large Language Models Catch Vulnerabilities?",
+            "publication_year": 2025,
+            "cited_by_count": 532,
+            "doi": "https://doi.org/10.4230/oasics.icpec.2025.4"
+          },
+          {
+            "id": "https://openalex.org/W4406152263",
+            "title": "The TRIPOD-LLM reporting guideline for studies using large language models",
+            "publication_year": 2025,
+            "cited_by_count": 521,
+            "doi": "https://doi.org/10.1038/s41591-024-03425-5"
+          },
+          {
+            "id": "https://openalex.org/W4391974543",
+            "title": "Software Testing With Large Language Models: Survey, Landscape, and Vision",
+            "publication_year": 2024,
+            "cited_by_count": 494,
+            "doi": "https://doi.org/10.1109/tse.2024.3368208"
+          },
+          {
+            "id": "https://openalex.org/W4393160302",
+            "title": "Graph of Thoughts: Solving Elaborate Problems with Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 487,
+            "doi": "https://doi.org/10.1609/aaai.v38i16.29720"
+          },
+          {
+            "id": "https://openalex.org/W4401834466",
+            "title": "A survey on large language models for recommendation",
+            "publication_year": 2024,
+            "cited_by_count": 438,
+            "doi": "https://doi.org/10.1007/s11280-024-01291-2"
+          },
+          {
+            "id": "https://openalex.org/W4394994587",
+            "title": "Recommender Systems in the Era of Large Language Models (LLMs)",
+            "publication_year": 2024,
+            "cited_by_count": 427,
+            "doi": "https://doi.org/10.1109/tkde.2024.3392335"
+          },
+          {
+            "id": "https://openalex.org/W4394938913",
+            "title": "RemoteCLIP: A Vision Language Foundation Model for Remote Sensing",
+            "publication_year": 2024,
+            "cited_by_count": 421,
+            "doi": "https://doi.org/10.1109/tgrs.2024.3390838"
+          },
+          {
+            "id": "https://openalex.org/W4401386967",
+            "title": "DriveGPT4: Interpretable End-to-End Autonomous Driving Via Large Language Model",
+            "publication_year": 2024,
+            "cited_by_count": 410,
+            "doi": "https://doi.org/10.1109/lra.2024.3440097"
+          },
+          {
+            "id": "https://openalex.org/W4395052272",
+            "title": "The application of large language models in medicine: A scoping review",
+            "publication_year": 2024,
+            "cited_by_count": 407,
+            "doi": "https://doi.org/10.1016/j.isci.2024.109713"
+          },
+          {
+            "id": "https://openalex.org/W4401386758",
+            "title": "Large Language Models in Healthcare and Medical Domain: A Review",
+            "publication_year": 2024,
+            "cited_by_count": 405,
+            "doi": "https://doi.org/10.3390/informatics11030057"
+          },
+          {
+            "id": "https://openalex.org/W4391221150",
+            "title": "Almanac \u2014 Retrieval-Augmented Language Models for Clinical Medicine",
+            "publication_year": 2024,
+            "cited_by_count": 398,
+            "doi": "https://doi.org/10.1056/aioa2300068"
+          },
+          {
+            "id": "https://openalex.org/W4402667093",
+            "title": "LlamaFactory: Unified Efficient Fine-Tuning of 100+ Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 384,
+            "doi": "https://doi.org/10.18653/v1/2024.acl-demos.38"
+          },
+          {
+            "id": "https://openalex.org/W4402671548",
+            "title": "Video-ChatGPT: Towards Detailed Video Understanding via Large Vision and Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 383,
+            "doi": "https://doi.org/10.18653/v1/2024.acl-long.679"
+          },
+          {
+            "id": "https://openalex.org/W4393119065",
+            "title": "The ethics of ChatGPT in medicine and healthcare: a systematic review on Large Language Models (LLMs)",
+            "publication_year": 2024,
+            "cited_by_count": 379,
+            "doi": "https://doi.org/10.1038/s41746-024-01157-x"
+          },
+          {
+            "id": "https://openalex.org/W4393147129",
+            "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 379,
+            "doi": "https://doi.org/10.1609/aaai.v38i16.29728"
+          },
+          {
+            "id": "https://openalex.org/W4402909345",
+            "title": "A framework for human evaluation of large language models in healthcare derived from literature review",
+            "publication_year": 2024,
+            "cited_by_count": 378,
+            "doi": "https://doi.org/10.1038/s41746-024-01258-7"
+          },
+          {
+            "id": "https://openalex.org/W4402754134",
+            "title": "LISA: Reasoning Segmentation via Large Language Model",
+            "publication_year": 2024,
+            "cited_by_count": 375,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00915"
+          },
+          {
+            "id": "https://openalex.org/W4401671778",
+            "title": "Large language models (LLMs): survey, technical frameworks, and future challenges",
+            "publication_year": 2024,
+            "cited_by_count": 374,
+            "doi": "https://doi.org/10.1007/s10462-024-10888-y"
+          },
+          {
+            "id": "https://openalex.org/W4390638022",
+            "title": "Prompt Engineering in Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 369,
+            "doi": "https://doi.org/10.1007/978-981-99-7962-2_30"
+          },
+          {
+            "id": "https://openalex.org/W4391301614",
+            "title": "Large Language Models in Medicine: The Potentials and Pitfalls",
+            "publication_year": 2024,
+            "cited_by_count": 358,
+            "doi": "https://doi.org/10.7326/m23-2772"
+          },
+          {
+            "id": "https://openalex.org/W4393397034",
+            "title": "Large language models could change the future of behavioral healthcare: a proposal for responsible development and evaluation",
+            "publication_year": 2024,
+            "cited_by_count": 356,
+            "doi": "https://doi.org/10.1038/s44184-024-00056-z"
+          },
+          {
+            "id": "https://openalex.org/W4392002118",
+            "title": "Extracting accurate materials data from research papers with conversational language models and prompt engineering",
+            "publication_year": 2024,
+            "cited_by_count": 356,
+            "doi": "https://doi.org/10.1038/s41467-024-45914-8"
+          },
+          {
+            "id": "https://openalex.org/W4391215636",
+            "title": "Talking about Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 355,
+            "doi": "https://doi.org/10.1145/3624724"
+          },
+          {
+            "id": "https://openalex.org/W4391494845",
+            "title": "Benchmarking Large Language Models for News Summarization",
+            "publication_year": 2024,
+            "cited_by_count": 354,
+            "doi": "https://doi.org/10.1162/tacl_a_00632"
+          },
+          {
+            "id": "https://openalex.org/W4391561379",
+            "title": "Leveraging large language models for predictive chemistry",
+            "publication_year": 2024,
+            "cited_by_count": 351,
+            "doi": "https://doi.org/10.1038/s42256-023-00788-1"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-agentdojo.json",
+      "response": {
+        "meta": {
+          "count": 11,
+          "db_response_time_ms": 30,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (AgentDojo)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "AgentDojo",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:AgentDojo&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4415796822",
+            "title": "AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents",
+            "publication_year": 2024,
+            "cited_by_count": 79,
+            "doi": "https://doi.org/10.52202/079017-2636"
+          },
+          {
+            "id": "https://openalex.org/W4399912700",
+            "title": "AgentDojo-PROV: A W3C PROV-O Corpus of LLM Agent Executions",
+            "publication_year": 2024,
+            "cited_by_count": 7,
+            "doi": "https://doi.org/10.48550/arxiv.2406.13352"
+          },
+          {
+            "id": "https://openalex.org/W7204871152",
+            "title": "AgentDojo Trace Audit",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22217484"
+          },
+          {
+            "id": "https://openalex.org/W7204937514",
+            "title": "AgentDojo Trace Audit",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22217485"
+          },
+          {
+            "id": "https://openalex.org/W7170675441",
+            "title": "Agents reading web pages, emails and repository files are hijacked by prompt injections hidden in untrusted content, yet 2026 benchmarks show deployed guards over-block benign text, making them unusable inline. A naive single prompt asking a base model whether text is an injection fails because without the agent's declared task it cannot separate legitimate imperative content, such as a README's install instructions, from instructions subverting the agent, returning a bare score with no offending span or operating point. Evaluate a task-conditioned LLM judge seeing the declared task and permitted capabilities alongside the untrusted output, using constrained structured decoding to emit is_injection, targeted_capability, quoted span and confidence, retrieving injection patterns for few-shot grounding, and applying a threshold calibrated on a benign corpus with self-consistency voting. Measure ROC-AUC, recall at sub-one-percent false-positive rate, span-localization precision and Brier calibration on AgentDojo-style labeled attack traces plus held-out benign corpora, beating a naive single-prompt base-model classifier and a Llama-Guard-style guardrail. Deliver as the prototype a minimal runnable Python MCP server (stdio) exposing the priced AI tool screen_tool_output that invokes a language or ML model to produce its output, with a typed input/output schema, an x402-style pay-per-call metering stub that records a per-call price in USDT and emits a settlement receipt, and one smoke test that exercises the tool end to end.",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.21529713"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-crag.json",
+      "response": {
+        "error": "Rate limit exceeded",
+        "message": "Rate limit exceeded: 10 requests per second. Please slow down.",
+        "retryAfter": 0.031000000000000038,
+        "costUsd": 0.001,
+        "dailyRemainingUsd": 0,
+        "prepaidRemainingUsd": 0,
+        "creditsRequired": 10,
+        "creditsRemaining": 0,
+        "onetimeCreditsRemaining": 0
+      }
+    },
+    {
+      "capture": "research-audit-paper-fa3.json",
+      "response": {
+        "meta": {
+          "count": 14,
+          "db_response_time_ms": 22,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (FlashAttention 3)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "FlashAttention 3",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:FlashAttention 3&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4415797154",
+            "title": "FlashAttention-3: Fast and Accurate Attention with Asynchrony and Low-precision",
+            "publication_year": 2024,
+            "cited_by_count": 65,
+            "doi": "https://doi.org/10.52202/079017-2193"
+          },
+          {
+            "id": "https://openalex.org/W4400611982",
+            "title": "FlashAttention-3: Fast and Accurate Attention with Asynchrony and Low-precision",
+            "publication_year": 2024,
+            "cited_by_count": 16,
+            "doi": "https://doi.org/10.48550/arxiv.2407.08608"
+          },
+          {
+            "id": "https://openalex.org/W7213996949",
+            "title": "Microarchitectural Memory Bandwidth Saturation, KV-Cache Paging Dynamics, and Time-to-First-Token Latency: A Comparative Benchmark of vLLM, TensorRT-LLM, and FlashAttention-3 on NVIDIA Hopper H100 versus AMD Instinct MI300X",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22898895"
+          },
+          {
+            "id": "https://openalex.org/W7214021312",
+            "title": "Microarchitectural Memory Bandwidth Saturation, KV-Cache Paging Dynamics, and Time-to-First-Token Latency: A Comparative Benchmark of vLLM, TensorRT-LLM, and FlashAttention-3 on NVIDIA Hopper H100 versus AMD Instinct MI300X",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22898894"
+          },
+          {
+            "id": "https://openalex.org/W7164359042",
+            "title": "Block-Sparse FlashAttention vs Sliding Window Attention in LongBench Multilingual Reasoning for Llama-3 at 32K Context Lengths",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.20637029"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-graphrag.json",
+      "response": {
+        "meta": {
+          "count": 34,
+          "db_response_time_ms": 111,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Graph RAG Approach)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Graph RAG Approach",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Graph RAG Approach&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4402703527",
+            "title": "WeKnow-RAG: An Adaptive Approach for Retrieval-Augmented Generation Integrating Web Search and Knowledge Graphs",
+            "publication_year": 2024,
+            "cited_by_count": 7,
+            "doi": "https://doi.org/10.48550/arxiv.2408.07611"
+          },
+          {
+            "id": "https://openalex.org/W4416988511",
+            "title": "An Ontology-Driven Graph RAG for Legal Norms: A Hierarchical, Temporal, and Deterministic Approach",
+            "publication_year": 2025,
+            "cited_by_count": 6,
+            "doi": "https://doi.org/10.3233/faia251598"
+          },
+          {
+            "id": "https://openalex.org/W7135012900",
+            "title": "Unlocking electronic health records: a hybrid graph RAG approach to safe clinical AI for patient QA",
+            "publication_year": 2026,
+            "cited_by_count": 4,
+            "doi": "https://doi.org/10.3389/fdgth.2026.1780700"
+          },
+          {
+            "id": "https://openalex.org/W4416196623",
+            "title": "A Graph RAG Approach to Enhance Explainability in Dataset Discovery",
+            "publication_year": 2025,
+            "cited_by_count": 3,
+            "doi": "https://doi.org/10.1007/s41019-025-00313-x"
+          },
+          {
+            "id": "https://openalex.org/W4416126051",
+            "title": "Global Discovery: A Global Graph-RAG Approach for Query-Focused Multimodal Summarization Across Multiple PDF Papers",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.1007/978-981-95-3061-8_1"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-hippo2.json",
+      "response": {
+        "meta": {
+          "count": 12,
+          "db_response_time_ms": 63,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (From RAG to Memory)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "From RAG to Memory",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:From RAG to Memory&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4407831980",
+            "title": "From RAG to Memory: Non-Parametric Continual Learning for Large Language Models",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.48550/arxiv.2502.14802"
+          },
+          {
+            "id": "https://openalex.org/W7162952193",
+            "title": "Governed Enterprise AI Memory Beyond RAG: From Vector Retrieval to Permissioned Knowledge Graphs",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.20469577"
+          },
+          {
+            "id": "https://openalex.org/W7169559196",
+            "title": "Governed Enterprise AI Memory Beyond RAG: From Vector Retrieval to Permissioned Knowledge Graphs",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.21403316"
+          },
+          {
+            "id": "https://openalex.org/W7163426032",
+            "title": "Governed Enterprise AI Memory Beyond RAG: From Vector Retrieval to Permissioned Knowledge Graphs",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.20519039"
+          },
+          {
+            "id": "https://openalex.org/W7162935815",
+            "title": "Governed Enterprise AI Memory Beyond RAG: From Vector Retrieval to Permissioned Knowledge Graphs",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.20469578"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-lightrag.json",
+      "response": {
+        "meta": {
+          "count": 19,
+          "db_response_time_ms": 29,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (LightRAG)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "LightRAG",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:LightRAG&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4416034797",
+            "title": "LightRAG: Simple and Fast Retrieval-Augmented Generation",
+            "publication_year": 2025,
+            "cited_by_count": 151,
+            "doi": "https://doi.org/10.18653/v1/2025.findings-emnlp.568"
+          },
+          {
+            "id": "https://openalex.org/W4403347014",
+            "title": "LightRAG: Simple and Fast Retrieval-Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 26,
+            "doi": "https://doi.org/10.48550/arxiv.2410.05779"
+          },
+          {
+            "id": "https://openalex.org/W7131419058",
+            "title": "Jigsaw-like knowledge graph generation: a study on generalization patterns with a LightRAG implementation",
+            "publication_year": 2026,
+            "cited_by_count": 1,
+            "doi": "https://doi.org/10.1088/3050-287x/ae4a3e"
+          },
+          {
+            "id": "https://openalex.org/W7210269662",
+            "title": "LightRAG empowered multi-objective optimization framework for process parameter control in polyester fiber polymerization",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.1007/s10845-026-02966-5"
+          },
+          {
+            "id": "https://openalex.org/W7202140529",
+            "title": "\u30a4\u30d9\u30f3\u30c8\u958b\u50ac\u306b\u304a\u3051\u308b\u7d44\u7e54\u30ea\u30fc\u30c0\u30fc\u9078\u8003\u30d7\u30ed\u30bb\u30b9\u306e\u81ea\u52d5\u5316\u30fb\u69cb\u9020\u5316\u30b7\u30b9\u30c6\u30e0 \u2015 LightRAG\u30fbC4\u30e2\u30c7\u30eb\u30fbLangGraph\u306b\u3088\u308b3\u6bb5\u968e\u30ea\u30ec\u30fc\u65b9\u5f0f\u30a2\u30d7\u30ed\u30fc\u30c1 \u2015 \u7b2c\u2160\u90e8 \u57fa\u790e\u7de8\uff1a\u4e8b\u4f8b\u7814\u7a76\u8ad6\u6587 \u7b2c\u2161\u90e8 \u5b9f\u8df5\u7de8\uff1a\u73fe\u5834\u30b9\u30bf\u30c3\u30d5\u5411\u3051\u89e3\u8aac\u30de\u30cb\u30e5\u30a2\u30eb",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.13140/rg.2.2.17460.00648"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-llama3.json",
+      "response": {
+        "meta": {
+          "count": 1,
+          "db_response_time_ms": 38,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (The Llama 3 Herd of Models)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "The Llama 3 Herd of Models",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:The Llama 3 Herd of Models&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W7115097999",
+            "title": "The Llama 3 herd of models",
+            "publication_year": 2025,
+            "cited_by_count": 0,
+            "doi": null
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-mamba2.json",
+      "response": {
+        "meta": {
+          "count": 38,
+          "db_response_time_ms": 16,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Transformers are SSMs)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Transformers are SSMs",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Transformers are SSMs&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4401331702",
+            "title": "Medical Image Classification with a Hybrid SSM Model Based on CNN and Transformer",
+            "publication_year": 2024,
+            "cited_by_count": 21,
+            "doi": "https://doi.org/10.3390/electronics13153094"
+          },
+          {
+            "id": "https://openalex.org/W4402502732",
+            "title": "Transformers to SSMs: Distilling Quadratic Knowledge to Subquadratic Models",
+            "publication_year": 2024,
+            "cited_by_count": 3,
+            "doi": "https://doi.org/10.48550/arxiv.2408.10189"
+          },
+          {
+            "id": "https://openalex.org/W4413664098",
+            "title": "SSM-Transformer-Based Dual-Scale Convolutional Neural Network for High-Performance EEG Decoding",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.26599/tst.2025.9010125"
+          },
+          {
+            "id": "https://openalex.org/W4415798044",
+            "title": "Transformers to SSMs: Distilling Quadratic Knowledge to Subquadratic Models",
+            "publication_year": 2024,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.52202/079017-0999"
+          },
+          {
+            "id": "https://openalex.org/W4393299819",
+            "title": "Heracles: A Hybrid SSM-Transformer Model for High-Resolution Image and Time-Series Analysis",
+            "publication_year": 2024,
+            "cited_by_count": 1,
+            "doi": "https://doi.org/10.48550/arxiv.2403.18063"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-nsa.json",
+      "response": {
+        "meta": {
+          "count": 21,
+          "db_response_time_ms": 17,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Native Sparse Attention)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Native Sparse Attention",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Native Sparse Attention&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4412944812",
+            "title": "Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention",
+            "publication_year": 2025,
+            "cited_by_count": 77,
+            "doi": "https://doi.org/10.18653/v1/2025.acl-long.1126"
+          },
+          {
+            "id": "https://openalex.org/W4407690159",
+            "title": "Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention",
+            "publication_year": 2025,
+            "cited_by_count": 4,
+            "doi": "https://doi.org/10.48550/arxiv.2502.11089"
+          },
+          {
+            "id": "https://openalex.org/W4416033192",
+            "title": "TabNSA: Native sparse attention for efficient tabular data learning",
+            "publication_year": 2026,
+            "cited_by_count": 1,
+            "doi": "https://doi.org/10.1016/j.neucom.2026.132928"
+          },
+          {
+            "id": "https://openalex.org/W7211929319",
+            "title": "GQLSA: Grouped-Query Latent Sparse Attention: A Hardware-Native Architecture for Efficient and Effective Sequence Modeling",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22658036"
+          },
+          {
+            "id": "https://openalex.org/W7211972215",
+            "title": "GQLSA: Grouped-Query Latent Sparse Attention: A Hardware-Native Architecture for Efficient and Effective Sequence Modeling",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22658037"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-osworld.json",
+      "response": {
+        "meta": {
+          "count": 8,
+          "db_response_time_ms": 31,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (OSWorld)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "OSWorld",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:OSWorld&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4415797693",
+            "title": "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments",
+            "publication_year": 2024,
+            "cited_by_count": 38,
+            "doi": "https://doi.org/10.52202/079017-1650"
+          },
+          {
+            "id": "https://openalex.org/W4394782272",
+            "title": "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments",
+            "publication_year": 2024,
+            "cited_by_count": 8,
+            "doi": "https://doi.org/10.48550/arxiv.2404.07972"
+          },
+          {
+            "id": "https://openalex.org/W7214054676",
+            "title": "OSWorld-Pro: Process-based Evaluation for Computer Use Agents",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.48550/arxiv.2609.24890"
+          },
+          {
+            "id": "https://openalex.org/W7166727921",
+            "title": "OSWorld 2.0: Benchmarking Computer Use Agents on Long-Horizon Real-World Tasks",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.48550/arxiv.2606.29537"
+          },
+          {
+            "id": "https://openalex.org/W7166901738",
+            "title": "OSWorld 2.0: Benchmarking Computer Use Agents on Long-Horizon Real-World Tasks",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": null
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-r1.json",
+      "response": {
+        "meta": {
+          "count": 445,
+          "db_response_time_ms": 22,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (DeepSeek R1)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "DeepSeek R1",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:DeepSeek R1&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4414281281",
+            "title": "DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning",
+            "publication_year": 2025,
+            "cited_by_count": 1016,
+            "doi": "https://doi.org/10.1038/s41586-025-09422-z"
+          },
+          {
+            "id": "https://openalex.org/W4410915681",
+            "title": "Comparative evaluation of responses from DeepSeek-R1, ChatGPT-o1, ChatGPT-4, and dental GPT chatbots to patient inquiries about dental and maxillofacial prostheses",
+            "publication_year": 2025,
+            "cited_by_count": 57,
+            "doi": "https://doi.org/10.1186/s12903-025-06267-w"
+          },
+          {
+            "id": "https://openalex.org/W4408413603",
+            "title": "Emotion-Aware Embedding Fusion in Large Language Models (Flan-T5, Llama 2, DeepSeek-R1, and ChatGPT 4) for Intelligent Response Generation",
+            "publication_year": 2025,
+            "cited_by_count": 50,
+            "doi": "https://doi.org/10.3390/ai6030056"
+          },
+          {
+            "id": "https://openalex.org/W4406936679",
+            "title": "Comparative Evaluation of Advanced AI Reasoning Models in Pediatric Clinical Decision Support: ChatGPT O1 vs. DeepSeek-R1",
+            "publication_year": 2025,
+            "cited_by_count": 49,
+            "doi": "https://doi.org/10.1101/2025.01.27.25321169"
+          },
+          {
+            "id": "https://openalex.org/W4411004403",
+            "title": "Performance of DeepSeek-R1 and ChatGPT-4o on the Chinese National Medical Licensing Examination: A Comparative Study",
+            "publication_year": 2025,
+            "cited_by_count": 42,
+            "doi": "https://doi.org/10.1007/s10916-025-02213-z"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-raptor.json",
+      "response": {
+        "meta": {
+          "count": 1,
+          "db_response_time_ms": 25,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (RAPTOR Recursive Abstractive)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "RAPTOR Recursive Abstractive",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:RAPTOR Recursive Abstractive&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4391463108",
+            "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+            "publication_year": 2024,
+            "cited_by_count": 28,
+            "doi": "https://doi.org/10.48550/arxiv.2401.18059"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-searchr1.json",
+      "response": {
+        "meta": {
+          "count": 30,
+          "db_response_time_ms": 23,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Search-R1)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Search-R1",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Search-R1&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4417422257",
+            "title": "Search-R1: Training LLMs to Reason and Leverage Search Engines with Reinforcement Learning",
+            "publication_year": 2025,
+            "cited_by_count": 12,
+            "doi": "https://doi.org/10.48550/arxiv.2503.09516"
+          },
+          {
+            "id": "https://openalex.org/W2498641940",
+            "title": "Search for Compounds with Hypoglycemic Activity in the Series of 1-(2-(1H-Tetrazol-5-yl)-R1-Phenyl)-3-R2-phenyl(ethyl)ureas and R1-Tetrazolo[1,5-c]quinazolin-5(6H)-ones",
+            "publication_year": 2016,
+            "cited_by_count": 8,
+            "doi": "https://doi.org/10.3797/scipharm.1507-14"
+          },
+          {
+            "id": "https://openalex.org/W4416035553",
+            "title": "ConvSearch-R1: Enhancing Query Reformulation for Conversational Search with Reasoning via Reinforcement Learning",
+            "publication_year": 2025,
+            "cited_by_count": 4,
+            "doi": "https://doi.org/10.18653/v1/2025.emnlp-main.1349"
+          },
+          {
+            "id": "https://openalex.org/W4416453947",
+            "title": "R1-Searcher++: Incentivizing the Dynamic Knowledge Acquisition of LLMs via Reinforcement Learning",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.48550/arxiv.2505.17005"
+          },
+          {
+            "id": "https://openalex.org/W2057949384",
+            "title": "Search for a Stokes' Shift in the R1 Lines of Ruby",
+            "publication_year": 1965,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.1063/1.1714013"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-selfrag.json",
+      "response": {
+        "meta": {
+          "count": 168,
+          "db_response_time_ms": 19,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Self-RAG)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Self-RAG",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Self-RAG&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W1904972848",
+            "title": "Broad-spectrum antibodies against self-antigens and cytokines in RAG deficiency",
+            "publication_year": 2015,
+            "cited_by_count": 203,
+            "doi": "https://doi.org/10.1172/jci80477"
+          },
+          {
+            "id": "https://openalex.org/W3132545370",
+            "title": "The Self-Made Man in America: The Myth of Rags to Riches",
+            "publication_year": 1955,
+            "cited_by_count": 67,
+            "doi": "https://doi.org/10.2307/1845370"
+          },
+          {
+            "id": "https://openalex.org/W1980191720",
+            "title": "The Self-Made Man in America: The Myth of Rags to Riches.",
+            "publication_year": 1955,
+            "cited_by_count": 45,
+            "doi": "https://doi.org/10.2307/2955144"
+          },
+          {
+            "id": "https://openalex.org/W2020775936",
+            "title": "Self-Cycling Fermentation Applied to Acinetobacter calcoaceticus RAG-1",
+            "publication_year": 1991,
+            "cited_by_count": 44,
+            "doi": "https://doi.org/10.1128/aem.57.10.2901-2906.1991"
+          },
+          {
+            "id": "https://openalex.org/W4233735176",
+            "title": "Broad-spectrum antibodies against self-antigens and cytokines in RAG deficiency",
+            "publication_year": 2016,
+            "cited_by_count": 32,
+            "doi": "https://doi.org/10.1172/jci91162"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-sweagent.json",
+      "response": {
+        "meta": {
+          "count": 168,
+          "db_response_time_ms": 111,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (SWE-agent)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "SWE-agent",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:SWE-agent&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4399114781",
+            "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+            "publication_year": 2024,
+            "cited_by_count": 30,
+            "doi": "https://doi.org/10.48550/arxiv.2405.15793"
+          },
+          {
+            "id": "https://openalex.org/W4412886699",
+            "title": "UTBoost: Rigorous Evaluation of Coding Agents on SWE-Bench",
+            "publication_year": 2025,
+            "cited_by_count": 3,
+            "doi": "https://doi.org/10.18653/v1/2025.acl-long.189"
+          },
+          {
+            "id": "https://openalex.org/W4414920507",
+            "title": "SWE-Debate: Competitive Multi-Agent Debate for Software Issue Resolution",
+            "publication_year": 2026,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.1145/3744916.3787810"
+          },
+          {
+            "id": "https://openalex.org/W4415252687",
+            "title": "SWE-Bench Pro: Can AI Agents Solve Long-Horizon Software Engineering Tasks?",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.48550/arxiv.2509.16941"
+          },
+          {
+            "id": "https://openalex.org/W4416711632",
+            "title": "When Agents go Astray: Course-Correcting SWE Agents with PRMs",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.48550/arxiv.2509.02360"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-tau.json",
+      "response": {
+        "meta": {
+          "count": 56,
+          "db_response_time_ms": 59,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Tool-Agent-User)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Tool-Agent-User",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Tool-Agent-User&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4392449489",
+            "title": "PrivacyAsst: Safeguarding User Privacy in Tool-Using Large Language Model Agents",
+            "publication_year": 2024,
+            "cited_by_count": 61,
+            "doi": "https://doi.org/10.1109/tdsc.2024.3372777"
+          },
+          {
+            "id": "https://openalex.org/W2087626139",
+            "title": "Metadata as a knowledge management tool: supporting intelligent agent and end user access to spatial data",
+            "publication_year": 2002,
+            "cited_by_count": 60,
+            "doi": "https://doi.org/10.1016/s0167-9236(01)00102-6"
+          },
+          {
+            "id": "https://openalex.org/W1973571494",
+            "title": "COMPUTERS AS TOOLS OR AS SOCIAL ACTORS? \u2014 THE USERS' PERSPECTIVE ON ANTHROPOMORPHIC AGENTS",
+            "publication_year": 2001,
+            "cited_by_count": 45,
+            "doi": "https://doi.org/10.1142/s0218843001000321"
+          },
+          {
+            "id": "https://openalex.org/W7118468219",
+            "title": "From language to action: a review of large language models as autonomous agents and tool users",
+            "publication_year": 2026,
+            "cited_by_count": 38,
+            "doi": "https://doi.org/10.1007/s10462-025-11471-9"
+          },
+          {
+            "id": "https://openalex.org/W4280629051",
+            "title": "I Need a CAVAA: How Conversational Agent Voting Advice Applications (CAVAAs) Affect Users' Political Knowledge and Tool Experience",
+            "publication_year": 2022,
+            "cited_by_count": 22,
+            "doi": "https://doi.org/10.3389/frai.2022.835505"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-tau2.json",
+      "response": {
+        "error": "Rate limit exceeded",
+        "message": "Rate limit exceeded: 10 requests per second. Please slow down.",
+        "retryAfter": 0.08200000000000005,
+        "costUsd": 0.001,
+        "dailyRemainingUsd": 0,
+        "prepaidRemainingUsd": 0,
+        "creditsRequired": 10,
+        "creditsRemaining": 0,
+        "onetimeCreditsRemaining": 0
+      }
+    },
+    {
+      "capture": "research-audit-paper-testtime.json",
+      "response": {
+        "meta": {
+          "count": 19,
+          "db_response_time_ms": 21,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Scaling LLM Test Time Compute)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Scaling LLM Test Time Compute",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Scaling LLM Test Time Compute&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4406492615",
+            "title": "Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters",
+            "publication_year": 2024,
+            "cited_by_count": 20,
+            "doi": "https://doi.org/10.48550/arxiv.2408.03314"
+          },
+          {
+            "id": "https://openalex.org/W4415003690",
+            "title": "ScaleRTL: Scaling LLMs with Reasoning Data and Test-Time Compute for Accurate RTL Code Generation",
+            "publication_year": 2025,
+            "cited_by_count": 6,
+            "doi": "https://doi.org/10.1109/mlcad65511.2025.11189212"
+          },
+          {
+            "id": "https://openalex.org/W7155550404",
+            "title": "Scaling LLM Test-Time Compute with Mobile NPU on Smartphones",
+            "publication_year": 2026,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.1145/3767295.3769382"
+          },
+          {
+            "id": "https://openalex.org/W4407359482",
+            "title": "Can 1B LLM Surpass 405B LLM? Rethinking Compute-Optimal Test-Time Scaling",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.48550/arxiv.2502.06703"
+          },
+          {
+            "id": "https://openalex.org/W7137828628",
+            "title": "Do We Truly Need So Many Samples? Multi-LLM Repeated Sampling Efficiently Scales Test-Time Compute",
+            "publication_year": 2026,
+            "cited_by_count": 1,
+            "doi": "https://doi.org/10.1609/aaai.v40i24.39094"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-v2.json",
+      "response": {
+        "meta": {
+          "count": 22,
+          "db_response_time_ms": 29,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (DeepSeek V2)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "DeepSeek V2",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:DeepSeek V2&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4396815229",
+            "title": "DeepSeek-V2: A Strong, Economical, and Efficient Mixture-of-Experts Language Model",
+            "publication_year": 2024,
+            "cited_by_count": 107,
+            "doi": "https://doi.org/10.48550/arxiv.2405.04434"
+          },
+          {
+            "id": "https://openalex.org/W4399836663",
+            "title": "DeepSeek-Coder-V2: Breaking the Barrier of Closed-Source Models in Code Intelligence",
+            "publication_year": 2024,
+            "cited_by_count": 49,
+            "doi": "https://doi.org/10.48550/arxiv.2406.11931"
+          },
+          {
+            "id": "https://openalex.org/W4417525574",
+            "title": "DeepSeek-Prover-V2: Advancing Formal Mathematical Reasoning via Reinforcement Learning for Subgoal Decomposition",
+            "publication_year": 2025,
+            "cited_by_count": 2,
+            "doi": "https://doi.org/10.48550/arxiv.2504.21801"
+          },
+          {
+            "id": "https://openalex.org/W4411726400",
+            "title": "Tuning DeepSeek-Coder-V2-Lite-Base for C# Code Smell Detection: Advancing Towards Task Versatility in Software Maintenance",
+            "publication_year": 2025,
+            "cited_by_count": 1,
+            "doi": "https://doi.org/10.1109/meco66322.2025.11049257"
+          },
+          {
+            "id": "https://openalex.org/W7212041754",
+            "title": "oute_Agent v2-deepseek-r2 freeze manifest",
+            "publication_year": 2026,
+            "cited_by_count": 0,
+            "doi": "https://doi.org/10.5281/zenodo.22672058"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-v3.json",
+      "response": {
+        "meta": {
+          "count": 1,
+          "db_response_time_ms": 35,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (DeepSeek V3 Technical Report)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "DeepSeek V3 Technical Report",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:DeepSeek V3 Technical Report&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4405903187",
+            "title": "DeepSeek-V3 Technical Report",
+            "publication_year": 2024,
+            "cited_by_count": 268,
+            "doi": "https://doi.org/10.48550/arxiv.2412.19437"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-paper-whyfail.json",
+      "response": {
+        "meta": {
+          "count": 1,
+          "db_response_time_ms": 24,
+          "page": 1,
+          "per_page": 5,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (Why Do Multi Agent LLM Systems Fail)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "Why Do Multi Agent LLM Systems Fail",
+                  "operator": "has"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:Why Do Multi Agent LLM Systems Fail&per_page=5"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W7196981818",
+            "title": "Why Do Multi-Agent LLM Systems Fail?",
+            "publication_year": 2025,
+            "cited_by_count": 27,
+            "doi": "https://doi.org/10.52202/085713-4082"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-rag.json",
+      "response": {
+        "meta": {
+          "count": 3666,
+          "db_response_time_ms": 28,
+          "page": 1,
+          "per_page": 50,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (retrieval augmented generation)\n  and date >= (2024-01-01)\n  and date <= (2025-12-31)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "retrieval augmented generation",
+                  "operator": "has"
+                },
+                {
+                  "column_id": "from_publication_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "column_id": "to_publication_date",
+                  "value": "2025-12-31"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:retrieval augmented generation,from_publication_date:2024-01-01,to_publication_date:2025-12-31&per_page=50"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4411630045",
+            "title": "RAGAs: Automated Evaluation of Retrieval Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 471,
+            "doi": "https://doi.org/10.18653/v1/2024.eacl-demo.16"
+          },
+          {
+            "id": "https://openalex.org/W4393147129",
+            "title": "Benchmarking Large Language Models in Retrieval-Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 379,
+            "doi": "https://doi.org/10.1609/aaai.v38i16.29728"
+          },
+          {
+            "id": "https://openalex.org/W4402670290",
+            "title": "Benchmarking Retrieval-Augmented Generation for Medicine",
+            "publication_year": 2024,
+            "cited_by_count": 264,
+            "doi": "https://doi.org/10.18653/v1/2024.findings-acl.372"
+          },
+          {
+            "id": "https://openalex.org/W4411203672",
+            "title": "Retrieval augmented generation for large language models in healthcare: A systematic review",
+            "publication_year": 2025,
+            "cited_by_count": 226,
+            "doi": "https://doi.org/10.1371/journal.pdig.0000877"
+          },
+          {
+            "id": "https://openalex.org/W4395050972",
+            "title": "Optimization of hepatological clinical guidelines interpretation by large language models: a retrieval augmented generation-based framework",
+            "publication_year": 2024,
+            "cited_by_count": 206,
+            "doi": "https://doi.org/10.1038/s41746-024-01091-y"
+          },
+          {
+            "id": "https://openalex.org/W4406421570",
+            "title": "Improving large language model applications in biomedicine with retrieval-augmented generation: a systematic review, meta-analysis, and clinical development guidelines",
+            "publication_year": 2025,
+            "cited_by_count": 174,
+            "doi": "https://doi.org/10.1093/jamia/ocaf008"
+          },
+          {
+            "id": "https://openalex.org/W4392597393",
+            "title": "Integrating Retrieval-Augmented Generation with Large Language Models in Nephrology: Advancing Practical Applications",
+            "publication_year": 2024,
+            "cited_by_count": 165,
+            "doi": "https://doi.org/10.3390/medicina60030445"
+          },
+          {
+            "id": "https://openalex.org/W4396823873",
+            "title": "Retrieval-Augmented Generation with Knowledge Graphs for Customer Service Question Answering",
+            "publication_year": 2024,
+            "cited_by_count": 152,
+            "doi": "https://doi.org/10.1145/3626772.3661370"
+          },
+          {
+            "id": "https://openalex.org/W4416034797",
+            "title": "LightRAG: Simple and Fast Retrieval-Augmented Generation",
+            "publication_year": 2025,
+            "cited_by_count": 151,
+            "doi": "https://doi.org/10.18653/v1/2025.findings-emnlp.568"
+          },
+          {
+            "id": "https://openalex.org/W4399660853",
+            "title": "Applying generative AI with retrieval augmented generation to summarize and extract key clinical information from electronic health records",
+            "publication_year": 2024,
+            "cited_by_count": 150,
+            "doi": "https://doi.org/10.1016/j.jbi.2024.104662"
+          },
+          {
+            "id": "https://openalex.org/W4406771321",
+            "title": "Evaluation of Retrieval-Augmented Generation: A Survey",
+            "publication_year": 2025,
+            "cited_by_count": 147,
+            "doi": "https://doi.org/10.1007/978-981-96-1024-2_8"
+          },
+          {
+            "id": "https://openalex.org/W4400526126",
+            "title": "Evaluating Retrieval Quality in Retrieval-Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 146,
+            "doi": "https://doi.org/10.1145/3626772.3657957"
+          },
+          {
+            "id": "https://openalex.org/W4392544551",
+            "title": "Development of a liver disease\u2013specific large language model chat interface using retrieval-augmented generation",
+            "publication_year": 2024,
+            "cited_by_count": 146,
+            "doi": "https://doi.org/10.1097/hep.0000000000000834"
+          },
+          {
+            "id": "https://openalex.org/W4416379250",
+            "title": "Graph Retrieval-Augmented Generation: A Survey",
+            "publication_year": 2025,
+            "cited_by_count": 141,
+            "doi": "https://doi.org/10.1145/3777378"
+          },
+          {
+            "id": "https://openalex.org/W4409157497",
+            "title": "Retrieval augmented generation for 10 large language models and its generalizability in assessing medical fitness",
+            "publication_year": 2025,
+            "cited_by_count": 138,
+            "doi": "https://doi.org/10.1038/s41746-025-01519-z"
+          },
+          {
+            "id": "https://openalex.org/W4396941482",
+            "title": "Interactive AI With Retrieval-Augmented Generation for Next Generation Networking",
+            "publication_year": 2024,
+            "cited_by_count": 137,
+            "doi": "https://doi.org/10.1109/mnet.2024.3401159"
+          },
+          {
+            "id": "https://openalex.org/W4399530612",
+            "title": "Seven Failure Points When Engineering a Retrieval Augmented Generation System",
+            "publication_year": 2024,
+            "cited_by_count": 131,
+            "doi": "https://doi.org/10.1145/3644815.3644945"
+          },
+          {
+            "id": "https://openalex.org/W4406813548",
+            "title": "Retrieval-augmented generation for generative artificial intelligence in health care",
+            "publication_year": 2025,
+            "cited_by_count": 126,
+            "doi": "https://doi.org/10.1038/s44401-024-00004-1"
+          },
+          {
+            "id": "https://openalex.org/W4401042808",
+            "title": "ARES: An Automated Evaluation Framework for Retrieval-Augmented Generation Systems",
+            "publication_year": 2024,
+            "cited_by_count": 125,
+            "doi": "https://doi.org/10.18653/v1/2024.naacl-long.20"
+          },
+          {
+            "id": "https://openalex.org/W4410362031",
+            "title": "Retrieval-augmented generation for educational application: A systematic survey",
+            "publication_year": 2025,
+            "cited_by_count": 122,
+            "doi": "https://doi.org/10.1016/j.caeai.2025.100417"
+          },
+          {
+            "id": "https://openalex.org/W4404280355",
+            "title": "Performance comparison of retrieval-augmented generation and fine-tuned large language models for construction safety management knowledge retrieval",
+            "publication_year": 2024,
+            "cited_by_count": 122,
+            "doi": "https://doi.org/10.1016/j.autcon.2024.105846"
+          },
+          {
+            "id": "https://openalex.org/W4409348640",
+            "title": "Retrieval-Augmented Generation (RAG) Chatbots for Education: A Survey of Applications",
+            "publication_year": 2025,
+            "cited_by_count": 121,
+            "doi": "https://doi.org/10.3390/app15084234"
+          },
+          {
+            "id": "https://openalex.org/W4404351611",
+            "title": "HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction",
+            "publication_year": 2024,
+            "cited_by_count": 121,
+            "doi": "https://doi.org/10.1145/3677052.3698671"
+          },
+          {
+            "id": "https://openalex.org/W4410705984",
+            "title": "Corrective Retrieval Augmented Generation",
+            "publication_year": 2025,
+            "cited_by_count": 115,
+            "doi": "https://doi.org/10.2139/ssrn.5267341"
+          },
+          {
+            "id": "https://openalex.org/W4399932275",
+            "title": "CBR-RAG: Case-Based Reasoning for Retrieval Augmented Generation in LLMs for Legal Question Answering",
+            "publication_year": 2024,
+            "cited_by_count": 108,
+            "doi": "https://doi.org/10.1007/978-3-031-63646-2_29"
+          },
+          {
+            "id": "https://openalex.org/W4404782883",
+            "title": "Searching for Best Practices in Retrieval-Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 107,
+            "doi": "https://doi.org/10.18653/v1/2024.emnlp-main.981"
+          },
+          {
+            "id": "https://openalex.org/W4409657176",
+            "title": "MedRAG: Enhancing Retrieval-augmented Generation with Knowledge Graph-Elicited Reasoning for Healthcare Copilot",
+            "publication_year": 2025,
+            "cited_by_count": 105,
+            "doi": "https://doi.org/10.1145/3696410.3714782"
+          },
+          {
+            "id": "https://openalex.org/W4402670423",
+            "title": "The Good and The Bad: Exploring Privacy Issues in Retrieval-Augmented Generation (RAG)",
+            "publication_year": 2024,
+            "cited_by_count": 100,
+            "doi": "https://doi.org/10.18653/v1/2024.findings-acl.267"
+          },
+          {
+            "id": "https://openalex.org/W4407856367",
+            "title": "Empowering LLMs by hybrid retrieval-augmented generation for domain-centric Q&A in smart manufacturing",
+            "publication_year": 2025,
+            "cited_by_count": 97,
+            "doi": "https://doi.org/10.1016/j.aei.2025.103212"
+          },
+          {
+            "id": "https://openalex.org/W4403560390",
+            "title": "CRUD-RAG: A Comprehensive Chinese Benchmark for Retrieval-Augmented Generation of Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 96,
+            "doi": "https://doi.org/10.1145/3701228"
+          },
+          {
+            "id": "https://openalex.org/W4409690035",
+            "title": "Enhancing medical AI with retrieval-augmented generation: A mini narrative review",
+            "publication_year": 2025,
+            "cited_by_count": 92,
+            "doi": "https://doi.org/10.1177/20552076251337177"
+          },
+          {
+            "id": "https://openalex.org/W4393299232",
+            "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+            "publication_year": 2024,
+            "cited_by_count": 84,
+            "doi": "https://doi.org/10.48550/arxiv.2402.19473"
+          },
+          {
+            "id": "https://openalex.org/W4392487838",
+            "title": "Fine Tuning vs. Retrieval Augmented Generation for Less Popular Knowledge",
+            "publication_year": 2024,
+            "cited_by_count": 78,
+            "doi": "https://doi.org/10.1145/3673791.3698415"
+          },
+          {
+            "id": "https://openalex.org/W4391631359",
+            "title": "Rag-Fusion: A New Take on Retrieval Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 78,
+            "doi": "https://doi.org/10.5121/ijnlc.2024.13103"
+          },
+          {
+            "id": "https://openalex.org/W4410929991",
+            "title": "Retrieval-Augmented Generation (RAG)",
+            "publication_year": 2025,
+            "cited_by_count": 77,
+            "doi": "https://doi.org/10.1007/s12599-025-00945-3"
+          },
+          {
+            "id": "https://openalex.org/W4399738410",
+            "title": "Retrieval-Augmented Generation\u2013Enabled GPT-4 for Clinical Trial Screening",
+            "publication_year": 2024,
+            "cited_by_count": 77,
+            "doi": "https://doi.org/10.1056/aioa2400181"
+          },
+          {
+            "id": "https://openalex.org/W4401042735",
+            "title": "Reducing hallucination in structured outputs via Retrieval-Augmented Generation",
+            "publication_year": 2024,
+            "cited_by_count": 77,
+            "doi": "https://doi.org/10.18653/v1/2024.naacl-industry.19"
+          },
+          {
+            "id": "https://openalex.org/W4411119292",
+            "title": "Knowledge Graph-Guided Retrieval Augmented Generation",
+            "publication_year": 2025,
+            "cited_by_count": 76,
+            "doi": "https://doi.org/10.18653/v1/2025.naacl-long.449"
+          },
+          {
+            "id": "https://openalex.org/W4405382136",
+            "title": "Effectiveness of retrieval augmented generation-based large language models for generating construction safety information",
+            "publication_year": 2024,
+            "cited_by_count": 76,
+            "doi": "https://doi.org/10.1016/j.autcon.2024.105926"
+          },
+          {
+            "id": "https://openalex.org/W4411120544",
+            "title": "GRAG: Graph Retrieval-Augmented Generation",
+            "publication_year": 2025,
+            "cited_by_count": 75,
+            "doi": "https://doi.org/10.18653/v1/2025.findings-naacl.232"
+          },
+          {
+            "id": "https://openalex.org/W4415800738",
+            "title": "G-Retriever: Retrieval-Augmented Generation for Textual Graph Understanding and Question Answering",
+            "publication_year": 2024,
+            "cited_by_count": 74,
+            "doi": "https://doi.org/10.52202/079017-4224"
+          },
+          {
+            "id": "https://openalex.org/W4414128336",
+            "title": "Retrieval-Augmented Generation (RAG) in Healthcare: A Comprehensive Review",
+            "publication_year": 2025,
+            "cited_by_count": 73,
+            "doi": "https://doi.org/10.3390/ai6090226"
+          },
+          {
+            "id": "https://openalex.org/W4412889782",
+            "title": "Medical Graph RAG: Evidence-based Medical Large Language Model via Graph Retrieval-Augmented Generation",
+            "publication_year": 2025,
+            "cited_by_count": 73,
+            "doi": "https://doi.org/10.18653/v1/2025.acl-long.1381"
+          },
+          {
+            "id": "https://openalex.org/W4400955423",
+            "title": "Enhancement of the Performance of Large Language Models in Diabetes Education through Retrieval-Augmented Generation: Comparative Study",
+            "publication_year": 2024,
+            "cited_by_count": 73,
+            "doi": "https://doi.org/10.2196/58041"
+          },
+          {
+            "id": "https://openalex.org/W4402671152",
+            "title": "DRAGIN: Dynamic Retrieval Augmented Generation based on the Real-time Information Needs of Large Language Models",
+            "publication_year": 2024,
+            "cited_by_count": 73,
+            "doi": "https://doi.org/10.18653/v1/2024.acl-long.702"
+          },
+          {
+            "id": "https://openalex.org/W4407189925",
+            "title": "Retrieval augmented generation-driven information retrieval and question answering in construction management",
+            "publication_year": 2025,
+            "cited_by_count": 72,
+            "doi": "https://doi.org/10.1016/j.aei.2025.103158"
+          },
+          {
+            "id": "https://openalex.org/W4404954244",
+            "title": "Graph Retrieval-Augmented Generation for Large Language Models: A Survey",
+            "publication_year": 2024,
+            "cited_by_count": 70,
+            "doi": "https://doi.org/10.1109/aixset62544.2024.00030"
+          },
+          {
+            "id": "https://openalex.org/W4401836449",
+            "title": "Retrieval augmented generation using engineering design knowledge",
+            "publication_year": 2024,
+            "cited_by_count": 69,
+            "doi": "https://doi.org/10.1016/j.knosys.2024.112410"
+          },
+          {
+            "id": "https://openalex.org/W4404944302",
+            "title": "An advanced retrieval-augmented generation system for manufacturing quality control",
+            "publication_year": 2024,
+            "cited_by_count": 64,
+            "doi": "https://doi.org/10.1016/j.aei.2024.103007"
+          },
+          {
+            "id": "https://openalex.org/W4408323770",
+            "title": "Enhancing the Precision and Interpretability of Retrieval-Augmented Generation (RAG) in Legal Technology: A Survey",
+            "publication_year": 2025,
+            "cited_by_count": 63,
+            "doi": "https://doi.org/10.1109/access.2025.3550145"
+          }
+        ],
+        "group_by": []
+      }
+    },
+    {
+      "capture": "research-audit-transformer.json",
+      "response": {
+        "meta": {
+          "count": 51266,
+          "db_response_time_ms": 195,
+          "page": 1,
+          "per_page": 50,
+          "groups_count": null,
+          "x_query": {
+            "oql": "works where title has (transformer)\n  and date >= (2024-01-01)\n  and date <= (2025-12-31)",
+            "oqo": {
+              "get_rows": "works",
+              "filter_rows": [
+                {
+                  "column_id": "display_name.search",
+                  "value": "transformer",
+                  "operator": "has"
+                },
+                {
+                  "column_id": "from_publication_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "column_id": "to_publication_date",
+                  "value": "2025-12-31"
+                }
+              ]
+            },
+            "url": "/works?filter=display_name.search:transformer,from_publication_date:2024-01-01,to_publication_date:2025-12-31&per_page=50"
+          },
+          "cost_usd": 0.001
+        },
+        "results": [
+          {
+            "id": "https://openalex.org/W4393183306",
+            "title": "Loss of Life Transformer Prediction Based on Stacking Ensemble Improved by Genetic Algorithm By IJISRT",
+            "publication_year": 2024,
+            "cited_by_count": 1320,
+            "doi": "https://doi.org/10.38124/ijisrt/ijisrt24mar1125"
+          },
+          {
+            "id": "https://openalex.org/W4400881081",
+            "title": "TransUNet: Rethinking the U-Net architecture design for medical image segmentation through the lens of transformers",
+            "publication_year": 2024,
+            "cited_by_count": 1298,
+            "doi": "https://doi.org/10.1016/j.media.2024.103280"
+          },
+          {
+            "id": "https://openalex.org/W4402667891",
+            "title": "Point Transformer V3: Simpler, Faster, Stronger",
+            "publication_year": 2024,
+            "cited_by_count": 591,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00463"
+          },
+          {
+            "id": "https://openalex.org/W4394828356",
+            "title": "GPT (Generative Pre-Trained Transformer)\u2014 A Comprehensive Review on Enabling Technologies, Potential Applications, Emerging Challenges, and Future Directions",
+            "publication_year": 2024,
+            "cited_by_count": 588,
+            "doi": "https://doi.org/10.1109/access.2024.3389497"
+          },
+          {
+            "id": "https://openalex.org/W4404821554",
+            "title": "Nucleotide Transformer: building and evaluating robust foundation models for human genomics",
+            "publication_year": 2024,
+            "cited_by_count": 489,
+            "doi": "https://doi.org/10.1038/s41592-024-02523-z"
+          },
+          {
+            "id": "https://openalex.org/W4413146238",
+            "title": "VGGT: Visual Geometry Grounded Transformer",
+            "publication_year": 2025,
+            "cited_by_count": 400,
+            "doi": "https://doi.org/10.1109/cvpr52734.2025.00499"
+          },
+          {
+            "id": "https://openalex.org/W4402754177",
+            "title": "TransNeXt: Robust Foveal Visual Perception for Vision Transformers",
+            "publication_year": 2024,
+            "cited_by_count": 398,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.01683"
+          },
+          {
+            "id": "https://openalex.org/W4390706297",
+            "title": "TTST: A Top- k Token Selective Transformer for Remote Sensing Image Super-Resolution",
+            "publication_year": 2024,
+            "cited_by_count": 394,
+            "doi": "https://doi.org/10.1109/tip.2023.3349004"
+          },
+          {
+            "id": "https://openalex.org/W4396685186",
+            "title": "Advancements in Generative AI: A Comprehensive Review of GANs, GPT, Autoencoders, Diffusion Model, and Transformers",
+            "publication_year": 2024,
+            "cited_by_count": 349,
+            "doi": "https://doi.org/10.1109/access.2024.3397775"
+          },
+          {
+            "id": "https://openalex.org/W4402499135",
+            "title": "Comparison of Vision Transformers and Convolutional Neural Networks in Medical Image Analysis: A Systematic Review",
+            "publication_year": 2024,
+            "cited_by_count": 327,
+            "doi": "https://doi.org/10.1007/s10916-024-02105-8"
+          },
+          {
+            "id": "https://openalex.org/W4396973073",
+            "title": "DA-TransUNet: integrating spatial and channel dual attention with transformer U-net for medical image segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 325,
+            "doi": "https://doi.org/10.3389/fbioe.2024.1398237"
+          },
+          {
+            "id": "https://openalex.org/W4392883923",
+            "title": "CellViT: Vision Transformers for precise cell segmentation and classification",
+            "publication_year": 2024,
+            "cited_by_count": 323,
+            "doi": "https://doi.org/10.1016/j.media.2024.103143"
+          },
+          {
+            "id": "https://openalex.org/W4413146579",
+            "title": "MambaVision: A Hybrid Mamba-Transformer Vision Backbone",
+            "publication_year": 2025,
+            "cited_by_count": 302,
+            "doi": "https://doi.org/10.1109/cvpr52734.2025.02352"
+          },
+          {
+            "id": "https://openalex.org/W4405219754",
+            "title": "BEVFormer: Learning Bird\u2019s-Eye-View Representation From LiDAR-Camera via Spatiotemporal Transformers",
+            "publication_year": 2024,
+            "cited_by_count": 265,
+            "doi": "https://doi.org/10.1109/tpami.2024.3515454"
+          },
+          {
+            "id": "https://openalex.org/W4393154023",
+            "title": "MedSegDiff-V2: Diffusion-Based Medical Image Segmentation with Transformer",
+            "publication_year": 2024,
+            "cited_by_count": 260,
+            "doi": "https://doi.org/10.1609/aaai.v38i6.28418"
+          },
+          {
+            "id": "https://openalex.org/W4392543906",
+            "title": "A Multilevel Multimodal Fusion Transformer for Remote Sensing Semantic Segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 260,
+            "doi": "https://doi.org/10.1109/tgrs.2024.3373033"
+          },
+          {
+            "id": "https://openalex.org/W4409326045",
+            "title": "MB-TaylorFormer V2: Improved Multi-Branch Linear Transformer Expanded by Taylor Formula for Image Restoration",
+            "publication_year": 2025,
+            "cited_by_count": 244,
+            "doi": "https://doi.org/10.1109/tpami.2025.3559891"
+          },
+          {
+            "id": "https://openalex.org/W4401070841",
+            "title": "Transformer-Based Visual Segmentation: A Survey",
+            "publication_year": 2024,
+            "cited_by_count": 230,
+            "doi": "https://doi.org/10.1109/tpami.2024.3434373"
+          },
+          {
+            "id": "https://openalex.org/W4391376377",
+            "title": "SCTransNet: Spatial-Channel Cross Transformer Network for Infrared Small Target Detection",
+            "publication_year": 2024,
+            "cited_by_count": 229,
+            "doi": "https://doi.org/10.1109/tgrs.2024.3383649"
+          },
+          {
+            "id": "https://openalex.org/W4392543517",
+            "title": "VRT: A Video Restoration Transformer",
+            "publication_year": 2024,
+            "cited_by_count": 227,
+            "doi": "https://doi.org/10.1109/tip.2024.3372454"
+          },
+          {
+            "id": "https://openalex.org/W4402726980",
+            "title": "RMT: Retentive Networks Meet Vision Transformers",
+            "publication_year": 2024,
+            "cited_by_count": 226,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00539"
+          },
+          {
+            "id": "https://openalex.org/W4392903274",
+            "title": "Hyperspectral Image Classification Using Groupwise Separable Convolutional Vision Transformer Network",
+            "publication_year": 2024,
+            "cited_by_count": 219,
+            "doi": "https://doi.org/10.1109/tgrs.2024.3377610"
+          },
+          {
+            "id": "https://openalex.org/W4391811778",
+            "title": "\u03b2-Variational autoencoders and transformers for reduced-order modelling of fluid flows",
+            "publication_year": 2024,
+            "cited_by_count": 212,
+            "doi": "https://doi.org/10.1038/s41467-024-45578-4"
+          },
+          {
+            "id": "https://openalex.org/W4402727345",
+            "title": "Adapt or Perish: Adaptive Sparse Transformer with Attentive Feature Refinement for Image Restoration",
+            "publication_year": 2024,
+            "cited_by_count": 209,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00285"
+          },
+          {
+            "id": "https://openalex.org/W4398138244",
+            "title": "GridFormer: Residual Dense Transformer with Grid Structure for Image Restoration in Adverse Weather Conditions",
+            "publication_year": 2024,
+            "cited_by_count": 208,
+            "doi": "https://doi.org/10.1007/s11263-024-02056-0"
+          },
+          {
+            "id": "https://openalex.org/W4392383209",
+            "title": "From CNN to Transformer: A Review of Medical Image Segmentation Models",
+            "publication_year": 2024,
+            "cited_by_count": 207,
+            "doi": "https://doi.org/10.1007/s10278-024-00981-7"
+          },
+          {
+            "id": "https://openalex.org/W4395667411",
+            "title": "A multimodal approach to cross-lingual sentiment analysis with ensemble of transformer and LLM",
+            "publication_year": 2024,
+            "cited_by_count": 203,
+            "doi": "https://doi.org/10.1038/s41598-024-60210-7"
+          },
+          {
+            "id": "https://openalex.org/W4400409682",
+            "title": "SwinJSCC: Taming Swin Transformer for Deep Joint Source-Channel Coding",
+            "publication_year": 2024,
+            "cited_by_count": 202,
+            "doi": "https://doi.org/10.1109/tccn.2024.3424842"
+          },
+          {
+            "id": "https://openalex.org/W4415799108",
+            "title": "TimeXer: Empowering Transformers for Time Series Forecasting with Exogenous Variables",
+            "publication_year": 2024,
+            "cited_by_count": 195,
+            "doi": "https://doi.org/10.52202/079017-0015"
+          },
+          {
+            "id": "https://openalex.org/W4401481079",
+            "title": "CSWin-UNet: Transformer UNet with cross-shaped windows for medical image segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 192,
+            "doi": "https://doi.org/10.1016/j.inffus.2024.102634"
+          },
+          {
+            "id": "https://openalex.org/W4392796741",
+            "title": "C\u00b2Former: Calibrated and Complementary Transformer for RGB-Infrared Object Detection",
+            "publication_year": 2024,
+            "cited_by_count": 192,
+            "doi": "https://doi.org/10.1109/tgrs.2024.3376819"
+          },
+          {
+            "id": "https://openalex.org/W4404851540",
+            "title": "Wind and solar power forecasting based on hybrid CNN-ABiLSTM, CNN-transformer-MLP models",
+            "publication_year": 2024,
+            "cited_by_count": 189,
+            "doi": "https://doi.org/10.1016/j.renene.2024.122055"
+          },
+          {
+            "id": "https://openalex.org/W4406080987",
+            "title": "A systematic review for transformer-based long-term series forecasting",
+            "publication_year": 2025,
+            "cited_by_count": 181,
+            "doi": "https://doi.org/10.1007/s10462-024-11044-2"
+          },
+          {
+            "id": "https://openalex.org/W4401455022",
+            "title": "Transformers in single-cell omics: a review and new perspectives",
+            "publication_year": 2024,
+            "cited_by_count": 180,
+            "doi": "https://doi.org/10.1038/s41592-024-02353-z"
+          },
+          {
+            "id": "https://openalex.org/W4394008640",
+            "title": "CasFormer: Cascaded transformers for fusion-aware computational hyperspectral imaging",
+            "publication_year": 2024,
+            "cited_by_count": 179,
+            "doi": "https://doi.org/10.1016/j.inffus.2024.102408"
+          },
+          {
+            "id": "https://openalex.org/W4402727538",
+            "title": "SHViT: Single-Head Vision Transformer with Memory Efficient Macro Design",
+            "publication_year": 2024,
+            "cited_by_count": 178,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.00550"
+          },
+          {
+            "id": "https://openalex.org/W4399367209",
+            "title": "Transformers and large language models in healthcare: A review",
+            "publication_year": 2024,
+            "cited_by_count": 177,
+            "doi": "https://doi.org/10.1016/j.artmed.2024.102900"
+          },
+          {
+            "id": "https://openalex.org/W4393159321",
+            "title": "SCTNet: Single-Branch CNN with Transformer Semantic Information for Real-Time Segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 177,
+            "doi": "https://doi.org/10.1609/aaai.v38i6.28457"
+          },
+          {
+            "id": "https://openalex.org/W4401200174",
+            "title": "ITFuse: An interactive transformer for infrared and visible image fusion",
+            "publication_year": 2024,
+            "cited_by_count": 175,
+            "doi": "https://doi.org/10.1016/j.patcog.2024.110822"
+          },
+          {
+            "id": "https://openalex.org/W4402037270",
+            "title": "CTNet: a convolutional transformer network for EEG-based motor imagery classification",
+            "publication_year": 2024,
+            "cited_by_count": 174,
+            "doi": "https://doi.org/10.1038/s41598-024-71118-7"
+          },
+          {
+            "id": "https://openalex.org/W4390787329",
+            "title": "Improving RGB-infrared object detection with cascade alignment-guided transformer",
+            "publication_year": 2024,
+            "cited_by_count": 172,
+            "doi": "https://doi.org/10.1016/j.inffus.2024.102246"
+          },
+          {
+            "id": "https://openalex.org/W4394597906",
+            "title": "MotionAGFormer: Enhancing 3D Human Pose Estimation with a Transformer-GCNFormer Network",
+            "publication_year": 2024,
+            "cited_by_count": 171,
+            "doi": "https://doi.org/10.1109/wacv57701.2024.00677"
+          },
+          {
+            "id": "https://openalex.org/W4391594064",
+            "title": "ScribFormer: Transformer Makes CNN Work Better for Scribble-Based Medical Image Segmentation",
+            "publication_year": 2024,
+            "cited_by_count": 167,
+            "doi": "https://doi.org/10.1109/tmi.2024.3363190"
+          },
+          {
+            "id": "https://openalex.org/W4406330070",
+            "title": "Vision Transformers for Image Classification: A Comparative Survey",
+            "publication_year": 2025,
+            "cited_by_count": 166,
+            "doi": "https://doi.org/10.3390/technologies13010032"
+          },
+          {
+            "id": "https://openalex.org/W4399659782",
+            "title": "Investigation on the combined effect of the hydrogen premixing and nanoparticle mixed pyrolysed oil of transformer oil waste in engine characteristics",
+            "publication_year": 2024,
+            "cited_by_count": 166,
+            "doi": "https://doi.org/10.1016/j.ijhydene.2024.05.304"
+          },
+          {
+            "id": "https://openalex.org/W4396918399",
+            "title": "Conv2Former: A Simple Transformer-Style ConvNet for Visual Recognition",
+            "publication_year": 2024,
+            "cited_by_count": 165,
+            "doi": "https://doi.org/10.1109/tpami.2024.3401450"
+          },
+          {
+            "id": "https://openalex.org/W4391401593",
+            "title": "Lightweight transformer image feature extraction network",
+            "publication_year": 2024,
+            "cited_by_count": 162,
+            "doi": "https://doi.org/10.7717/peerj-cs.1755"
+          },
+          {
+            "id": "https://openalex.org/W4392240693",
+            "title": "Advanced hybrid LSTM-transformer architecture for real-time multi-task prediction in engineering systems",
+            "publication_year": 2024,
+            "cited_by_count": 161,
+            "doi": "https://doi.org/10.1038/s41598-024-55483-x"
+          },
+          {
+            "id": "https://openalex.org/W4402704627",
+            "title": "Autoregressive Queries for Adaptive Tracking with Spatio-Temporal Transformers",
+            "publication_year": 2024,
+            "cited_by_count": 159,
+            "doi": "https://doi.org/10.1109/cvpr52733.2024.01826"
+          },
+          {
+            "id": "https://openalex.org/W4390918905",
+            "title": "A Generative Pretrained Transformer (GPT)\u2013Powered Chatbot as a Simulated Patient to Practice History Taking: Prospective, Mixed Methods Study",
+            "publication_year": 2024,
+            "cited_by_count": 158,
+            "doi": "https://doi.org/10.2196/53961"
+          }
+        ],
+        "group_by": []
+      }
+    }
+  ]
+}

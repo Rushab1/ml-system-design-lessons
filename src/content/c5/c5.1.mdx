@@ -3,18 +3,16 @@ id: c5.1
 chapter: 5
 title: Retrieval fundamentals
 subtitle: Why RAG exists, and the machinery underneath it — embeddings, chunking, indexes, BM25, hybrid
-refs: []
 estimatedMinutes: 60
 ---
 
 ## TL;DR
 
-**RAG** (retrieval-augmented generation) means: before answering, fetch relevant text from a corpus and paste it into the prompt. It exists because a language model's weights are a lossy, frozen, unattributable compression of whatever it saw during training. Retrieval fixes exactly three things that weight-editing cannot: the knowledge is **fresh** (you re-index, you don't re-train), it is **private** (your documents never enter anyone's training set), and it is **attributable** (you can point at the sentence the answer came from). Fine-tuning teaches a model *how to behave* — format, tone, tool-call syntax, a domain's phrasing. It is a bad way to teach volatile facts, because facts change weekly and gradient descent does not give you a citation.
+**RAG** (retrieval-augmented generation) supplies retrieved evidence to a generator. It separates updating a knowledge source from retraining model weights, making freshness, access control and attribution explicit engineering problems. It does not automatically guarantee privacy: document retention, training use and access depend on the deployed services and their contracts. Fine-tuning can change knowledge as well as behavior, but is usually a poor update mechanism for frequently changing facts that must be cited or revoked. Retrieval only helps when the right evidence reaches the model and the answer uses it correctly.
 
 The rest of the machinery is a chain, and the weakest link caps the whole system: text is **chunked** into passages, each passage is **embedded** into a vector, the vectors go into an **index** that answers nearest-neighbour queries approximately but fast, and at query time a **dense** (embedding) search and a **sparse** (keyword/BM25) search are run and fused, because each one fails on exactly the queries the other handles. Each stage is derived from the problem it solves and from what breaks it. Every design choice here has a measurable version, and the question that settles each one is the same: *how would you know it's any good?*
 
 ## What you'll be able to do after this lesson
-
 - State the decision framework for RAG vs fine-tuning vs long context vs no retrieval at all, by freshness, attribution, privacy, cost and latency.
 - Explain what an embedding encodes, and show algebraically why cosine, dot product and Euclidean distance give the *same ranking* on normalized vectors — and when normalization is the thing that saves you.
 - Name the four places embeddings reliably fail, and say what you'd add to the system for each.
@@ -22,16 +20,34 @@ The rest of the machinery is a chain, and the weakest link caps the whole system
 - Say when a flat index is the right answer, and describe HNSW in one paragraph without hand-waving.
 - Compute a BM25 term score and use it to explain why exact identifiers destroy pure vector search.
 - Describe reciprocal rank fusion and defend hybrid retrieval as the default.
+- Choose an inference or training intervention and test complete text-and-table evidence retrieval.
 
 ## Part 1 — What retrieval buys you that training does not
 
 Start from the failure. Ask a model about your company's Q3 refund policy. Three things can go wrong: it never saw the policy, it saw the Q1 version, or it produces something plausible and unsourced. Retrieval attacks all three at once by moving the fact out of the weights and into the prompt, where it is a string you control, timestamped, with a URL attached.
 
-**Fine-tuning** adjusts weights on your data. It is right when you need the model to *act* differently — emit valid JSON in your schema, adopt a clinical register, call your internal tools correctly. It is wrong for facts: every document change means another training run, you cannot cite, and you cannot revoke a fact for one tenant without retraining. The clean separation: fine-tuning teaches behaviour and format; retrieval supplies volatile facts.
+**Fine-tuning** adjusts weights and can affect behavior and knowledge. Retrieval is often the better operational mechanism for volatile evidence because a source can be updated, permissioned and cited without retraining. Fine-tuning and retrieval can also be combined: train evidence use while retaining external sources as the update path.
 
-**Long context** is the live 2026 challenge: models take a million tokens, so why not paste the corpus in? Arithmetic. A 1M-token prompt at roughly \$3 per million input tokens costs about \$3 before you generate a single token, and time-to-first-token runs into tens of seconds. Retrieving 5 chunks of 500 tokens is 2,500 tokens — a fraction of a cent and tens of milliseconds. Quality degrades too: models underweight material in the middle of a very long context (the "lost in the middle" effect), so stuffing can be *worse* than a tight context. The inversion holds too: if the corpus is small and static, a 30-page product spec, skip retrieval and put it in the prompt with caching. Retrieval earns its complexity when the corpus is large, changing, or permissioned.
+**Long context** is a competing evidence-access strategy. At an illustrative USD 3 per million uncached input tokens, one million tokens costs USD 3 and 2,500 tokens costs USD 0.0075, before output and retrieval expenses. Latency and quality require measurement; context capacity alone does not tell you how well evidence is used. A small stable corpus may work well as a cached prompt. Larger or frequently changing corpora can benefit from selective retrieval. Test both, including repeated requests within each tenant; [c5.2](/c/c5/c5.2) explains the comparative research and routing decision.
 
 The general form of that argument: **retrieval is a tool, not automatically a pipeline.** Corpus shape decides. A navigable, structured corpus (a codebase, a well-organized wiki) often does better with an agent running keyword search and following links. A large unstructured permissioned corpus gets the full hybrid-plus-filter treatment. You settle it by prototyping the cheap option and measuring recall on labelled questions, not by arguing.
+
+<ResearchFlow variant="retrieval" />
+
+### RAG also has training choices
+
+**Goal — identify which part of the system a training change can improve.** The [2024 survey on RAG meeting LLMs](https://arxiv.org/abs/2405.06211) covers both architecture and training. “Add search to a frozen model” is one deployment choice, not the whole field.
+
+| Change | Data it needs | Failure it can address | What it cannot guarantee |
+|---|---|---|---|
+| Inference-only retrieval and prompting | Corpus and an evaluation set | Missing current evidence | Relevant candidates or faithful generation |
+| Train retriever/reranker | Query–evidence labels and hard negatives | Poor matching or candidate ordering | Correct use of retrieved evidence |
+| Retrieval-aware generator training | Evidence-conditioned answer examples | Ignoring evidence, weak attribution | Recovering evidence never retrieved |
+| Train retrieval/reflection policy | Trajectories, critique labels or task rewards | Wrong decision to search, stop or refine | Safe sources or correct reward specification |
+
+<ResearchFlow variant="ragTraining" />
+
+Hold the corpus snapshot and evaluation split fixed when comparing these interventions. Train a retriever only after verifying that ingestion preserved the evidence: no matching objective can recover a table that was dropped before indexing. [c5.2](/c/c5/c5.2) develops Self-RAG, Corrective RAG and Search-R1 as distinct ways of controlling evidence access.
 
 ## Part 2 — Embeddings
 
@@ -57,7 +73,7 @@ Four failure classes, all traceable to "trained for topical similarity":
 
 1. **Negation.** "Drug X is safe for pregnant patients" and "Drug X is not safe for pregnant patients" are near-identical topically and land close together. Contrastive training rarely saw that distinction as a hard negative.
 2. **Temporal reasoning.** "The 2024 policy" and "the 2026 policy" differ by two characters and enormously in meaning. Fix with metadata and filters, not with a better encoder.
-3. **Exact identifiers.** SKUs, error codes, part numbers, ticket IDs. `ERR_2041` gets tokenized into fragments that carry no learned meaning; it is topically identical to `ERR_2040`. This is the single most common real-world vector-search failure, and it is why hybrid exists.
+3. **Exact identifiers.** SKUs, error codes, part numbers and ticket IDs can differ by one character while having similar embeddings. A query for `ERR_2041` may retrieve `ERR_2040` even though it refers to a different error. Exact-match or lexical retrieval can complement dense retrieval for these queries.
 4. **Domain jargon.** If the encoder never saw your vocabulary, "the widget desyncs in bay 3" embeds as generic noise.
 
 ## Part 3 — Chunking
@@ -82,7 +98,7 @@ A financial report says on page 1 "all amounts in thousands." Page 40 is chunked
 
 Fixes, cheapest first: prepend the document title and heading path to each chunk's embedded text; carry a document-level summary or a units/definitions header in metadata and prepend it at assembly time; use parent-child so the reader sees the enclosing section.
 
-**The question that settles a chunking choice is "how would you know it is any good?"** Build 30–50 questions from real traffic, label which chunks contain the answer, and measure **recall@k** — for a chosen cutoff $k$, the fraction of questions whose gold chunk appears among the top $k$ retrieved chunks. Then chunking becomes a knob you turn against a number instead of a taste debate. A chunking taxonomy recited without this measurement is a preference, not a decision.
+**The question that settles a chunking choice is “does the needed evidence survive and get retrieved?”** Label real questions with supporting spans or acceptable evidence sets, then map them to chunks for each chunking variant. With one gold chunk, hit@k is the fraction of questions retrieving it. With several required pieces, measure evidence recall and complete-evidence-set success too: retrieving the revenue row without its units header may have high topical relevance and still be insufficient. A small initial set can diagnose large failures; it cannot establish tiny performance differences.
 
 ## Part 4 — Vector indexes
 
@@ -128,7 +144,7 @@ Now the three-way tradeoff has a lever on every side, and they push each other a
 
 **Metadata filtering** interacts with the index choice, and the interaction is not free. Pre-filtering (restrict to the allowed set, then search) is correct but can wreck the graph's connectivity if the filter is selective; post-filtering (search, then drop disallowed hits) is fast but can return three results when you asked for ten. For access control the answer is always pre-filtering — returning zero results is a bug, returning another tenant's document is an incident.
 
-## Part 5 — Sparse retrieval, BM25, and why hybrid wins
+## Part 5 — Sparse retrieval, BM25, and when hybrid helps
 
 Sparse retrieval represents a document as a vector over the vocabulary, almost all zeros. It is exact lexical matching with weights, served from an inverted index (term → list of documents containing it). **BM25** is the standard scoring function. It scores a single query term $t$ against a single document $d$, and a document's score for a multi-term query is the sum of these over the query's terms:
 
@@ -156,7 +172,7 @@ $$
 
 A factor of roughly 14. BM25 treats the rare exact token as overwhelmingly the most informative thing in the query — which is precisely the signal a dense encoder throws away, because to an embedding model `ERR_2041` is just a smear of subword fragments near `ERR_2040`. So the failure where users search by SKU or error code and the vector index returns near-miss codes is a representation failure, not an index or threshold failure, and the repair is to put a retriever alongside it that scores exact tokens.
 
-The reverse case is just as real. A user asks "my laptop won't boot after the update" and the document says "device fails POST following firmware upgrade." Zero term overlap, so BM25 scores it near nothing; the embedding nails it. Neither method dominates, they fail on disjoint query types, and that is the whole argument for **hybrid** being the default rather than an optimization.
+The reverse case is just as real. A user asks "my laptop won't boot after the update" and the document says "device fails POST following firmware upgrade." Zero term overlap, so BM25 scores it near nothing; the embedding nails it. Their strengths are complementary, although their failures are not perfectly disjoint. **Hybrid** is a strong baseline; compare it with each retriever alone on your query slices rather than assuming fusion always wins.
 
 ### Fusing the two lists
 
@@ -200,6 +216,12 @@ A question and the passage answering it do not look alike: passages are declarat
 
 All three add latency and cost before the first byte of retrieval. Add them when your eval set shows a recall problem that they fix — not by default.
 
+### A 2026 stress test: text and tables together
+
+**Goal — test evidence retrieval and numerical reasoning in the same pipeline.** [T2-RAGBench](https://aclanthology.org/2026.eacl-long.8/) (EACL 2026) evaluates questions over mixed text and tables with actual retrieval; a hybrid BM25 configuration was strongest in its comparison, while substantial difficulty remained. This supports testing complementary retrieval signals, not declaring one recipe universally best.
+
+For our financial-report example, include the table row, column year, units declaration and any relevant footnote in the gold evidence set. Compare sparse-only, dense-only and hybrid systems under the same context budget. Report all-evidence retrieval and final numerical accuracy separately; an oracle-context test measures the reader and cannot replace the full-pipeline test. See the stage-by-stage diagnostic in [c5.2](/c/c5/c5.2#part-10--evaluate-the-evidence-path-not-just-the-final-answer).
+
 ## Tradeoff matrix
 
 | Choice | Favours | Costs | Pick it when |
@@ -242,3 +264,13 @@ All three add latency and cost before the first byte of retrieval. Add them when
 ## Take the quiz
 
 **[Take the quiz →](/c/c5/c5.1/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Fan et al. (KDD 2024), [A Survey on RAG Meeting LLMs: Towards Retrieval-Augmented Large Language Models](https://arxiv.org/abs/2405.06211): architectural and training taxonomy used above.
+- [T2-RAGBench: Text-and-Table Benchmark for Evaluating Retrieval-Augmented Generation](https://aclanthology.org/2026.eacl-long.8/) (EACL 2026): mixed-evidence evaluation.

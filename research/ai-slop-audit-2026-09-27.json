@@ -1,0 +1,1522 @@
+{
+  "metadata": {
+    "date": "2026-09-27",
+    "scope": "33 lessons and 33 paired quizzes; landing-page copy and curriculum guidance inspected separately",
+    "method": "Full-corpus pattern screening; contextual editorial review of selected candidates, chapter openings and repeated boilerplate. Not a line-by-line technical proof audit, exhaustive copyedit or AI-authorship detector.",
+    "book_source_changed": false,
+    "findings": 66,
+    "priority_counts": {
+      "P1": 30,
+      "P2": 35,
+      "P3": 1
+    },
+    "book_occurrences": 136,
+    "unique_book_locations": 135,
+    "all_occurrences_including_upstream_and_landing": 140,
+    "screened_file_count": 66,
+    "screened_whitespace_token_count": 407191,
+    "limitations": "P1 records identify unsupported scope, missing conditions, internal tensions or omitted source material. They are editing and fact-check tasks, not claims that every underlying technical result has been independently disproved."
+  },
+  "findings": [
+    {
+      "id": "AS-001",
+      "priority": "P1",
+      "category": "Unfinished explanation",
+      "title": "Five deferrals to an AI assistant",
+      "why": "These are instructions to obtain missing explanations elsewhere, embedded where the book should state a result or cite a source. Four also guess what an interviewer will or will not ask. The omissions matter because the surrounding claims depend on theorem conditions.",
+      "suggested_action": "Replace each deferral with the precise scoped statement and a primary-source or appendix link. Keep proof details optional if necessary; do not substitute an AI prompt for a citation. Verify the James–Stein, nearest-neighbour error-bound and distance-concentration conditions during that edit.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.3.mdx",
+          "line": 517,
+          "excerpt": "ask an AI assistant like Claude or ChatGPT",
+          "context": "The trace appears because $\\operatorname{Cov}(\\hat\\beta)$ is a matrix; its diagonal entries are the component variances, and their sum is the estimator's total variance. Ridge is biased, but its reduction in total variance can outweigh its squared bias and produce lower total MSE than OLS. Look at the two terms and the trade is visible: you accept a nonzero first term to make the second term much smaller. OLS minimizes variance only *among linear unbiased estimators*, an often-overlooked restriction. That shrinkage can beat the unbiased estimate on *total* MSE is a real effect, not a numerical hack. (The classic formal result is James–Stein (1961) on shrinkage dominance: once you are estimating three or more means at once, shrinking them all toward a common point beats the plain sample mean on total squared error at *every* true parameter value. For the precise inadmissibility statement and proof, ask an AI assistant like Claude or ChatGPT — an interviewer won't.) Ridge applies that bias–variance logic to regression."
+        },
+        {
+          "path": "src/content/c1/c1.3.mdx",
+          "line": 606,
+          "excerpt": "ask an AI for the precise statement",
+          "context": "- **\"When is a biased estimator better than OLS?\"** — bias-variance: ridge trades bias for a larger variance cut → lower MSE. (The formal shrinkage-dominance result is James–Stein; ask an AI for the precise statement — an interviewer won't.)"
+        },
+        {
+          "path": "src/content/c1/c1.3.quiz.mdx",
+          "line": 145,
+          "excerpt": "ask an AI assistant (Claude or ChatGPT)",
+          "context": "**The intuition (skip the theorem).** With many noisy coefficients, shrinking them all toward zero gives up a little bias to buy a large cut in variance — so on *total* MSE the shrunk estimate can beat the unbiased one. That is the whole reason ridge is principled and not a hack. There is a celebrated formal result making this precise for a high-dimensional Gaussian mean, but no interviewer will ask you to reproduce it — if you want the exact statement and proof, ask an AI assistant (Claude or ChatGPT) to walk you through it."
+        },
+        {
+          "path": "src/content/c1/c1.8.quiz.mdx",
+          "line": 199,
+          "excerpt": "for the exact statement, ask an AI assistant",
+          "context": "(The general $M$-class form carries an extra $M/(M-1)$ factor; for the exact statement, ask an AI assistant — an interviewer wants the $2R^\\star$ takeaway, not the constant.)"
+        },
+        {
+          "path": "src/content/c1/c1.8.mdx",
+          "line": 200,
+          "excerpt": "for the formal variance-ratio statement, ask an AI assistant",
+          "context": "In high dimensions, distances **concentrate**: for a query against $n$ points, the ratio of the farthest to the nearest distance tends to 1. Sit with that for a second. If the farthest point is essentially the same distance away as the nearest one, then the word \"nearest\" has stopped carrying information, and the vote you take is close to arbitrary. Beyer et al. (1999) make this precise — under mild conditions the ratio of farthest to nearest distance converges to 1 (for the formal variance-ratio statement, ask an AI assistant)."
+        }
+      ]
+    },
+    {
+      "id": "AS-002",
+      "priority": "P2",
+      "category": "Repeated coaching",
+      "title": "Unsubstantiated interview-value ranking repeated in 26 quizzes",
+      "why": "The same sentence claims a measured popularity order and near-complete coverage without giving a measurement basis. Repetition adds no subject knowledge.",
+      "suggested_action": "Delete the sentence from each quiz. Preserve the intended question order; if the ranking is editorial judgment, that does not need to be advertised as empirical coverage.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.1.quiz.mdx",
+          "line": 824,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.2.quiz.mdx",
+          "line": 949,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.3.quiz.mdx",
+          "line": 478,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.4.quiz.mdx",
+          "line": 445,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.5.quiz.mdx",
+          "line": 528,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.6.quiz.mdx",
+          "line": 337,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.7.quiz.mdx",
+          "line": 323,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.8.quiz.mdx",
+          "line": 639,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c1/c1.9.quiz.mdx",
+          "line": 632,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c10/c10.1.quiz.mdx",
+          "line": 383,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c10/c10.2.quiz.mdx",
+          "line": 424,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c10/c10.3.quiz.mdx",
+          "line": 441,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c2/c2.1.quiz.mdx",
+          "line": 336,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c2/c2.2.quiz.mdx",
+          "line": 420,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c2/c2.3.quiz.mdx",
+          "line": 369,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c6/c6.1.quiz.mdx",
+          "line": 179,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c6/c6.2.quiz.mdx",
+          "line": 199,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c6/c6.3.quiz.mdx",
+          "line": 200,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c7/c7.1.quiz.mdx",
+          "line": 293,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c7/c7.2.quiz.mdx",
+          "line": 306,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c8/c8.1.quiz.mdx",
+          "line": 418,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c8/c8.2.quiz.mdx",
+          "line": 315,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c8/c8.3.quiz.mdx",
+          "line": 314,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c9/c9.1.quiz.mdx",
+          "line": 412,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c9/c9.2.quiz.mdx",
+          "line": 275,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        },
+        {
+          "path": "src/content/c9/c9.3.quiz.mdx",
+          "line": 277,
+          "excerpt": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.",
+          "context": "They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it."
+        }
+      ]
+    },
+    {
+      "id": "AS-003",
+      "priority": "P2",
+      "category": "Repeated coaching",
+      "title": "Timing and frequency preamble repeated in eight quizzes",
+      "why": "This is study coaching rather than an introduction to the topic. The authoring skill explicitly excludes rapid-fire timing/coaching preambles.",
+      "suggested_action": "Remove the preamble and begin with the questions. Preserve any genuinely topic-specific scope information separately.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.1.quiz.mdx",
+          "line": 823,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 17 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.2.quiz.mdx",
+          "line": 948,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 12 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.3.quiz.mdx",
+          "line": 477,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 18 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.5.quiz.mdx",
+          "line": 527,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 13 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.6.quiz.mdx",
+          "line": 336,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 17 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.7.quiz.mdx",
+          "line": 322,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 14 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.8.quiz.mdx",
+          "line": 638,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 16 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        },
+        {
+          "path": "src/content/c1/c1.9.quiz.mdx",
+          "line": 631,
+          "excerpt": "Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.",
+          "context": "These 14 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest."
+        }
+      ]
+    },
+    {
+      "id": "AS-004",
+      "priority": "P2",
+      "category": "Generic metadata",
+      "title": "Seven quiz descriptions I made indistinguishable in the recent update",
+      "why": "The description could belong to any technical quiz. Reusing it across all seven transformer, agent and RAG quizzes loses useful topic information.",
+      "suggested_action": "Replace each with a short topic-specific description, such as 'Twelve worked questions on attention shapes, masking, positional information and long-context evidence.'",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.1.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        },
+        {
+          "path": "src/content/c3/c3.2.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        },
+        {
+          "path": "src/content/c3/c3.3.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        },
+        {
+          "path": "src/content/c4/c4.1.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        },
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        },
+        {
+          "path": "src/content/c5/c5.1.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        },
+        {
+          "path": "src/content/c5/c5.2.quiz.mdx",
+          "line": 5,
+          "excerpt": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits.",
+          "context": "description: Twelve worked questions on mechanisms, engineering tradeoffs, research findings and their limits."
+        }
+      ]
+    },
+    {
+      "id": "AS-005",
+      "priority": "P2",
+      "category": "Generic introduction",
+      "title": "Seven formulaic quiz introductions from the recent update",
+      "why": "The introductory clause repeats the same generic promise. The following qualification about illustrative numerical scenarios is useful and should not be deleted indiscriminately.",
+      "suggested_action": "Name what this quiz actually tests, or remove the generic clause when the description already does that. Keep the numerical-scenario qualification where needed.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.1.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c3/c3.1). Numerical scenarios are illustrative unless a source is named."
+        },
+        {
+          "path": "src/content/c3/c3.2.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c3/c3.2). Numerical scenarios are illustrative unless a source is named."
+        },
+        {
+          "path": "src/content/c3/c3.3.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c3/c3.3). Numerical scenarios are illustrative unless a source is named."
+        },
+        {
+          "path": "src/content/c4/c4.1.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c4/c4.1). Numerical scenarios are illustrative unless a source is named."
+        },
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c4/c4.2). Numerical scenarios are illustrative unless a source is named."
+        },
+        {
+          "path": "src/content/c5/c5.1.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c5/c5.1). Numerical scenarios are illustrative unless a source is named."
+        },
+        {
+          "path": "src/content/c5/c5.2.quiz.mdx",
+          "line": 9,
+          "excerpt": "Twelve worked questions test the mechanisms, arithmetic and evidence limits",
+          "context": "Twelve worked questions test the mechanisms, arithmetic and evidence limits in [the lesson](/c/c5/c5.2). Numerical scenarios are illustrative unless a source is named."
+        }
+      ]
+    },
+    {
+      "id": "AS-006",
+      "priority": "P3",
+      "category": "Redundant signposting",
+      "title": "Seven reference-section goals describe the editorial process",
+      "why": "The repeated goal tells the reader what a bibliography is doing. Publication dates and revision distinctions are useful; the repeated process narration is optional padding.",
+      "suggested_action": "Keep the research cutoff and original/revision-date information as a compact reference note. Omit the repeated goal if it adds nothing beyond the references heading. Preserve substantive goal-first teaching elsewhere.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.1.mdx",
+          "line": 250,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        },
+        {
+          "path": "src/content/c3/c3.2.mdx",
+          "line": 257,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        },
+        {
+          "path": "src/content/c3/c3.3.mdx",
+          "line": 369,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        },
+        {
+          "path": "src/content/c4/c4.1.mdx",
+          "line": 224,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        },
+        {
+          "path": "src/content/c4/c4.2.mdx",
+          "line": 287,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        },
+        {
+          "path": "src/content/c5/c5.1.mdx",
+          "line": 271,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        },
+        {
+          "path": "src/content/c5/c5.2.mdx",
+          "line": 369,
+          "excerpt": "connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.",
+          "context": "**Goal — connect the mechanisms to primary sources, with original publication dates distinguished from later revisions.** Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed."
+        }
+      ]
+    },
+    {
+      "id": "AS-007",
+      "priority": "P1",
+      "category": "Unsupported prevalence",
+      "title": "The data-pipeline opening turns a scenario into a population claim",
+      "why": "An effective hypothetical postmortem is followed by an unsupported statement about why most production ML systems fail.",
+      "suggested_action": "Label the numerical postmortem as illustrative and say 'A data-pipeline assumption can fail while the modeling code remains unchanged.' Retain the example and the concrete failure mechanism.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.1.mdx",
+          "line": 12,
+          "excerpt": "Most ML systems fail in production",
+          "context": "Picture the postmortem. The model is fine. The architecture diagram is fine. The offline AUC was 0.93 and the production AUC is 0.74, and nobody can find the bug because there isn't a bug in the modeling code. Most ML systems fail in production not because the model is wrong but because the **data pipeline silently violated an assumption the model was trained under**. This lesson teaches the data architecture, sampling math, splitting strategies, and leakage detection that make production ML *work* — derived, with worked examples, not just stated."
+        }
+      ]
+    },
+    {
+      "id": "AS-008",
+      "priority": "P2",
+      "category": "Authority and self-promotion",
+      "title": "The leakage introduction ranks itself and the field",
+      "why": "The paragraph combines 'most important', 'single most common', an explanation of course design and a claim that nobody owns leakage. Those claims distract from the mechanism.",
+      "suggested_action": "Start with the definition of leakage and explain how it inflates offline performance. Remove the unsupported superlatives and the book's self-assessment.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.1.mdx",
+          "line": 464,
+          "excerpt": "This is the most important section of the lesson.",
+          "context": "This is the most important section of the lesson. Data leakage is the single most common reason ML systems pass offline evaluation and fail in production. Yet it's rarely *the* topic of any one course or chapter — it gets distributed across \"feature engineering,\" \"experimentation,\" and \"model evaluation.\" That scattering is itself part of why it keeps happening: nobody owns it. We treat it as the first-class concept it should be."
+        }
+      ]
+    },
+    {
+      "id": "AS-009",
+      "priority": "P2",
+      "category": "Imaginary audience",
+      "title": "Readers are portrayed as memorisers before the derivation",
+      "why": "The claimed ignorance of 'most people' does not help explain the decomposition.",
+      "suggested_action": "Start: 'Add and subtract the mean prediction to derive the bias and variance terms.' Keep the algebra.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.1.mdx",
+          "line": 650,
+          "excerpt": "Most people can recite \"bias-variance tradeoff\"",
+          "context": "Most people can recite \"bias-variance tradeoff\" and cannot say where the two terms come from. They come from one line of algebra plus one added-and-subtracted quantity, and doing it once means you never have to trust the slogan again."
+        }
+      ]
+    },
+    {
+      "id": "AS-010",
+      "priority": "P2",
+      "category": "Status coaching",
+      "title": "Seniority and candidate quality substitute for learning objectives",
+      "why": "The useful technical criteria already appear before these status judgments.",
+      "suggested_action": "Delete the status clauses. Say directly that the answer should distinguish the three CV effects, or demonstrate the calibration checks.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.1.mdx",
+          "line": 740,
+          "excerpt": "a staff-level answer separates all three.",
+          "context": "- **CV error is an estimator with a sampling distribution** — three distinct effects (pessimistic bias from smaller folds, high variance from correlated LOO folds, optimistic *selection* bias from min-over-candidates); a staff-level answer separates all three."
+        },
+        {
+          "path": "src/content/c1/c1.2.mdx",
+          "line": 725,
+          "excerpt": "This separates strong candidates.",
+          "context": "- **\"Is your model calibrated, and how would you check/fix it?\"** — reliability diagram + ECE; temperature scaling (and that it doesn't change accuracy). This separates strong candidates."
+        }
+      ]
+    },
+    {
+      "id": "AS-011",
+      "priority": "P2",
+      "category": "Strawman opening",
+      "title": "The losses chapter invents a careless universal reader",
+      "why": "Every course, every notebook and nobody asking about the loss are rhetorical generalisations, not evidence.",
+      "suggested_action": "Open with the actual problem: a library's default loss need not match the deployment objective.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.2.mdx",
+          "line": 36,
+          "excerpt": "Open any notebook.",
+          "context": "Open any notebook. In Chapter 1 of every ML course (and most production code), the first piece of code anyone writes is `model.fit(X, y)`. Nobody stops to ask what `.fit` is minimizing. The choice of *what `.fit` is actually optimizing* — the loss function — usually defaults to whatever the library picked. That default is the wrong answer twice:"
+        }
+      ]
+    },
+    {
+      "id": "AS-012",
+      "priority": "P1",
+      "category": "Unqualified universal",
+      "title": "A loss-function preference is presented as 'Nobody does'",
+      "why": "A rationale for preferring one loss does not establish that the other is never used.",
+      "suggested_action": "State the two optimisation or modelling drawbacks under the stated setup without claiming universal non-use.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.2.mdx",
+          "line": 439,
+          "excerpt": "Nobody does, for two reasons.",
+          "context": "You could put squared error on top of a sigmoid. It's a valid function, it's differentiable, it has a minimum in the right place. Nobody does, for two reasons."
+        }
+      ]
+    },
+    {
+      "id": "AS-013",
+      "priority": "P2",
+      "category": "Condescending heading",
+      "title": "Calibration is introduced as what everyone skips",
+      "why": "The heading asserts reader negligence rather than naming the lesson content.",
+      "suggested_action": "Use 'Calibration: interpreting predicted probabilities'.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.2.mdx",
+          "line": 461,
+          "excerpt": "## Calibration: the part everyone skips",
+          "context": "## Calibration: the part everyone skips"
+        }
+      ]
+    },
+    {
+      "id": "AS-014",
+      "priority": "P2",
+      "category": "Overpromised unification",
+      "title": "The PCA opening promises everything and invents a classroom foil",
+      "why": "The reconstruction-versus-prediction distinction is useful. 'Everything worth knowing' and 'never computed' overstate what that distinction and the subsequent numerical discussion cover.",
+      "suggested_action": "State the reconstruction objective and its limitation for predicting a target. Describe practical numerical methods directly, without claiming what every course teaches.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.5.mdx",
+          "line": 12,
+          "excerpt": "Everything worth knowing follows from that move",
+          "context": "PCA is one move: **rotate the coordinate system so the axes line up with the data's own directions of spread**, then keep the first few. Everything worth knowing follows from that move plus one fact — the rotation is chosen to reconstruct $X$, and it never looks at $y$. Maximizing projected variance and minimizing squared reconstruction error turn out to be the same objective. The eigendecomposition that finds the axes is never computed the way a linear-algebra course teaches. Ridge turns out to be a soft version of the same truncation. And the failure that matters — PCA deleting exactly the signal you needed — is not a bug but the direct consequence of optimizing for the wrong target."
+        },
+        {
+          "path": "src/content/c1/c1.5.mdx",
+          "line": 179,
+          "excerpt": "The linear algebra course answer is to form the characteristic polynomial",
+          "context": "The linear algebra course answer is to form the characteristic polynomial and find its roots. For a 10,000-by-10,000 covariance matrix that is a degree-10,000 polynomial, and nobody does this."
+        }
+      ]
+    },
+    {
+      "id": "AS-015",
+      "priority": "P1",
+      "category": "False exhaustiveness",
+      "title": "Bagging and boosting become the only possible fixes",
+      "why": "The opening's 'exactly two ways' turns a choice of teaching examples into an exhaustive classification.",
+      "suggested_action": "Say 'This lesson compares two ensemble approaches: bagging and boosting.' Preserve the derivations and state the assumptions behind the bias/variance comparison.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.6.mdx",
+          "line": 12,
+          "excerpt": "There are exactly two ways to fix that",
+          "context": "Ensembles are **bias-variance engineering**. Start with the base learner. A single decision tree is a *low-bias, high-variance* learner: flexible enough to fit anything, unstable enough to fit noise. There are exactly two ways to fix that, and they pull opposite levers."
+        }
+      ]
+    },
+    {
+      "id": "AS-016",
+      "priority": "P2",
+      "category": "Unsupported interview frequency",
+      "title": "The ensemble summary asks for memorisation and claims top frequency",
+      "why": "The technical summary can stand without a claim about which interview idea is asked most often.",
+      "suggested_action": "Replace the coaching with a scoped comparison of bagging and boosting; retain the mechanisms and qualifications.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.6.mdx",
+          "line": 304,
+          "excerpt": "This is the single most-asked ensemble idea.",
+          "context": "- **The dichotomy to memorize:** **bagging/RF reduce variance** (average low-bias/high-variance trees; bias ≈ a single tree's), **boosting reduces bias** (sequentially fit the loss; variance can creep up → can overfit). This is the single most-asked ensemble idea."
+        }
+      ]
+    },
+    {
+      "id": "AS-017",
+      "priority": "P1",
+      "category": "Forced unification",
+      "title": "A mixture-model interpretation is asserted for every clustering algorithm",
+      "why": "The opening expands the subsequent k-means/Gaussian-mixture derivation into a claim about all clustering methods.",
+      "suggested_action": "Limit the thesis to the methods for which the derivation is provided. Introduce other clustering families on their own assumptions.",
+      "occurrences": [
+        {
+          "path": "src/content/c1/c1.7.mdx",
+          "line": 12,
+          "excerpt": "Every one of them is **a probabilistic generative model plus a hardening choice**",
+          "context": "Clustering looks like a grab-bag of algorithms. It isn't. Every one of them is **a probabilistic generative model plus a hardening choice**, and once you see that, the keystone fact follows: **k-means is the hard-EM, infinite-precision (zero-variance), isotropic-shared-covariance limit of a Gaussian mixture**. Take that model seriously and you no longer have to memorize k-means's assumptions, failure modes, or the \"how do I pick $k$?\" advice. They all fall out of the model."
+        }
+      ]
+    },
+    {
+      "id": "AS-018",
+      "priority": "P2",
+      "category": "Dismissive framing",
+      "title": "The universal-approximation section dismisses the theorem's audience",
+      "why": "Saying a theorem is something everyone recites and that it predicts nothing useful is less precise than stating what it does and does not guarantee.",
+      "suggested_action": "Name the missing guarantees: the section can distinguish existence of a representation from practical width, data and optimisation requirements.",
+      "occurrences": [
+        {
+          "path": "src/content/c2/c2.1.mdx",
+          "line": 152,
+          "excerpt": "instead of the theorem everyone recites",
+          "context": "**Goal: give the concrete construction instead of the theorem everyone recites.** The universal approximation theorem says one hidden layer of sufficient width can approximate any continuous function. It is true, and it predicts nothing useful, because it says nothing about how many units you need or whether gradient descent will find them."
+        }
+      ]
+    },
+    {
+      "id": "AS-019",
+      "priority": "P1",
+      "category": "Overconfident causal shortcut",
+      "title": "Single-pass pretraining is equated with nothing to memorise",
+      "why": "A training-recipe observation is given a sweeping causal explanation. Corpus size and epoch count alone do not substantiate the claimed impossibility of memorisation in the prose.",
+      "suggested_action": "Source the specific pretraining configurations. Separate observed dropout settings from the proposed explanation, and verify the memorisation claim before retaining it.",
+      "occurrences": [
+        {
+          "path": "src/content/c2/c2.2.mdx",
+          "line": 204,
+          "excerpt": "With a single pass over a corpus far larger than the parameter count there is nothing to memorize",
+          "context": "**Dropout has largely disappeared from large-model pretraining.** With a single pass over a corpus far larger than the parameter count there is nothing to memorize, and dropout only adds gradient noise; typical LLM pretraining configs set it to 0.0. It survives in fine-tuning, small-data regimes, and anywhere you are running many epochs over the same examples. \"Add dropout\" is the wrong reflex for a pretraining question, because the condition dropout was invented for is absent."
+        },
+        {
+          "path": "src/content/c2/c2.2.mdx",
+          "line": 240,
+          "excerpt": "Single-epoch pretraining on a corpus larger than the parameter count, no",
+          "context": "- **\"Should you add dropout?\"** Ask what regime. Multi-epoch fine-tuning on a small dataset, yes. Single-epoch pretraining on a corpus larger than the parameter count, no — there is nothing to memorize and it only adds gradient noise."
+        },
+        {
+          "path": "src/content/c2/c2.2.quiz.mdx",
+          "line": 360,
+          "excerpt": "There is nothing to memorize, so there is no co-adaptation to break",
+          "context": "**(c)** In single-epoch pretraining over a corpus far larger than the parameter count, the model sees each token once. There is nothing to memorize, so there is no co-adaptation to break — dropout only injects gradient noise and slows convergence. Typical modern LLM pretraining configs set dropout to 0.0. If a pretraining run is \"overfitting\", something else is wrong: duplicated data, too many epochs over a small corpus, or a leaking eval set."
+        },
+        {
+          "path": "src/content/c2/c2.3.mdx",
+          "line": 58,
+          "excerpt": "With a single pass over a corpus far larger than the parameter count there is nothing to memorize",
+          "context": "**Dropout has largely left large-model pretraining.** Modern LLM pretraining runs typically set dropout to 0. With a single pass over a corpus far larger than the parameter count there is nothing to memorize, and dropout only adds gradient noise and slows convergence. Dropout is alive in fine-tuning and in small-data regimes. Reaching for dropout reflexively on a pretraining question is out of date."
+        },
+        {
+          "path": "src/content/c2/c2.3.quiz.mdx",
+          "line": 343,
+          "excerpt": "with one pass over a corpus much larger than the parameter count there is nothing to memorize",
+          "context": "**Run A**, cheapest and most effective first: **more data → augmentation → weight decay → dropout → early stopping → smaller model.** The ordering is the answer, not the list. More data comes first because it is the only intervention that raises the achievable ceiling instead of trading training fit for variance reduction. A smaller model comes last because it gives up capacity permanently and you cannot get it back later. Where you enter depends on what is actually available: if more data is not obtainable, start with augmentation *if you can name a true invariance for this task* — augmentation encodes an assumption, and a false one (horizontal flips on a task where left and right differ) makes things worse, not better. In a fine-tuning or small-data regime, dropout is live; in large-model pretraining it mostly is not, because with one pass over a corpus much larger than the parameter count there is nothing to memorize."
+        }
+      ]
+    },
+    {
+      "id": "AS-020",
+      "priority": "P1",
+      "category": "Heuristic presented as a rule",
+      "title": "A debugging order forbids early data inspection",
+      "why": "The 'then, and only then' wording converts a useful checklist into an unconditional sequence. The company examples and claims about grading need their own provenance.",
+      "suggested_action": "Present the order as a starting checklist and allow observed symptoms to redirect it. Link reported interview examples or remove the company-specific claims.",
+      "occurrences": [
+        {
+          "path": "src/content/c2/c2.3.mdx",
+          "line": 14,
+          "excerpt": "Then, and only then, go read the data pipeline.",
+          "context": "The other half of the problem is the fixed order you debug in. Overfit a single batch first. Then check that gradients are flowing. Then sweep the learning rate by powers of ten. Then, and only then, go read the data pipeline. Companies run this as a dedicated round (Stripe calls its version an ML bug squash, Airbnb asks you to debug a model with unexpected behavior, OpenAI hands you a broken PyTorch setup) and the thing being graded is whether you have an ordering at all, or whether you just start changing hyperparameters."
+        }
+      ]
+    },
+    {
+      "id": "AS-021",
+      "priority": "P2",
+      "category": "Status coaching",
+      "title": "Manual inspection is sold as the honest senior answer",
+      "why": "Reading examples is a concrete debugging action. Claiming it proves seniority adds no information; fifty is not justified as a universal threshold.",
+      "suggested_action": "Say 'Inspect a sample of validation documents to check the suspected mismatch.' Specify a sample size only as an example or justified protocol.",
+      "occurrences": [
+        {
+          "path": "src/content/c2/c2.3.quiz.mdx",
+          "line": 69,
+          "excerpt": "the honest senior answer includes",
+          "context": "How to check: compare the *distributions*, not the means. Sequence-length histograms, per-domain loss broken out by source, and duplicate detection between train and validation. A leaked or near-duplicate validation set shows up as an unusually tight loss distribution with a heavy left tail. Also inspect a random sample of validation documents by hand; on this kind of question the honest senior answer includes \"I would read fifty of them.\""
+        }
+      ]
+    },
+    {
+      "id": "AS-022",
+      "priority": "P1",
+      "category": "Unsupported intervention ranking",
+      "title": "A fixed overfitting-fix ladder is declared the answer",
+      "why": "The universal cost/effectiveness ranking is stronger than the scenario supports, even though later sentences provide some qualifications.",
+      "suggested_action": "Make intervention order depend on data availability, acquisition cost, valid augmentations, observed failure and validation results.",
+      "occurrences": [
+        {
+          "path": "src/content/c2/c2.3.quiz.mdx",
+          "line": 343,
+          "excerpt": "The ordering is the answer, not the list.",
+          "context": "**Run A**, cheapest and most effective first: **more data → augmentation → weight decay → dropout → early stopping → smaller model.** The ordering is the answer, not the list. More data comes first because it is the only intervention that raises the achievable ceiling instead of trading training fit for variance reduction. A smaller model comes last because it gives up capacity permanently and you cannot get it back later. Where you enter depends on what is actually available: if more data is not obtainable, start with augmentation *if you can name a true invariance for this task* — augmentation encodes an assumption, and a false one (horizontal flips on a task where left and right differ) makes things worse, not better. In a fine-tuning or small-data regime, dropout is live; in large-model pretraining it mostly is not, because with one pass over a corpus much larger than the parameter count there is nothing to memorize."
+        }
+      ]
+    },
+    {
+      "id": "AS-023",
+      "priority": "P1",
+      "category": "Overconfident diagnosis",
+      "title": "Failure to fit eight examples rules out capacity by assertion",
+      "why": "A diagnostic exercise becomes a proof of one cause and an unsupported claim about the most common wasted week.",
+      "suggested_action": "Present failure to overfit as evidence that warrants inspecting the setup, including representational constraints. Remove the prevalence claim and 'no amount' wording.",
+      "occurrences": [
+        {
+          "path": "src/content/c2/c2.3.quiz.mdx",
+          "line": 347,
+          "excerpt": "no amount of capacity will help.",
+          "context": "**Run B**, before adding a single parameter: **prove the optimization works by overfitting a single batch.** Take 8 examples, disable augmentation, regularization, and shuffling, and train until loss approaches zero. If it cannot, the problem is in the model or the loss and no amount of capacity will help. Only once a single batch overfits do you move on to: sweep the learning rate by powers of ten, check that gradients are flowing at every depth, then train longer, then add capacity, then remove regularization. Adding parameters to a model that cannot fit 8 examples is the single most common wasted week in applied ML."
+        }
+      ]
+    },
+    {
+      "id": "AS-024",
+      "priority": "P1",
+      "category": "Unsupported universal and internal tension",
+      "title": "The GQA answer claims every large model uses it",
+      "why": "The absolute statement is already in tension with the next paragraph's different MLA mechanism. It also claims questions are always asked in one form.",
+      "suggested_action": "Keep the cache calculation. Describe GQA as one design choice and compare it explicitly with MHA, MQA and MLA; attach model-specific examples to their sources.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.2.quiz.mdx",
+          "line": 145,
+          "excerpt": "every 70B-plus model since Llama 2 uses GQA",
+          "context": "**(c)** 640 GB minus 140 GB of weights leaves roughly 500 GB, and in practice less after activations, fragmentation and workspace. MHA gives you one concurrent 100K request, and not comfortably. GQA-8 gives you about fifteen. MQA would give you over a hundred if quality held. That is the entire argument for why every 70B-plus model since Llama 2 uses GQA, and it is why the question is always asked as \"how much does it save,\" never \"what is it.\""
+        }
+      ]
+    },
+    {
+      "id": "AS-025",
+      "priority": "P2",
+      "category": "Question about interview performance",
+      "title": "A SwiGLU subquestion tests why an answer is satisfying",
+      "why": "Part (c) and its answer discuss impressing interviewers instead of testing an architectural consequence.",
+      "suggested_action": "Replace part (c) with a parameter-budget or alignment calculation. Keep the existing derivation; remove the imagined interviewer reaction.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.2.quiz.mdx",
+          "line": 162,
+          "excerpt": "Why is this a satisfying interview answer",
+          "context": "**Q5. Why is the FFN width 11008?** Llama-family model cards list feed-forward widths like 11008 and 14336 rather than $4d$. (a) Write the original FFN and the SwiGLU replacement, and say what the gate buys. (b) Derive the $\\frac83$ rule and show it produces 11008 for $d = 4096$. (c) Why is this a satisfying interview answer even though nobody asks it directly very often?"
+        },
+        {
+          "path": "src/content/c3/c3.2.quiz.mdx",
+          "line": 183,
+          "excerpt": "Nobody wants the trivia;",
+          "context": "**(c)** Because it demonstrates the habit interviewers are actually testing: you saw a strange number on a model card and reconstructed the constraint that produced it. The same move is what makes the KV-cache and MoE answers land. Nobody wants the trivia; they want to see that architectural choices resolve into arithmetic for you."
+        }
+      ]
+    },
+    {
+      "id": "AS-026",
+      "priority": "P1",
+      "category": "Forced contrast",
+      "title": "The serving thesis erases compute-sensitive regimes",
+      "why": "The memory-versus-compute slogan is broader than the chapter's own separate prefill and decode discussion.",
+      "suggested_action": "Scope the thesis to the workload being analysed: small-batch dense decode is often limited by memory traffic; identify the other regimes before generalising.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.3.mdx",
+          "line": 11,
+          "excerpt": "memory problem wearing a compute costume",
+          "context": "Serving an LLM is not a compute problem. It is a **memory problem wearing a compute costume**. Generating one token requires reading every weight in the model out of GPU memory and doing only about two floating-point operations per byte read — roughly 300 times less arithmetic than the GPU can do per byte it can fetch. So decode speed is set by memory bandwidth, not by FLOPs, and every serious inference optimization is an answer to one of two questions: *how do I move fewer bytes per token* (quantization, GQA, speculative decoding) or *how do I amortize the bytes I already moved across more tokens* (batching)."
+        }
+      ]
+    },
+    {
+      "id": "AS-027",
+      "priority": "P1",
+      "category": "Risk-free and winning-option rhetoric",
+      "title": "Caching and batching are declared risk-free; routing wins by assertion",
+      "why": "Exact-output semantics, correct implementation and workload-level cost/latency tradeoffs are compressed into a guarantee. 'Easy 80%' is also not established by the scenario.",
+      "suggested_action": "Explain the conditions under which caching or batching preserve the computation. Mark traffic fractions as illustrative, validate routing quality and compare options on measured workload metrics.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.3.mdx",
+          "line": 301,
+          "excerpt": "at zero quality risk",
+          "context": "Decompose before acting: measure the split between TTFT and generation. If TTFT dominates, prefix-cache the system prompt, shorten the prompt, chunk the prefill, or disaggregate prefill onto separate GPUs from decode. If generation dominates, generation time is $N_{\\text{out}} \\times \\text{TPOT}$, where $N_{\\text{out}}$ is the number of output tokens (not to be confused with $N$, the parameter count): cut output tokens (terser instructions, stop sequences, streaming so perceived latency falls), cut TPOT with quantization and speculative decoding, or route the easy 80% of traffic to a smaller model. For cost, continuous batching and prefix caching raise tokens per GPU-hour at zero quality risk, quantization raises it further at some risk, and the smaller-model route usually beats both. Name the tension out loud: batching improves cost and *worsens* per-user latency."
+        },
+        {
+          "path": "src/content/c3/c3.3.quiz.mdx",
+          "line": 212,
+          "excerpt": "Continuous batching and prefix caching do that at zero quality risk",
+          "context": "**For cost.** Cost is dollars per GPU-hour divided by tokens per GPU-hour, so anything that raises tokens per GPU-hour is a cost win. Continuous batching and prefix caching do that at zero quality risk and come first. Quantization does it with some quality risk and needs a task eval. Model routing usually does it best of all. Check utilization before buying anything: a fleet at 30% utilization has a scheduling problem, not a capacity problem."
+        },
+        {
+          "path": "src/content/c3/c3.3.quiz.mdx",
+          "line": 218,
+          "excerpt": "flagged as zero-risk",
+          "context": "- Prefix caching named as the first cost/TTFT lever and flagged as zero-risk"
+        }
+      ]
+    },
+    {
+      "id": "AS-028",
+      "priority": "P2",
+      "category": "Unsupported prevalence",
+      "title": "Cache monitoring advice ends with 'almost nobody graphs it'",
+      "why": "The suggested metric is useful without a claim about the behaviour of the field.",
+      "suggested_action": "Keep 'Alert on prefix-cache hit rate' and the explanation of what the alert would catch. Delete the prevalence claim.",
+      "occurrences": [
+        {
+          "path": "src/content/c3/c3.3.quiz.mdx",
+          "line": 275,
+          "excerpt": "almost nobody graphs it.",
+          "context": "Second-order lesson: alert on prefix cache hit rate directly. It is the metric that would have caught this in minutes, and almost nobody graphs it."
+        }
+      ]
+    },
+    {
+      "id": "AS-029",
+      "priority": "P2",
+      "category": "Status coaching",
+      "title": "Refusing an unnecessary agent is advertised as seniority",
+      "why": "The engineering choice can be assessed by task structure, failure rate and cost without speculating about an interviewer's status judgment.",
+      "suggested_action": "Retain the conditions for choosing a simpler workflow. Delete the instruction to say it out loud and the seniority claim.",
+      "occurrences": [
+        {
+          "path": "src/content/c4/c4.1.quiz.mdx",
+          "line": 259,
+          "excerpt": "Interviewers read the refusal as seniority",
+          "context": "The honest middle ground worth naming: most production \"agents\" are a fixed pipeline with one or two model-decided branch points. Say that out loud. Interviewers read the refusal as seniority, and reaching for the agent unprompted reads as overengineering."
+        }
+      ]
+    },
+    {
+      "id": "AS-030",
+      "priority": "P1",
+      "category": "Gatekeeping and unsupported universal",
+      "title": "The ReAct answer caricatures current practice and the reader",
+      "why": "The paragraph combines 'nobody implements' with an insult about learning from a tutorial. Native tool calling does not, by itself, justify that universal claim.",
+      "suggested_action": "Explain which parts of ReAct correspond to the implementation being discussed. Distinguish a historical prompting format from a reasoning/action loop without policing what practitioners may call their system.",
+      "occurrences": [
+        {
+          "path": "src/content/c4/c4.1.quiz.mdx",
+          "line": 288,
+          "excerpt": "signals you learned agents from a 2023 tutorial.",
+          "context": "What remains: the loop shape, and that is all. Native tool calling absorbed the pattern — the model's reasoning is the Thought, the tool call is the Action, the appended tool result is the Observation — so nobody implements the paper's text format anymore. Give the paragraph, add that it is now just the default loop, and stop. Claiming to \"use ReAct\" as an architecture choice in 2026 signals you learned agents from a 2023 tutorial."
+        }
+      ]
+    },
+    {
+      "id": "AS-031",
+      "priority": "P2",
+      "category": "Imaginary grading criteria",
+      "title": "Agent questions explain what is being graded",
+      "why": "A concrete distinction between schema validity and semantic correctness is followed by mind-reading; another subquestion asks about grading rather than diagnosis.",
+      "suggested_action": "Keep the schema-versus-semantics distinction. Rewrite the subquestion to ask why the first-divergence labeling rule changes the diagnosis.",
+      "occurrences": [
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 96,
+          "excerpt": "Saying that second half unprompted is the thing being graded.",
+          "context": "**(b)** Structured output enforcement means constrained decoding against the tool's JSON Schema, so the sampler can only emit token sequences that parse into a valid call. It makes mode one close to unrepresentable, and it is cheap enough that there is no good reason not to run it. It does **nothing** for mode two, because a schema constrains the shape of the arguments, not their relationship to the user's request. Saying that second half unprompted is the thing being graded."
+        },
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 326,
+          "excerpt": "Why is the labeling rule in (a) the thing being graded",
+          "context": "**(b)** Why is the labeling rule in (a) the thing being graded, and what does the common wrong answer look like?"
+        }
+      ]
+    },
+    {
+      "id": "AS-032",
+      "priority": "P1",
+      "category": "Unsupported failure ranking",
+      "title": "Agent failures are said to happen mainly before execution",
+      "why": "The chapter presents several stages of failure but gives no distribution supporting which stage usually matters. The interview slogan obscures that qualification.",
+      "suggested_action": "Explain that decision logs and execution logs reveal different failures. Avoid ranking their frequency without trace data.",
+      "occurrences": [
+        {
+          "path": "src/content/c4/c4.2.mdx",
+          "line": 187,
+          "excerpt": "the important failure usually happens before execution.",
+          "context": "The load-bearing point: **the important failure usually happens before execution.** If you only log tool effects, you cannot distinguish \"the model chose the wrong tool,\" \"the model chose right but passed a bad argument,\" \"the tool returned garbage,\" and \"the tool was correct and the model misread it.\" Those four have four different fixes. Log the decision, not just the effect."
+        },
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 356,
+          "excerpt": "The line that lands in an interview:",
+          "context": "The line that lands in an interview: **the important failure usually happens before execution.** A trace of effects tells you what your system did, not what your model decided, and the decision is the thing that broke."
+        },
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 370,
+          "excerpt": "Says the important failure happens before execution.",
+          "context": "- Says the important failure happens before execution."
+        }
+      ]
+    },
+    {
+      "id": "AS-033",
+      "priority": "P2",
+      "category": "Unsupported return-on-effort ranking",
+      "title": "Replay is declared the most valuable debugging feature",
+      "why": "Replay has concrete benefits, but 'nothing else buys as much' is a universal ranking without a workload or cost comparison.",
+      "suggested_action": "Keep the replay and run-forking examples. State the limitations and benefit for the illustrated workflow without ranking every possible investment.",
+      "occurrences": [
+        {
+          "path": "src/content/c4/c4.2.quiz.mdx",
+          "line": 398,
+          "excerpt": "Nothing else on this list buys as much per unit of engineering time.",
+          "context": "Then make **record/replay a first-class mode**. Record every tool call and its result in the trace. A replay run serves tool results from the recording instead of hitting the world. The orchestrator becomes deterministic even though the model is not, which lets you test a prompt change, a new cap, or a schema change against 200 recorded runs in seconds instead of re-running against production systems. It also gives you the ability to fork a run at step $k$ with an edited context, which is the single most useful debugging affordance an agent system can have. Nothing else on this list buys as much per unit of engineering time."
+        }
+      ]
+    },
+    {
+      "id": "AS-034",
+      "priority": "P2",
+      "category": "Unsupported prevalence",
+      "title": "A vector-search failure is called the most common",
+      "why": "The causal explanation is useful; its claimed real-world frequency is not established.",
+      "suggested_action": "Describe it as a failure mode and retain the diagnostic calculation.",
+      "occurrences": [
+        {
+          "path": "src/content/c5/c5.1.mdx",
+          "line": 76,
+          "excerpt": "single most common real-world vector-search failure",
+          "context": "3. **Exact identifiers.** SKUs, error codes, part numbers, ticket IDs. `ERR_2041` gets tokenized into fragments that carry no learned meaning; it is topically identical to `ERR_2040`. This is the single most common real-world vector-search failure, and it is why hybrid exists."
+        }
+      ]
+    },
+    {
+      "id": "AS-035",
+      "priority": "P2",
+      "category": "Imaginary grading and guaranteed score",
+      "title": "Chunking evaluation advice is wrapped in grading claims",
+      "why": "The passage predicts why a question is failed and gives an ungrounded 95% outcome for a poorly constructed eval set.",
+      "suggested_action": "Keep traffic-derived questions and labelled retrieval evaluation. Explain the leakage risk without invented pass-rate precision or interviewer behaviour.",
+      "occurrences": [
+        {
+          "path": "src/content/c5/c5.1.quiz.mdx",
+          "line": 108,
+          "excerpt": "this is the part being graded",
+          "context": "Second, and this is the part being graded: **\"better\" is not a claim either of us can settle by arguing.** Take 30 to 50 questions from real traffic, label which chunks contain the answer, and sweep the strategies against recall@k. Reciting a chunking taxonomy without attaching a measurement to it is the single most common way this question is failed. Note the labels must come from real queries — an eval set written by reading the chunks inherits the same phrasing and the same segmentation assumptions and will score 95% while users complain."
+        }
+      ]
+    },
+    {
+      "id": "AS-036",
+      "priority": "P2",
+      "category": "Gatekeeping",
+      "title": "ANN advice tells the reader to stop and implies they lack experience",
+      "why": "The tradeoff explanation is useful; the warning about sounding evasive unless one owned infrastructure adds status policing.",
+      "suggested_action": "State which parameters affect recall, latency and memory. Explain when more implementation detail is relevant to the question.",
+      "occurrences": [
+        {
+          "path": "src/content/c5/c5.1.quiz.mdx",
+          "line": 140,
+          "excerpt": "unless you actually owned vector infrastructure.",
+          "context": "The sentence to own is that **recall, latency and memory are one three-way tradeoff and every ANN knob only slides you along it**. Then stop. Reciting graph-construction hyperparameters when the interviewer wants to discuss evaluation reads as deflection, unless you actually owned vector infrastructure."
+        }
+      ]
+    },
+    {
+      "id": "AS-037",
+      "priority": "P2",
+      "category": "Performance coaching replaces a decision criterion",
+      "title": "RRF is recommended based on what a reader can say aloud",
+      "why": "The engineering criterion should be availability of reliable tuning data, not the reader's ability to recite a phrase.",
+      "suggested_action": "Say 'Use a labelled evaluation set to tune weighted fusion; compare RRF as a baseline when score calibration or tuning data is limited.'",
+      "occurrences": [
+        {
+          "path": "src/content/c5/c5.1.quiz.mdx",
+          "line": 188,
+          "excerpt": "If you cannot say that out loud, use RRF",
+          "context": "Use a weighted sum $\\alpha \\cdot \\text{dense} + (1-\\alpha) \\cdot \\text{sparse}$, with $\\alpha$ between 0 and 1 weighting the dense list, over *min-max normalized* scores when you know your traffic leans one way and you want the dial — a codebase search where nearly everything is identifier-shaped wants $\\alpha$ low. The condition attached to that answer: the only defensible way to set $\\alpha$ is by sweeping it against a labelled eval set and reading recall@k. If you cannot say that out loud, use RRF, which has no such parameter to get wrong."
+        }
+      ]
+    },
+    {
+      "id": "AS-038",
+      "priority": "P1",
+      "category": "False exclusivity and unsupported prevalence",
+      "title": "The RAG thesis assigns every failure to exactly one stage",
+      "why": "A stage-based diagnostic framework is turned into a claim of mutually exclusive causes and fixes. The paragraph also asserts that almost every real defect is retrieval-related without supporting data.",
+      "suggested_action": "Describe first-failure attribution as a debugging convention. Allow multiple contributing failures and cross-stage remedies; measure the distribution on the target workload.",
+      "occurrences": [
+        {
+          "path": "src/content/c5/c5.2.mdx",
+          "line": 11,
+          "excerpt": "a wrong answer was produced by exactly one of them.",
+          "context": "A RAG system is a chain of stages, and a wrong answer was produced by exactly one of them. The correct chunk was never indexed, or it was indexed but ranked below the cutoff, or it was ranked well but dropped during context assembly, or it was in the context and the model answered from its priors anyway. **These four failures have four disjoint fixes, and the most common way a competent engineer goes wrong is proposing a fix before attributing the failure.** Almost every instinct points at generation. Almost every real defect is in retrieval."
+        }
+      ]
+    },
+    {
+      "id": "AS-039",
+      "priority": "P1",
+      "category": "False definition and internal inconsistency",
+      "title": "Judge-format guidance dismisses ordinal scores across lessons and quizzes",
+      "why": "The prose treats an unanchored 1–5 rating and every possible 1–5 rubric as equivalent. It defines metrics by deployment gates and claims annotators cannot agree. This conflicts with c5.2's more qualified judge-format guidance.",
+      "suggested_action": "Distinguish an undefined overall-quality score from an anchored rubric. Justify binary checks for the named failure mode and validate whichever judge format is used; retain diagnostic metrics that do not directly gate deployment.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.1.mdx",
+          "line": 34,
+          "excerpt": "an aggregate \"quality score\" is not a metric.",
+          "context": "The consequence people resist: **an aggregate \"quality score\" is not a metric.** A number is only a metric if it supports a specific decision — ship or don't, gate this PR or don't, roll back or don't. A 1–5 quality score supports nothing, because nobody can say what separates a 3 from a 4, and two annotators will not agree on it. Part 3 turns this into a concrete choice of judge format."
+        },
+        {
+          "path": "src/content/c6/c6.1.mdx",
+          "line": 179,
+          "excerpt": "annotators cannot reproduce the 3/4 boundary.",
+          "context": "- **\"Should the judge give a 1–5 score?\"** Prefer binary per named failure mode. A binary rate has a confidence interval and can gate a release; a 1–5 mean moves for reasons nobody can articulate, and annotators cannot reproduce the 3/4 boundary."
+        },
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 45,
+          "excerpt": "Nobody in the room can say what separates a 3 from a 4",
+          "context": "Now you have a build order. Fifty-six of your failures are covered by five checks, and the check for each is **binary**: did this response cite a source that supports every factual claim, yes or no. Not \"rate groundedness 1 to 5.\" Nobody in the room can say what separates a 3 from a 4, which means the score is unreproducible, and an unreproducible number cannot gate anything. Binary per named mode also hands the taxonomy back: when the gate fails you already know which mode moved."
+        },
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 19,
+          "excerpt": "Explain why binary pass/fail per named failure mode beats a 1-to-5 quality score.",
+          "context": "- Explain why binary pass/fail per named failure mode beats a 1-to-5 quality score."
+        },
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 177,
+          "excerpt": "Almost never; binary is usually better",
+          "context": "| Score type | Binary per failure mode | Likert 1-to-5 | Almost never; binary is usually better |"
+        },
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 201,
+          "excerpt": "Because nobody can reproduce the boundary between 3 and 4",
+          "context": "- **\"Why binary and not a 1-to-5 quality score?\"** Because nobody can reproduce the boundary between 3 and 4, so the score has no test-retest reliability, so it cannot gate. Binary per named failure mode is reproducible, gives you the taxonomy back, and is directly checkable against human labels."
+        },
+        {
+          "path": "src/content/c5/c5.2.quiz.mdx",
+          "line": 406,
+          "excerpt": "why is a 1-to-5 score a bad output format?",
+          "context": "7. **LLM as judge** What is LLM-as-judge and where does it go wrong? How many human labels would you collect before trusting a judge, what would you report instead of raw agreement, and why is a 1-to-5 score a bad output format?"
+        }
+      ]
+    },
+    {
+      "id": "AS-040",
+      "priority": "P1",
+      "category": "Forced definition",
+      "title": "An evaluation is defined solely as a deployment gate",
+      "why": "The catchy dashboard/eval contrast excludes the chapter's own diagnostic and exploratory uses of evaluation.",
+      "suggested_action": "Say 'For release evaluation, connect measured outcomes to an explicit deployment decision.' Keep the infrastructure requirements without redefining all evaluation.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 12,
+          "excerpt": "it is a dashboard, not an eval.",
+          "context": "An eval is not a score you compute at the end. It is a piece of infrastructure with a dataset, a version, a runner, a gate and an owner, and its job is to answer one question: **do we ship this change or not?** Every design choice that follows is downstream of that question. If a number cannot block a deploy or trigger a rollback, it is a dashboard, not an eval. The most common failure is not a bad metric, it is a good metric attached to no decision."
+        }
+      ]
+    },
+    {
+      "id": "AS-041",
+      "priority": "P1",
+      "category": "Unlabelled numerical scenario",
+      "title": "An illustrative failure table is introduced as a real distribution",
+      "why": "Exact counts acquire empirical authority through 'A real distribution looks like this' without provenance in the passage.",
+      "suggested_action": "Label the table as an illustrative sample of 100 traces or cite the dataset and collection method if it is real.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 34,
+          "excerpt": "A real distribution looks like this:",
+          "context": "Then cluster the notes into a taxonomy and count. A real distribution looks like this:"
+        }
+      ]
+    },
+    {
+      "id": "AS-042",
+      "priority": "P2",
+      "category": "Gatekeeping",
+      "title": "Using BLEU is treated as proof a practitioner stopped reading",
+      "why": "The limitations of overlap metrics are the substantive point. A claim about the practitioner's reading history is gratuitous and broader than the task-specific discussion supports.",
+      "suggested_action": "Keep the paraphrase example and task limitations; remove the judgment about practitioner competence.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.1.mdx",
+          "line": 50,
+          "excerpt": "stopped reading the field a decade ago.",
+          "context": "**BLEU and ROUGE** are the n-gram versions of the same idea — BLEU is precision-weighted over n-grams with a brevity penalty, ROUGE is recall-weighted — and they inherit the same failure amplified, because at $n = 4$ the example above scores exactly zero. The one sentence worth keeping: *n-gram overlap measures surface form, so for open-ended output it penalizes correct paraphrase and rewards fluent copying of the reference.* That sentence is the whole of what these metrics are good for; leading with BLEU as the answer to \"how do you evaluate generation\" is the clearest signal that a practitioner stopped reading the field a decade ago."
+        }
+      ]
+    },
+    {
+      "id": "AS-043",
+      "priority": "P1",
+      "category": "Risk-free rhetoric",
+      "title": "Shadow deployment promises zero user risk",
+      "why": "Discarding output is one protection, not a complete statement of isolation conditions.",
+      "suggested_action": "State that users do not see shadow outputs, and specify the assumptions needed to prevent side effects or resource contention from affecting them.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.2.mdx",
+          "line": 148,
+          "excerpt": "at zero user risk.",
+          "context": "**Shadow.** Run version B on live traffic in parallel with A, discard B's output, log it. Answers: does B crash, time out, blow the cost budget, or produce structurally invalid output on real inputs? Catches training-serving skew — inputs or features computed one way in the offline harness and another way in the live path — and distribution mismatch, at zero user risk. Cannot answer anything about user behavior, because no user saw it."
+        }
+      ]
+    },
+    {
+      "id": "AS-044",
+      "priority": "P2",
+      "category": "Unsupported prevalence",
+      "title": "The statistical-rigour opening declares nearly all evals unsound",
+      "why": "The confidence-interval example supplies the argument; the book does not need a claim about almost every number the reader will encounter.",
+      "suggested_action": "Open with the 100-example comparison, explicitly presented as an example, and then derive its uncertainty.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.3.mdx",
+          "line": 12,
+          "excerpt": "Almost every eval number you will ever be shown",
+          "context": "Almost every eval number you will ever be shown is a point estimate with no error bar, computed on a sample small enough that the error bar would swallow the claim. \"Model B got 72% versus model A's 70% on our 100-example set\" is the canonical example: the 95% confidence interval on that 2-point gap runs from about $-11$ to $+15$ points. The data is equally consistent with B being ten points *worse*. To resolve a true 2-point difference with unpaired evaluation you need roughly 8,000 examples per model, not 100. That arithmetic converts an impression into a number, and a number can be argued with in a design review."
+        }
+      ]
+    },
+    {
+      "id": "AS-045",
+      "priority": "P2",
+      "category": "Dismissive generalisation",
+      "title": "Nobody is said to care about input distributions",
+      "why": "The actual point is that input drift alone does not establish performance degradation. The absolute claim obscures that distinction.",
+      "suggested_action": "Say 'An input-drift alert does not by itself measure a change in task performance.' Retain the distribution factorisation.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.3.mdx",
+          "line": 235,
+          "excerpt": "nobody cares about the input distribution.",
+          "context": "The point worth saying out loud in a design review: **nobody cares about the input distribution.** What the business cares about is whether the model still performs. The joint distribution factors as $P(x, y) = P(x)\\,P(y \\mid x)$, where $x$ is the feature vector and $y$ the label. An input monitor sees $P(x)$ and only $P(x)$. Performance depends on both factors, so the monitor is watching one of the two terms and inferring the product."
+        }
+      ]
+    },
+    {
+      "id": "AS-046",
+      "priority": "P1",
+      "category": "Statistical rhetoric outruns the calculation",
+      "title": "An uncertainty interval becomes a claim that every decision is a coin flip",
+      "why": "A wide confidence interval warrants uncertainty, but the prose asserts a universal decision probability that the shown calculation does not establish.",
+      "suggested_action": "State the detectable effect and uncertainty for the specified setup. Remove the coin-flip claim and the imagined failure to notice.",
+      "occurrences": [
+        {
+          "path": "src/content/c6/c6.3.mdx",
+          "line": 285,
+          "excerpt": "a coin flip dressed as data.",
+          "context": "1. **The 100-example golden set that gates releases.** Its 95% CI is roughly $\\pm 9$ points, so every ship decision under 9 points is a coin flip dressed as data. Nobody notices because the number always looks precise."
+        }
+      ]
+    },
+    {
+      "id": "AS-047",
+      "priority": "P2",
+      "category": "Overpromised unification",
+      "title": "Four probability techniques are made to cover almost every famous problem",
+      "why": "The examples motivate a useful selection of methods, not a census of famous probability problems.",
+      "suggested_action": "Say 'These four techniques solve the examples in this lesson.' Preserve the mapping from each problem to its method.",
+      "occurrences": [
+        {
+          "path": "src/content/c7/c7.1.mdx",
+          "line": 14,
+          "excerpt": "Almost every famous problem you have heard of",
+          "context": "Almost every famous problem you have heard of is one of these four wearing a costume. Expected flips to see HHT is first-step analysis. Coupon collector is indicators. The 99%-accurate test for a rare disease is a base rate. The ant on a cube is gambler's ruin with the state space collapsed by symmetry. Each tool below is derived from the problem it solves, then drilled on the reported questions with the arithmetic done out loud."
+        }
+      ]
+    },
+    {
+      "id": "AS-048",
+      "priority": "P2",
+      "category": "Coverage claim and timing coaching",
+      "title": "Five distributions supposedly carry almost all quant interviewing",
+      "why": "The opening adds an unsupported coverage claim and a ten-second proficiency target to a useful list of distributions.",
+      "suggested_action": "Name the five distributions and the processes they model. Remove the coverage and speed claims; bound any shared derivation to its assumptions.",
+      "occurrences": [
+        {
+          "path": "src/content/c7/c7.2.mdx",
+          "line": 12,
+          "excerpt": "Five distributions carry almost all of quantitative interviewing:",
+          "context": "Five distributions carry almost all of quantitative interviewing: binomial, Poisson, geometric, exponential, normal. They are not five unrelated facts. They are four views of one story (independent trials at a constant rate) plus the limit that everything collapses to. If you can derive the mean and variance of each in ten seconds and say what physical process generates it, you have the prerequisite for every harder question in this chapter."
+        }
+      ]
+    },
+    {
+      "id": "AS-049",
+      "priority": "P2",
+      "category": "Imaginary interviewer reaction",
+      "title": "A probability answer warns what an interviewer might think",
+      "why": "Method selection and verification are useful; predicting that the interviewer will suspect memorisation is coaching filler.",
+      "suggested_action": "Keep the comparison of solution methods and the independent check. Remove the performance narration.",
+      "occurrences": [
+        {
+          "path": "src/content/c7/c7.1.quiz.mdx",
+          "line": 277,
+          "excerpt": "memorized a trick",
+          "context": "**(c) When to use which.** Lead with the difference equation, because it shows you can solve the problem from first principles and it generalizes to the biased case and to duration without needing a new martingale. Then offer the optional-stopping version as a 30-second check. Doing it in the other order risks the interviewer thinking you memorized a trick, and it leaves you stuck if they perturb the problem in a way that breaks the martingale you named."
+        }
+      ]
+    },
+    {
+      "id": "AS-050",
+      "priority": "P2",
+      "category": "Universal in a title",
+      "title": "The Kelly question says nobody uses the result",
+      "why": "The subsequent question already gives the substantive subject: reasons to use less than full Kelly.",
+      "suggested_action": "Use 'Kelly and reasons to scale the allocation down.'",
+      "occurrences": [
+        {
+          "path": "src/content/c7/c7.2.quiz.mdx",
+          "line": 202,
+          "excerpt": "Kelly, and why nobody bets it.",
+          "context": "**Q6. Kelly, and why nobody bets it.** (a) Derive $f^\\star$ for a repeated even-money bet won with probability $p > 1/2$. (b) Defend maximising $E[\\log W]$ instead of $E[W]$. (c) Give three mechanically distinct reasons practitioners bet less than full Kelly, with a number attached to each. (d) What is the growth rate at half Kelly relative to full?"
+        }
+      ]
+    },
+    {
+      "id": "AS-051",
+      "priority": "P1",
+      "category": "Evidence replaced by a slogan",
+      "title": "Missing an economic explanation proves a statistical result was coincidence",
+      "why": "Lack of a documented mechanism is a reason to scrutinise a strategy; the sentence jumps from that concern to a conclusive explanation of the observed test result.",
+      "suggested_action": "Say the absent mechanism weakens the interpretation and warrants out-of-sample and stability checks. Do not claim it proves coincidence.",
+      "occurrences": [
+        {
+          "path": "src/content/c8/c8.1.quiz.mdx",
+          "line": 395,
+          "excerpt": "a passing ADF test was a coincidence with a p-value attached.",
+          "context": "6. **It was never economic.** If nobody wrote down the mechanism tying the two names together before the backtest, a passing ADF test was a coincidence with a p-value attached."
+        }
+      ]
+    },
+    {
+      "id": "AS-052",
+      "priority": "P2",
+      "category": "Unsupported prevalence",
+      "title": "A track-record diagnostic is endorsed by dismissing everyone else",
+      "why": "The autocorrelation check can be justified by its effect on annualisation without asserting that almost nobody runs it.",
+      "suggested_action": "Retain the calculation and diagnostic; delete the final prevalence claim.",
+      "occurrences": [
+        {
+          "path": "src/content/c8/c8.3.mdx",
+          "line": 104,
+          "excerpt": "almost nobody handed a track record runs it.",
+          "context": "Positive autocorrelation in a reported return stream is usually a symptom, not a feature. Illiquid positions marked to stale prices smooth the series, and monthly marks on private or thinly traded assets do the same. A fund reporting a monthly Sharpe of 2 on a book with lag-1 autocorrelation $\\rho_1 = 0.4$ is inflating it by tens of percent through the annualization alone, before anyone argues about alpha. Checking the lag-1 autocorrelation of a claimed track record is a thirty-second sanity test, and almost nobody handed a track record runs it."
+        }
+      ]
+    },
+    {
+      "id": "AS-053",
+      "priority": "P2",
+      "category": "Interview mind-reading",
+      "title": "Covariance estimation advice insists everyone wants a name and nobody a derivation",
+      "why": "The surrounding explanation already teaches the methods. The sentence is unsupported and undermines the book's derive-rather-than-recite aim.",
+      "suggested_action": "Remove the sentence; retain the named methods, objectives and assumptions.",
+      "occurrences": [
+        {
+          "path": "src/content/c8/c8.3.quiz.mdx",
+          "line": 258,
+          "excerpt": "Nobody asks you to derive it; everybody expects the name.",
+          "context": "Fixes, and you are expected to produce at least one name. Nearest positive semi-definite projection: clip negative eigenvalues to zero and reconstruct (Higham 1988). Random matrix theory clipping: replace everything below the Marchenko-Pastur edge with its average, preserving the trace. Or shrinkage, pulling the matrix partway toward something you trust more: $\\hat\\Sigma_{\\text{shrunk}} = \\delta F + (1-\\delta)\\hat\\Sigma$ with $F$ a structured target such as constant correlation, a scaled identity, or a factor model, and $\\delta \\in [0,1]$ setting how far you move. **Ledoit-Wolf** picks $\\delta$ analytically, choosing the value that minimizes the expected squared elementwise distance to the true covariance, the Frobenius loss. Shrinkage guarantees invertibility because the target is positive definite. Nobody asks you to derive it; everybody expects the name. And the honest first move is still to fix the estimator that produced the broken matrix rather than to patch the output."
+        }
+      ]
+    },
+    {
+      "id": "AS-054",
+      "priority": "P1",
+      "category": "Forced contrast",
+      "title": "A backtest is declared evidence only about search, not a strategy",
+      "why": "A real concern about selection is turned into an absolute exclusion, without conditioning on how the backtest was designed or held out.",
+      "suggested_action": "State how selection and repeated testing affect the interpretation of a backtest. Keep the uncertainty calculation and describe the evaluated procedure.",
+      "occurrences": [
+        {
+          "path": "src/content/c8/c8.3.mdx",
+          "line": 12,
+          "excerpt": "a backtest is evidence about a search procedure, not evidence about a strategy.",
+          "context": "A Sharpe ratio is not a number, it is an estimate with a standard error, and that standard error is enormous relative to the Sharpes anyone actually runs. For independent returns the standard error of the Sharpe is roughly $1/\\sqrt{n}$ in per-period units, where $n$ is the number of return observations, and that collapses to one clean fact worth memorising: **the t-statistic of a track record is $t = SR_{\\text{ann}} \\times \\sqrt{T_{\\text{years}}}$**. A Sharpe of 1 needs about four years of daily data before it is even nominally significant, and about eight before you would reliably detect it. That is why a backtest is evidence about a search procedure, not evidence about a strategy."
+        }
+      ]
+    },
+    {
+      "id": "AS-055",
+      "priority": "P1",
+      "category": "Convenient algebra becomes a universal objective",
+      "title": "MSE is defended as the loss we always use",
+      "why": "A useful decomposition explains an analytical convenience, not a universal choice of loss.",
+      "suggested_action": "Say that squared error is used for this analysis because it permits the decomposition; connect application loss to the actual objective.",
+      "occurrences": [
+        {
+          "path": "src/content/c9/c9.1.quiz.mdx",
+          "line": 146,
+          "excerpt": "why do we always use MSE",
+          "context": "The one thing it does need is that the loss is squared error. Under absolute-error loss or an asymmetric loss there is no such clean split, which is the honest answer to \"why do we always use MSE\" — because it is the loss that decomposes."
+        }
+      ]
+    },
+    {
+      "id": "AS-056",
+      "priority": "P1",
+      "category": "Unqualified conclusion in a summary",
+      "title": "More data is said to do nothing at all for bias",
+      "why": "The summary omits the dependence on the learning procedure and sample-size regime that a universal statement would require.",
+      "suggested_action": "Bind the conclusion to the analysed model and assumptions. Ask what changes with sample size instead of presenting a general cure/no-effect split.",
+      "occurrences": [
+        {
+          "path": "src/content/c9/c9.2.mdx",
+          "line": 14,
+          "excerpt": "more data cures variance and does nothing at all for bias.",
+          "context": "The part people get wrong is what the expectation is over. **Bias and variance here are properties of a training procedure applied to a random training set, not properties of the fitted model sitting in your repo.** A single trained model has no variance. Refit it on a fresh sample of the same size and the spread of its predictions at one input is the variance; the gap between the average of those predictions and the truth is the bias. Everything else in this lesson follows from taking that definition literally: why overfitting is a variance statement, why training error is biased downward by an amount you can compute exactly, why ridge helps precisely in the near-collinear directions, and why more data cures variance and does nothing at all for bias."
+        }
+      ]
+    },
+    {
+      "id": "AS-057",
+      "priority": "P1",
+      "category": "Model result presented as a guarantee",
+      "title": "More forest trees are said never to hurt",
+      "why": "The variance calculation concerns a stated averaging model. 'Never hurt' can be read as a guarantee for every realised validation outcome or metric.",
+      "suggested_action": "State the expected averaging result under the model, retain the correlation floor and compute cost, and avoid a universal claim about realised performance.",
+      "occurrences": [
+        {
+          "path": "src/content/c9/c9.3.mdx",
+          "line": 145,
+          "excerpt": "more trees never hurt and the only cost is compute.",
+          "context": "This gives the cleanest one-line distinction in ensemble methods. **In a forest, $B$ is a Monte Carlo knob and not a capacity knob**, so more trees never hurt and the only cost is compute. **In boosting, $M$ is a capacity knob**, so it must be tuned, and every serious boosting library ships early stopping on a validation set because there is no way to avoid the choice. The capacity knobs in boosting are $M$, $\\nu$, and tree depth, and they interact: halving $\\nu$ roughly doubles the $M$ you need."
+        }
+      ]
+    },
+    {
+      "id": "AS-058",
+      "priority": "P2",
+      "category": "Unsupported prevalence",
+      "title": "Nobody is said to tune the forest parameter",
+      "why": "The calculation explains why changing correlation matters. The last clause adds an unsupported observation about practitioner behaviour.",
+      "suggested_action": "Keep the parameter's role and remove 'nobody tunes it'.",
+      "occurrences": [
+        {
+          "path": "src/content/c9/c9.3.mdx",
+          "line": 201,
+          "excerpt": "and nobody tunes it.",
+          "context": "1. **Adding trees to a forest and expecting the plateau to move.** Going from 100 to 1000 trees changes variance from $\\rho\\sigma^2 + 0.01(1-\\rho)\\sigma^2$ to $\\rho\\sigma^2 + 0.001(1-\\rho)\\sigma^2$. At $\\rho = 0.5$ that is 0.505 to 0.5005, a 0.9 percent improvement for 10 times the inference cost. The knob that moves the floor is `mtry`, and nobody tunes it."
+        }
+      ]
+    },
+    {
+      "id": "AS-059",
+      "priority": "P1",
+      "category": "Catastrophic framing and unsupported ranking",
+      "title": "Estimated inputs supposedly invalidate all portfolio theory",
+      "why": "The useful instability example is preceded by 'None of it survives' and followed by a universal ranking of fixes. Neither conclusion follows merely from the worked example.",
+      "suggested_action": "Explain sensitivity to estimation error in the illustrated setup. Compare remedies under stated data, constraints and objectives rather than ranking them universally.",
+      "occurrences": [
+        {
+          "path": "src/content/c10/c10.1.mdx",
+          "line": 14,
+          "excerpt": "None of it survives contact with estimated inputs.",
+          "context": "None of it survives contact with estimated inputs. The optimizer takes the largest positions exactly where the expected return was overestimated and the variance underestimated, because those are the assets that look best to it. The amplifier is $\\Sigma^{-1}$, which divides by the smallest eigenvalues of $\\Sigma$, and those are the directions the data determines worst. Two assets with 20 percent volatility and 0.9 correlation, given expected returns that differ by 50 basis points, produce a max-Sharpe portfolio of 145 percent long and 45 percent short. Move those returns by less than a tenth of one standard error and the portfolio flips. The fixes, in descending order of how much they buy you: constraints, shrinking $\\Sigma$, shrinking $\\mu$, and abandoning $\\mu$ entirely for minimum variance, equal weight, inverse volatility or risk parity."
+        }
+      ]
+    },
+    {
+      "id": "AS-060",
+      "priority": "P1",
+      "category": "Universal superiority",
+      "title": "Minimum variance is called better than anything else at surviving estimation error",
+      "why": "Avoiding an expected-return input is a specific benefit. The passage promotes that benefit into an unrestricted comparison with every other portfolio.",
+      "suggested_action": "Say it avoids direct dependence on estimated expected returns while remaining sensitive to covariance estimates and constraints.",
+      "occurrences": [
+        {
+          "path": "src/content/c10/c10.1.quiz.mdx",
+          "line": 79,
+          "excerpt": "survives estimation error better than anything on the rest of the frontier",
+          "context": "It sits at the hyperbola's vertex, and $\\mu$ does not appear anywhere in it. That is the remarkable part, and it is the reason minimum variance survives estimation error better than anything on the rest of the frontier: it never uses the worst-estimated input."
+        }
+      ]
+    },
+    {
+      "id": "AS-061",
+      "priority": "P1",
+      "category": "Invented scenario properties",
+      "title": "The marginal assets are assumed less liquid to force a negative conclusion",
+      "why": "The effective-breadth arithmetic does not supply the liquidity and transaction-cost premises introduced afterward.",
+      "suggested_action": "Keep the marginal breadth calculation. Make the cost conclusion conditional on explicitly supplied trading-cost assumptions.",
+      "occurrences": [
+        {
+          "path": "src/content/c10/c10.2.quiz.mdx",
+          "line": 281,
+          "excerpt": "the second five hundred names are decoration.",
+          "context": "**(d)** It buys almost nothing, and I can say how little. Going from 500 to 1,000 names at $\\rho = 0.10$ takes effective breadth from 9.8 to $1000/(1 + 999 \\times 0.10) = 1000/100.9 = 9.9$. The information ratio moves from 0.16 to 0.16. You are already sitting against the $1/\\rho = 10$ ceiling, so the second five hundred names are decoration. Worse, they are expensive decoration: the marginal names are smaller, less liquid and more costly to trade, so net of costs the change is negative."
+        }
+      ]
+    },
+    {
+      "id": "AS-062",
+      "priority": "P2",
+      "category": "Cynical mind-reading",
+      "title": "Nobody is said to audit their own factor model upward",
+      "why": "The omitted-factor risk can be explained without claiming that all practitioners avoid an unflattering audit.",
+      "suggested_action": "Describe the attribution bias caused by the omission and specify a factor-audit procedure.",
+      "occurrences": [
+        {
+          "path": "src/content/c10/c10.2.quiz.mdx",
+          "line": 334,
+          "excerpt": "nobody audits their own factor set upward.",
+          "context": "**Omitting a real factor** credits its premium to you. A value-tilted book regressed on the market alone reports the value premium as alpha, and a short-volatility book regressed on anything reports the insurance premium as alpha until the tail arrives. This is the common direction because it is the flattering one, and nobody audits their own factor set upward."
+        }
+      ]
+    },
+    {
+      "id": "AS-063",
+      "priority": "P1",
+      "category": "Universal deficiency claim",
+      "title": "Backtests are said never to include impact",
+      "why": "The lesson needs to explain omitted costs, not define every backtest as omitting them.",
+      "suggested_action": "Say 'A backtest that omits impact can overstate performance at larger trade sizes.' Then explain the impact model and its assumptions.",
+      "occurrences": [
+        {
+          "path": "src/content/c10/c10.3.mdx",
+          "line": 35,
+          "excerpt": "This is the part backtests never have.",
+          "context": "**Impact.** This is the part backtests never have. When you buy you consume the liquidity resting on the offer and the price moves up, so your later shares fill worse than your first shares. Nobody charges you this. It is your own order competing with itself."
+        }
+      ]
+    },
+    {
+      "id": "AS-064",
+      "priority": "P1",
+      "category": "Unqualified implementation claim",
+      "title": "Close or midpoint fills are universally called impossible",
+      "why": "The failure example does not specify execution assumptions that justify the categorical claim.",
+      "suggested_action": "Describe the assumed fill model, order type, spread and participation constraints. Explain why those assumptions are optimistic in the particular example.",
+      "occurrences": [
+        {
+          "path": "src/content/c10/c10.3.mdx",
+          "line": 216,
+          "excerpt": "a price nobody could have transacted at",
+          "context": "1. **Backtest fills at the close, or at the mid.** The simulator marks every trade at a price nobody could have transacted at, consistently in the profitable direction. Fill at the far side of the spread plus a modelled impact, and reconcile live fills against the model monthly."
+        }
+      ]
+    },
+    {
+      "id": "AS-065",
+      "priority": "P2",
+      "category": "Vague promotion and stale metadata",
+      "title": "The landing page promises uniform thirty-minute senior-level reads",
+      "why": "The page uses a status label instead of subject matter and makes a uniform reading-time promise that conflicts with the lesson metadata.",
+      "suggested_action": "Use a concrete subject description and show the individual lesson estimates already supplied by the content, without promising every lesson takes thirty minutes.",
+      "occurrences": [
+        {
+          "path": "src/app/page.tsx",
+          "line": 51,
+          "excerpt": "Staff+ lessons synthesized",
+          "context": "            Staff+ lessons synthesized from each chapter&apos;s references. Every"
+        },
+        {
+          "path": "src/app/page.tsx",
+          "line": 52,
+          "excerpt": "lesson is a ~30-minute deep read",
+          "context": "            lesson is a ~30-minute deep read for a senior engineer — math from"
+        }
+      ]
+    },
+    {
+      "id": "AS-066",
+      "priority": "P2",
+      "category": "Upstream source of repeated claims",
+      "title": "The curriculum plan turns an editorial priority into numerical coverage",
+      "why": "The 80%/95% claims explain the repeated quiz boilerplate. The stated rapid-fire study preference may be intentional, but it does not establish empirical coverage percentages.",
+      "suggested_action": "Preserve rapid-fire prioritisation as a workflow preference. Describe the first five/ten as editorial priorities, unless a defined corpus and coverage calculation support the percentages.",
+      "occurrences": [
+        {
+          "path": "PLAN.md",
+          "line": 68,
+          "excerpt": "**Top 5 = ~80%",
+          "context": "- **Top 5 = ~80% of that lesson's interview value.** These are the questions a loop opens with."
+        },
+        {
+          "path": "PLAN.md",
+          "line": 70,
+          "excerpt": "**Top 10 = ~95%+",
+          "context": "- **Top 10 = ~95%+.** Everything past 10 is genuine but lower-frequency depth."
+        }
+      ]
+    }
+  ]
+}

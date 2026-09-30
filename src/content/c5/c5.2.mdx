@@ -3,13 +3,12 @@ id: c5.2
 chapter: 5
 title: Building a RAG system that works
 subtitle: The pipeline, the stage each failure belongs to, and the measurements that tell you which
-refs: []
-estimatedMinutes: 55
+estimatedMinutes: 85
 ---
 
 ## TL;DR
 
-A RAG system is a chain of stages, and a wrong answer was produced by exactly one of them. The correct chunk was never indexed, or it was indexed but ranked below the cutoff, or it was ranked well but dropped during context assembly, or it was in the context and the model answered from its priors anyway. **These four failures have four disjoint fixes, and the most common way a competent engineer goes wrong is proposing a fix before attributing the failure.** Almost every instinct points at generation. Almost every real defect is in retrieval.
+**Debug RAG by tracing the evidence through indexing, retrieval, context assembly and generation.** A missing document, a low-ranked chunk, a dropped passage and an unsupported answer suggest different interventions. Labeling the first observed failure provides a consistent starting point; a trace can still contain several contributing failures, and a remedy can cross stage boundaries. Measure their frequency on the target workload before prioritizing fixes.
 
 Attribution requires that you measure retrieval and generation separately. Retrieval is a ranking problem and gets ranking metrics against labeled question-to-chunk pairs: recall@k, MRR, NDCG. Generation gets faithfulness and answer relevance, scored by a judge you validated against human labels. If you can hold those two numbers apart, "the answer was wrong" becomes a diagnosis instead of an opinion, and every subsequent design choice, reranking, context ordering, freshness, access control, has a number attached to it.
 
@@ -22,6 +21,7 @@ Attribution requires that you measure retrieval and generation separately. Retri
 - Validate an LLM judge with TPR and TNR rather than raw agreement, and say how many labels you would collect.
 - Design permission-filtered retrieval that does not silently destroy recall for small tenants.
 - Argue RAG versus long context versus fine-tuning with cost and latency arithmetic instead of preference.
+- Compare learned and engineered retrieval policies, graph designs and long-context routing; measure coverage, support and hop-level evidence.
 
 > **Vocabulary primer.** *Chunk*: one indexed unit of text, typically a few hundred tokens. *Bi-encoder*: embeds query and document independently into vectors compared by inner product. *Cross-encoder*: reads query and document together in one forward pass and emits a relevance score. *Recall@k*: fraction of the relevant chunks appearing in the top $k$ results, where $k$ is the number of results the stage keeps. *MRR*: mean reciprocal rank, the average over queries of $1/\text{rank of first relevant result}$. *NDCG*: normalized discounted cumulative gain, a position-weighted ranking score. *Faithfulness* (also *groundedness*): fraction of the answer's claims supported by the retrieved context. *ACL*: access control list. *TPR / TNR*: true positive and true negative rate of a classifier, here the judge.
 
@@ -55,15 +55,15 @@ Be precise about that, because raising $k$ is the reflex and it distinguishes tw
 
 Chunk size fails for the same reason. Quadruple the chunk to 2,000 tokens and one chunk covers 1% of the report instead of 0.25%. The theme still lives in the other 99%, and you have made every local lookup worse by burying the specific fact inside four times as much surrounding text.
 
-So the fix cannot be a search-time knob. It has to change what is in the index. Make the missing text exist before the query arrives:
+One fix is to create retrievable abstractions before the query arrives. Another is to read broadly and synthesize at query time. Raising top-k alone provides no coverage guarantee, but offline indexing is not the only possible repair. The offline construction is:
 
 1. Embed the chunks and cluster them, so each cluster holds passages about roughly one thing.
 2. Summarize each cluster with a model. That summary is new text stating what its members have in common, and it appears in no source chunk.
 3. Embed the summaries, cluster those, summarize again. Repeat until one node remains.
 
-The result is a tree. Leaves are the original chunks. Each level up is more abstract, and the top is document-level or corpus-level. Index every node in the same vector store, leaves and summaries alike, and search all levels at once. No router is needed, because the vocabulary does the routing: "what was Q3 revenue" lands on a leaf, since only leaves contain the number, and "what are the main themes" lands on an upper node, since upper nodes are written in exactly that abstract register. This is the **RAPTOR** pattern, recursive abstractive processing for tree-organized retrieval.
+The result is a hierarchy of source chunks and increasingly broad summaries. Index both sources and summaries so abstract questions can retrieve abstractions and precise questions can retrieve details. Vocabulary helps matching but guarantees neither routing nor accuracy: a summary may contain a number and a leaf may state a theme. [RAPTOR](https://arxiv.org/abs/2401.18059) (2024) develops this recursive abstraction approach. Verify the retrieved node and preserve links to its underlying evidence.
 
-Now price it, with a 100,000-chunk corpus and clusters of about 10. The first level makes 10,000 summaries and reads all 100,000 chunks, so $100{,}000 \times 500 = 5.0 \times 10^{7}$ input tokens. The second level makes 1,000 summaries reading 10,000 summaries of about 300 tokens, $3.0 \times 10^{6}$ tokens. Levels above that shrink by another factor of 10 each time and add under 1% more. Total is about 11,111 model calls and $5.3 \times 10^{7}$ input tokens, plus roughly $3.3 \times 10^{6}$ output tokens. At an illustrative USD 3 per million input and USD 15 per million output that is about USD 160 plus USD 50, so USD 210. Embedding the same corpus is $100{,}000 \times 500 = 5.0 \times 10^{7}$ tokens, about USD 5 at an illustrative USD 0.10 per million. The tree build costs roughly 40 times the embedding bill, and it is serial model latency rather than one batched matrix multiply.
+Now price it, with a 100,000-chunk corpus and clusters of about 10. The first level makes 10,000 summaries and reads all 100,000 chunks, so $100{,}000 \times 500 = 5.0 \times 10^{7}$ input tokens. The second level makes 1,000 summaries reading 10,000 summaries of about 300 tokens, $3.0 \times 10^{6}$ tokens. Levels above that shrink by another factor of 10 each time and add under 1% more. Total is about 11,111 model calls and $5.3 \times 10^{7}$ input tokens, plus roughly $3.3 \times 10^{6}$ output tokens. At an illustrative USD 3 per million input and USD 15 per million output that is about USD 160 plus USD 50, so USD 210. Embedding the same corpus is $100{,}000 \times 500 = 5.0 \times 10^{7}$ tokens, about USD 5 at an illustrative USD 0.10 per million. The tree build costs roughly 40 times the embedding bill, with dependency between tree levels; independent summaries within a level can run in parallel.
 
 Two more costs, both worse than the money.
 
@@ -133,9 +133,9 @@ When the boring answer is better. If recall@50 from a hybrid lexical-plus-dense 
 
 You have five chunks. The order you paste them in changes the answer.
 
-Liu et al. (2023), *Lost in the Middle*, placed a single gold document at varying positions inside a long context and measured answer accuracy. The curve is U-shaped: highest when the gold document is first or last, sagging badly in the middle, in some settings below the model's closed-book performance on the same questions. The model attends to the edges.
+[Liu et al., Lost in the Middle](https://aclanthology.org/2024.tacl-1.9/) (2023 preprint; TACL 2024) vary evidence position and find substantial positional sensitivity in the tested models and tasks. A supported context length does not imply reliable evidence use throughout that context.
 
-Two consequences. Put the highest-reranked chunk first and the second-highest last, filling the middle with the rest. And treat top-$k$, here the number of chunks you paste into the context, as a tradeoff rather than a constant: raising $k$ raises recall and also raises the amount of near-miss text competing for attention. Retrieve 20 chunks when one is right and you have moved a retrieval problem into the model's attention. Dedupe too, since near-identical chunks burn the budget repeatedly and give the model false corroboration.
+Test edge placement as a heuristic: for example, put the highest-reranked chunk first and the second-highest last. Retest ordering for your model and task rather than assuming a universal U-shaped curve. Raising top-k improves potential evidence coverage but also introduces distractors; deduplicate near-identical chunks and measure the resulting answer quality.
 
 ## Part 4 — Measuring retrieval on its own
 
@@ -169,13 +169,13 @@ Which metric you optimize is a product decision. Recall@k is what matters at the
 
 ## Part 5 — Measuring generation, and validating the judge
 
-Two quantities, and keep them separate.
+**Goal — separate support, correctness and coverage.** [RAGAs](https://aclanthology.org/2024.eacl-demo.16/) (EACL 2024; preprint 2023) helps motivate evaluating retrieval and generation along distinct dimensions. A metric is a diagnostic instrument; its judge still needs validation on your data.
 
-**Faithfulness.** Split the answer into atomic claims. For each, ask whether the retrieved context supports it. Faithfulness is supported claims over total claims. **Answer relevance.** Does the answer address the question that was asked. A perfectly grounded answer to a different question scores 1.0 on faithfulness and fails.
+**Faithfulness:** what fraction of answer claims is supported by the supplied evidence? **Answer correctness:** does the answer match the verified facts or task result? **Relevance:** does it address the request? **Completeness:** how much of the requested information is covered? **Citation support:** do the specific cited spans support the claims attached to them? An answer can be faithful to a stale source yet wrong today, or correct but cite an unrelated passage. Measure these failures separately.
 
 You will score these with an LLM judge, which raises the question of whether the judge itself can be trusted. Do not report raw agreement. If 5% of answers are unfaithful, a judge that says "faithful" every time scores 95% agreement and is useless. Report **TPR** (of the answers humans labeled unfaithful, what fraction did the judge catch) and **TNR** (of the faithful ones, what fraction did it leave alone) on a held-out set of human labels. About 100 labels per failure mode is the working number, and it comes from the variance rather than from habit: at $n$ labels in a class, the standard error on a rate near 0.5 is about $0.5/\sqrt{n}$, so 100 puts a confidence interval of roughly $\pm 10$ points on each rate. That is enough to separate a good judge from a bad one and not enough to argue about three-point differences.
 
-Make each judge a single binary question about one failure mode. A judge asked for a 1-to-5 helpfulness score cannot be validated against anything, because two humans will not agree on 3 versus 4 either.
+A binary question about one failure mode often gives the clearest debugging signal. Graded and pairwise criteria can also be validated: define anchored rubrics, check inter-rater agreement and compare judge preferences with held-out human judgments. TPR/TNR fit binary labels; weighted agreement or rank/preference agreement fits ordinal or comparative judgments. A vague 1-to-5 “helpfulness” score is hard to interpret, but graded evaluation is not inherently unvalidatable. See [c6.1](/c/c6/c6.1) for calibration and uncertainty.
 
 Keep guardrails and evals distinct. A **guardrail** is synchronous, cheap, and blocks a response inline. An **eval** is asynchronous measurement over logged traces feeding a CI regression gate and a dashboard. Confusing them gets you a judge model inside your latency budget.
 
@@ -183,13 +183,13 @@ Keep guardrails and evals distinct. A **guardrail** is synchronous, cheap, and b
 
 Given a failed query, run this in order. It takes two minutes if you logged the right things.
 
-1. **Is the answer text in the corpus at all?** Grep it. If not, it is an ingestion or parsing failure. Stop.
+1. **Is the necessary evidence in the corpus at all?** Inspect source spans, tables, units and dates. A derived answer need not appear verbatim. Distinguish absent source evidence from ingestion/parsing loss before tuning retrieval.
 2. **Does the gold chunk appear anywhere in the retrieved candidates?** If not, retrieval recall failure. Fixes: hybrid lexical plus dense retrieval, chunking changes, query rewriting.
 3. **Was it retrieved but ranked below the cutoff?** Ranking failure. Fixes: reranker, raise depth before rerank.
 4. **Was it in the final prompt?** If it was retrieved and reranked well and still missing, assembly dropped it. Check truncation and dedupe.
 5. **It was in the prompt and the answer is still wrong.** Now, and only now, it is a generation failure. Fixes: instruction to answer only from context and to say it does not know, position the chunk at an edge, reduce $k$, require span-level citations.
 
-The reflex to build: name the stage before naming the fix. The practitioner consensus, argued most directly by Jason Liu, is that teams tune generation long before they have made search work.
+The reflex to build: name the stage before naming the fix. The stage decomposition is consistent with [Barnett et al. (2024), Seven Failure Points When Engineering a RAG System](https://doi.org/10.1145/3644815.3644945); diagnose the observed failure before changing the generator.
 
 ## Part 7 — Freshness and incremental indexing
 
@@ -216,11 +216,25 @@ Retrieved text is untrusted input. A document saying "ignore previous instructio
 
 ## Part 9 — RAG, long context, or fine-tuning
 
-Do this with arithmetic. A 1M-token context call at an illustrative \$3 per million input tokens is roughly \$3 per query, with a prefill measured in tens of seconds. Retrieval instead: 5 chunks at 500 tokens is 2,500 tokens, about \$0.0075 of input cost plus a fraction of a cent for embedding and search, at a few hundred milliseconds. Three orders of magnitude in cost, two in latency. Prompt caching narrows the gap when everyone queries the same static corpus, and closes none of it when the corpus is per-tenant.
+**Goal — compare cost and quality under the same workload assumptions.** At an illustrative USD 3 per million uncached input tokens, a 1M-token prompt costs USD 3; 2,500 retrieved tokens cost USD 0.0075 before retrieval, output and other prompt costs. That is **400×**, about 2.6 orders of magnitude, for the input component. It is not a measured latency ratio. Repeated queries can share a permitted prefix **within a tenant** too: cache hit rate, corpus updates, cache isolation and retention determine the saving.
 
-The decision rule. **Long context** wins when the relevant material is small, static and fits the window. Do not build retrieval for a 40-page handbook. **RAG** wins when the corpus is much larger than the window, changes, is permissioned, or needs citations. **Fine-tuning** teaches behavior, format and domain vocabulary. It does not teach volatile facts, and a fine-tuned fact cannot be cited, updated or revoked.
+The decision starts with corpus size, query shape and evidence requirements. Long context can be competitive when the needed material fits; RAG can lower input cost and scale evidence selection beyond the window. Both can use citations and permission controls, and both can fail at evidence use. Fine-tuning changes behavior or knowledge but does not provide the operational update/revocation path of an external source. Compare complete system quality and measured p95 latency, not architecture labels.
 
 The more useful frame: retrieval is a tool in a loop, not automatically a pipeline. On a navigable structured corpus, a codebase or a well-organized wiki, an agent doing keyword search and following links often beats embedding the whole thing. Prototype the cheapest option and let recall@k on a labeled set make the call.
+
+[Li et al. (2024), RAG or Long-Context LLMs?](https://arxiv.org/abs/2407.16833) finds higher average long-context quality when sufficiently resourced in its tested settings, lower RAG cost, and a useful hybrid routing approach called Self-Route. The conclusion is conditional: compare RAG, long context and routing on the same corpus, questions, access rules and total budget. Include cached and uncached traffic separately.
+
+### Retrieve, correct, learn, or abstain
+
+**Goal — make evidence access a controlled decision instead of an unconditional search call.** Three papers change different parts of that decision:
+
+- [Self-RAG](https://arxiv.org/abs/2310.11511) (ICLR 2024; first posted 2023) trains reflection tokens for selective retrieval and critique of evidence and generated text. A hand-written “search if needed” prompt is not the same training method.
+- [Corrective RAG](https://arxiv.org/abs/2401.15884) (2024) evaluates retrieval quality and changes the evidence-gathering strategy when it is poor. For an application, useful branches include refining the query, using another authorized source, asking for missing information or abstaining. Web fallback is appropriate only when sources and permissions allow it.
+- [Search-R1](https://arxiv.org/abs/2503.09516) (2025) trains search-interleaved reasoning with reinforcement learning, treating returned search text differently from policy-generated tokens in the training objective. Improved rewarded QA is not evidence of safe tool use or secure source selection.
+
+<ResearchFlow variant="ragControl" />
+
+Measure the **retrieval decision** separately from retrieval recall: avoid a search that only adds irrelevant evidence, but do not answer a current private-fact question from stale parametric memory. For evidence-required tasks, answer only after the support gate passes; otherwise clarify, retrieve further within budget, or abstain. Log the reason and the evidence consulted, not just the number of searches.
 
 ### When to stop an iterative retriever
 
@@ -242,40 +256,83 @@ rounds on average. The cap does 2.2 times the work for the same answers. Lower t
 
 What should gate the next hop is **evidence sufficiency**: an explicit check over the pair (question, context retrieved so far) asking whether that context can answer the question yet. Sufficient, stop and generate. Insufficient, write the next sub-query from what is now known and go again. Keep the cap, demoted to a cost backstop, and make it loud: when it fires, log the event and have the answer say the search was cut short, because a truncated multi-hop answer that reads as complete is the failure mode this whole design exists to avoid.
 
-Feed the check the question and the retrieved spans, not the draft answer. Given a draft it starts scoring whether the answer is supported by the context, which is faithfulness, a different question with a different failure profile. A cheap deterministic pre-check helps too: if the entities named in the last sub-query do not appear in the retrieved text at all, the context is insufficient and no model call is needed to establish that.
+Feed a sufficiency check the question and accumulated evidence, not just a draft answer. [Sufficient Context](https://arxiv.org/abs/2411.06037) (2024 preprint; ICLR 2025) distinguishes having enough context from whether the model uses it correctly. Missing exact entity strings can be a diagnostic flag, but aliases, pronouns, tables and paraphrases make it an unsafe universal rejection rule. Conversely, merely mentioning every entity does not establish the required relation.
 
 Now the part people skip. The check is a binary classifier, so it earns exactly the validation a faithfulness judge earns: human labels, the two conditional rates, roughly 100 labels per class. What is specific to this classifier is what a label is and which class is positive. A label is a (question, context) pair a human marked as sufficient or not, harvested from real multi-hop traffic and stratified so both classes are populated. Take the positive class to be "insufficient, keep going", so TPR is the fraction of genuinely insufficient contexts the check flags and TNR the fraction of genuinely sufficient ones it correctly stops on.
 
-The two errors are not symmetric, and the asymmetry sets the operating point. A false "sufficient" ends retrieval early and produces a wrong answer with no signal that anything went missing. A false "insufficient" buys one more round. Price both against the same distribution, taking the 1.35 rounds of a perfect check as the baseline. A check running at TNR 0.7 fires an extra round on 30% of the questions that should have stopped, adding about 0.3 rounds to reach 1.65, a 22% cost increase. A check running at TPR 0.75 sends 25% of the genuinely insufficient cases to an early answer; with 30% of traffic needing more than one hop, that is $0.25 \times 0.30 = 0.075$, so 7.5% of all queries answered wrong. Trading 22% on the bill against 7.5% wrong answers is not a close call, so tune the threshold toward continuing.
+The two errors are asymmetric. A false “sufficient” decision ends the evidence search too early; it creates unsupported-answer risk, although a model might still guess correctly from parametric knowledge. A false “insufficient” decision wastes search or causes needless abstention. In a simplified one-extra-round approximation, TNR 0.7 adds 0.3 rounds to the 1.35-round baseline, reaching 1.65, a 22% increase. If 30% of questions need another hop and TPR is 0.75 at that decision, $0.30\times0.25=7.5\%$ of traffic is stopped without all required evidence, **not necessarily answered incorrectly**. Repeated checks require a full trajectory calculation; tune the threshold using measured costs and support failures.
 
 Two things to log per query, since neither is visible otherwise: the number of hops taken, and whether the cap fired. The hop distribution tells you whether the cap is set anywhere near reality. A rising cap-fired rate means the corpus changed or the query mix got harder, and it moves before the answer-quality metrics do.
+
+Selective answering adds another measurement: **coverage**, the fraction of questions answered, and **selective accuracy**, correctness among those answered. In an illustrative 1,000-query set, 600 answers with 570 correct give 60% coverage and 95% selective accuracy. Reporting only 95% hides 400 abstentions; reporting only coverage rewards unsupported guesses. Sweep the threshold and report both, including false abstentions on sufficient evidence.
 
 ### When a knowledge graph earns its cost
 
 A second index-time construction comes up whenever multi-hop questions do, so price it the same way.
 
-The construction: at index time, run a model over each chunk and have it emit entity-relationship triplets, subject-relation-object, each stamped with the chunk it came from. Accumulate them into a graph where nodes are entities and edges are relations. At query time, resolve the entities in the question to nodes, walk edges outward, and pull the chunks attached to the nodes and edges you traversed. This is **GraphRAG**.
+The construction: at index time, run a model over each chunk and have it emit entity-relationship triplets, subject-relation-object, each stamped with the chunk it came from. Accumulate them into a graph where nodes are entities and edges are relations. At query time, resolve the entities in the question to nodes, walk edges outward, and pull the chunks attached to the nodes and edges you traversed. This is **local graph-based retrieval**, one member of a broader graph-RAG family.
 
-What it buys is a join that no chunk states. "Which of our suppliers is downstream of a company sanctioned last month" needs chunk A saying X supplies Y, chunk B saying Y is owned by Z, and chunk C sanctioning Z. No chunk contains the connection, and top-$k$ over the question's embedding retrieves none of the three reliably, because the question's vocabulary matches none of them well. The graph performs that join once, offline, and the traversal is what a single similarity lookup cannot be. The shape is familiar: like a thematic summary, the answer exists in no chunk, and the fix is to manufacture the missing structure at index time. The missing thing here is a join rather than an abstraction.
+What it buys is a join that no chunk states. "Which of our suppliers is downstream of a company sanctioned last month" needs chunk A saying X supplies Y, chunk B saying Y is owned by Z, and chunk C sanctioning Z. No chunk contains the connection, and top-$k$ over the question's embedding retrieves none of the three reliably, because the question's vocabulary matches none of them well. The graph stores relations offline; query-time traversal composes them into the join. Extraction errors, temporal qualifiers and entity resolution can all break that composition. The shape is familiar: like a thematic summary, the answer exists in no chunk, and the fix is to manufacture the missing structure at index time. The missing thing here is a join rather than an abstraction.
 
 What it costs is one model call per chunk, and that inverts the usual cost shape. Take 20,000 documents a week at 20 chunks each, so 400,000 chunks a week. An extraction call reads about 500 tokens of chunk plus roughly 1,000 tokens of schema and instructions, and writes about 300 tokens of triplets. Weekly that is $400{,}000 \times 1{,}500 = 6.0 \times 10^{8}$ input tokens and $400{,}000 \times 300 = 1.2 \times 10^{8}$ output tokens. At an illustrative USD 3 per million input and USD 15 per million output, USD 1,800 plus USD 1,800, about USD 3,600 a week. Serving 10,000 queries a day at roughly USD 0.01 each is 70,000 queries a week, so USD 700. Indexing is roughly 5 times serving, and it scales with how much you ingest rather than how much anyone asks, so it does not amortize when usage is low and it does not fall when traffic does.
 
 That makes the qualifying test a measurement, not a preference. Take 50 real questions, label for each how many documents its evidence spans and whether those documents share enough vocabulary for one query embedding to reach both. If a handful qualify, a graph is an expensive way to be a vector index. Extraction also introduces a failure mode the vector path does not have: a model reading "X terminated its supply agreement with Y" and emitting the triplet (X, supplies, Y) has written a confident false edge, and every traversal through it inherits the error. Sample extracted triplets against their source chunks and carry a triplet precision number, because nothing downstream will surface that error as anything but a wrong answer.
 
+Distinguish the designs before comparing costs:
+
+| Design | Retrieval mechanism | Intended evidence need | Separate cost or risk |
+|---|---|---|---|
+| Local graph traversal | Resolve entities and follow evidence-backed edges | Relations spanning documents | Entity resolution, false/stale edges |
+| [Microsoft GraphRAG](https://arxiv.org/abs/2404.16130) | Community summaries and global map-reduce, alongside local retrieval | Corpus-wide sensemaking | Community summarization and global query work |
+| [LightRAG](https://arxiv.org/abs/2410.05779) | Low- and high-level retrieval over graph-linked information | Specific entities and broader relationships | Extraction, incremental updates and retrieval choices |
+| [HippoRAG 2](https://arxiv.org/abs/2502.14802) | Graph-linked passages and personalized PageRank retrieval | Factual, associative and sensemaking memory | Graph construction and passage/entity linking |
+
+The numerical extraction budget above prices one hypothetical local pipeline; it is not a universal bill for these systems. HippoRAG 2's persistent retrieval memory also differs from the editable scratchpad and recursive context access in [c4.1](/c/c4/c4.1).
+
 **The evaluation trap.** This is the sharper point, and it is where the published enthusiasm needs reading carefully.
 
-The strongest published GraphRAG results are on sense-making questions, the "what are the main themes across this corpus" shape, judged head to head by a model on criteria like comprehensiveness, meaning how many aspects the answer covers, and diversity, meaning how varied the perspectives are. Read what those criteria measure. Neither one asks whether a claim is true. An answer listing ten related facts, three of them wrong, beats an answer listing four correct ones on both criteria. A decisive win there is fully consistent with a system that is less accurate, and it is consistent with a system whose multi-hop answers are wrong most of the time, because the score never looked.
+The [2024 GraphRAG paper](https://arxiv.org/abs/2404.16130), revised in 2025, reports gains on global sensemaking criteria including comprehensiveness and diversity. Those are meaningful outcomes for that task, but they do not establish factual correctness or superiority on every local multi-hop question. Its limitations explicitly leave a stronger fabrication-rate comparison to further evaluation.
 
-The judge is the second half of the trap. Comprehensiveness is a graded subjective criterion, so it fails the validation bar a faithfulness judge has to clear, and there is no TPR or TNR to report for it at all. Head-to-head preference judging also carries position and verbosity biases, and answers assembled by aggregating many cluster summaries are longer than answers assembled from five chunks. Longer answers score higher on comprehensiveness close to by construction, so part of the measured win is a property of the output length rather than of the retrieval.
+Preference judges can have position and verbosity biases. Randomize answer order, inspect length distributions and validate against human preferences; use a length-controlled comparison to test whether verbosity explains an apparent gain. Without that analysis, verbosity is a possible confound, not an established cause. Graded comprehensiveness can be validated with an anchored rubric, but still measures a different property from factual support.
 
 Correctness has to be measured separately and it needs different labels. Build multi-hop questions with a known short answer and a known evidence set, then report two numbers. On the retrieval side, recall over the labeled evidence set: did the traversal actually pull the chunks supporting each hop. On the generation side, exact match against the short answer, or a single binary judge asking one question with a decision rule, validated on human labels by TPR and TNR. Put those beside the cost per indexed document. A graph that wins on comprehensiveness and loses on multi-hop answer accuracy has told you to keep the vector index.
+
+- Compare learned and engineered retrieval policies, graph designs and long-context routing; measure coverage, support and hop-level evidence.
+
+## Part 10 — Evaluate the evidence path, not just the final answer
+
+**Goal — expose where an apparently correct answer or good retrieval average hides missing evidence.** The 2024 [RGB benchmark](https://arxiv.org/abs/2309.01431) tests noise robustness, negative rejection, information integration and counterfactual robustness. [Comprehensive RAG Benchmark](https://arxiv.org/abs/2406.04744) adds question complexity, factual dynamism and long-tail knowledge. Its acronym **CRAG** refers to a benchmark, distinct from **Corrective RAG**, the method above. Convert these into slices of your own traffic instead of reporting a single easy-QA score.
+
+| Test slice | Controlled case | Diagnostic metric |
+|---|---|---|
+| Noisy context | Correct passage plus plausible distractors | Accuracy/support drop versus clean context |
+| Unanswerable question | Needed fact genuinely absent | Correct abstention and answered coverage |
+| Conflicting or stale evidence | Changed policy with dates and authority | Correct source/version selection |
+| Text and table integration | Table values plus units and footnotes | Complete evidence-set recall and numerical correctness |
+| Multi-hop relation | Evidence required at each dependency | Per-hop evidence acquisition, premature stop and excess hops |
+
+In our **illustrative** report question, “How much did revenue increase?”, the 2025/2024 table entries are 4,200/3,500 and a separate header says “USD thousands.” The answer is USD 700,000. A parser can transcribe every digit correctly while dropping the header or misassigning column years. [When Good OCR Is Not Enough](https://arxiv.org/abs/2605.00911) (2026 preprint) shows why character/word error rates alone miss structural damage with downstream retrieval and answer consequences. Retest the full system after parser changes.
+
+<ResearchFlow variant="evidence" />
+
+An example trace should record the evidence acquired, not invented reasoning:
+
+| Stage | Observation | Check |
+|---|---|---|
+| Parse/index | Values preserved, units header separate | Are header and column associations retained? |
+| Hop 1 | Table row retrieved | Values alone are insufficient; request units |
+| Hop 2 | Header and year labels recovered | Required evidence set now complete |
+| Generate | Difference of 700 thousand | Arithmetic correct; citations support values and units |
+| Stop | Evidence sufficient and answer verified | Further retrieval adds cost without resolving a gap |
+
+[AgenticRAGTracer](https://arxiv.org/abs/2602.19127) (February 2026; revised July) motivates hop-level diagnostics for premature collapse and unnecessary extension. Its largely generated benchmark is a testbed, not a substitute for real query traces. The [TREC 2025 RAG Track overview](https://arxiv.org/abs/2603.09891), published March 2026, separately assesses relevance, completeness and support for complex narrative requests. Label requested facts and citation support separately: citing one correct sentence does not show that the answer covered the request.
 
 ## Tradeoff matrix
 
 | Option | Knowledge freshness | Citations | Cost per query | Latency | Main failure mode |
 |---|---|---|---|---|---|
 | Plain prompting | Frozen at training | None | Lowest | Lowest | Confident hallucination |
-| Long context, stuff everything | As fresh as the paste | Weak, whole-doc | ~\$3 at 1M tokens | Tens of seconds | Lost in the middle, cost |
+| Long context | As fresh as supplied sources | Span-level if implemented | Illustrative \$3 / 1M uncached input tokens | Measure for model and cache hits | Evidence use, cost |
 | RAG, dense only | Index freshness | Chunk-level | ~\$0.01 | Hundreds of ms | Misses exact identifiers |
 | RAG, hybrid + rerank | Index freshness | Chunk-level | ~\$0.01 plus rerank | +50-150 ms | Reranker latency, cost |
 | Fine-tuning | Frozen at fine-tune | None | Low per query | Low | Stale facts, no attribution |
@@ -305,3 +362,20 @@ Correctness has to be measured separately and it needs different labels. Build m
 ## Take the quiz
 
 **[Take the quiz →](/c/c5/c5.2/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Barnett et al. (2024), [Seven Failure Points When Engineering a Retrieval Augmented Generation System](https://doi.org/10.1145/3644815.3644945).
+- Sarthi et al. (2024), [RAPTOR](https://arxiv.org/abs/2401.18059); Liu et al. (TACL 2024; first posted 2023), [Lost in the Middle](https://aclanthology.org/2024.tacl-1.9/).
+- Es et al. (EACL 2024; first posted 2023), [RAGAs](https://aclanthology.org/2024.eacl-demo.16/).
+- Asai et al. (ICLR 2024; first posted 2023), [Self-RAG](https://arxiv.org/abs/2310.11511); Yan et al. (2024), [Corrective RAG](https://arxiv.org/abs/2401.15884); Jin et al. (2025), [Search-R1](https://arxiv.org/abs/2503.09516).
+- Li et al. (2024), [RAG or Long-Context LLMs?](https://arxiv.org/abs/2407.16833); [Sufficient Context](https://arxiv.org/abs/2411.06037) (2024 preprint; ICLR 2025).
+- Edge et al. (2024; revised 2025), [From Local to Global: A Graph RAG Approach to Query-Focused Summarization](https://arxiv.org/abs/2404.16130); Guo et al. (2024 preprint; 2025 proceedings), [LightRAG](https://arxiv.org/abs/2410.05779); [HippoRAG 2](https://arxiv.org/abs/2502.14802) (2025).
+- Chen et al. (AAAI 2024; first posted 2023), [Benchmarking Large Language Models in Retrieval-Augmented Generation / RGB](https://arxiv.org/abs/2309.01431); Yang et al. (2024), [CRAG: Comprehensive RAG Benchmark](https://arxiv.org/abs/2406.04744).
+- [T2-RAGBench](https://aclanthology.org/2026.eacl-long.8/) (EACL 2026), used in [c5.1](/c/c5/c5.1); [When Good OCR Is Not Enough](https://arxiv.org/abs/2605.00911) (2026 preprint).
+- [AgenticRAGTracer](https://arxiv.org/abs/2602.19127) (2026 preprint, revised July); [Overview of the TREC 2025 RAG Track](https://arxiv.org/abs/2603.09891) (March 2026 report about the 2025 track).

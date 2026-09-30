@@ -201,7 +201,7 @@ The minibatch gradient is an average of $B$ independent per-example gradients, w
 
 **Dropout** zeroes each activation independently with probability $p$ during training. The standard implementation is inverted dropout: scale the survivors by $1/(1-p)$ at training time so that the layer's output $y$ satisfies $E[y] = x$, the undropped activation, which makes inference a plain identity with nothing to remember. The backward pass reuses the same mask and the same $1/(1-p)$ factor. The old formulation instead multiplied by $(1-p)$ at test time, which puts the correction in the inference path and leaves $p$ as something serving has to remember. The property that matters in any implementation is that the training and inference paths compose to the identity in expectation.
 
-**Dropout has largely disappeared from large-model pretraining.** With a single pass over a corpus far larger than the parameter count there is nothing to memorize, and dropout only adds gradient noise; typical LLM pretraining configs set it to 0.0. It survives in fine-tuning, small-data regimes, and anywhere you are running many epochs over the same examples. "Add dropout" is the wrong reflex for a pretraining question, because the condition dropout was invented for is absent.
+**Dropout is a training choice to validate for the regime.** [Liu, Bauer and Manning (2025)](https://arxiv.org/abs/2505.24788) compared dropout rates of 0, 0.1 and 0.3 in BERT-base and Pythia 160M/1.4B pretraining; omitting dropout performed best on their reported evaluations. This supports a no-dropout baseline in similar settings, not a theorem that single-pass training cannot memorize. [Biderman et al. (2023)](https://arxiv.org/abs/2304.11158) measured memorized sequences in Pythia models. Use held-out performance to choose regularization, and evaluate memorization separately.
 
 ## Tradeoff matrix
 
@@ -237,7 +237,7 @@ The minibatch gradient is an average of $B$ independent per-example gradients, w
 - **"How does BatchNorm work?"** Give the mechanism, then decline the internal-covariate-shift story: Santurkar et al. 2018 injected noise after the BN layer, reintroducing the shift deliberately, and training still improved. The evidence points to a smoother loss surface.
 - **"What happens at batch size 1? At full batch? How do you change the learning rate?"** Noise scales as $1/\sqrt{B}$. Batch 1: maximum noise, no hardware efficiency, BatchNorm undefined. Full batch: exact gradient, expensive steps, no noise-driven exploration, typically worse generalization at matched compute. Scaling: linear in $B$ for SGD with warmup (Goyal et al. 2017), roughly $\sqrt{B}$ for Adam.
 - **"Your gradients are exploding. What do you do?"** Clip by global norm, and then immediately say clipping is symptom management. The real fixes are lower learning rate, normalization layers, residual connections, and correct initialization. Interviewers are waiting for the "and?".
-- **"Should you add dropout?"** Ask what regime. Multi-epoch fine-tuning on a small dataset, yes. Single-epoch pretraining on a corpus larger than the parameter count, no — there is nothing to memorize and it only adds gradient noise.
+- **"Should you add dropout?"** Compare held-out results for the actual training regime. Small-data fine-tuning can benefit; the cited pretraining study favored no dropout. Epoch count or corpus size alone does not establish whether memorization occurs.
 
 ## Take the quiz
 

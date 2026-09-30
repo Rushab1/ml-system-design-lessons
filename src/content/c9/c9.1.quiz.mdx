@@ -143,7 +143,7 @@ $$
 
 **(b)** It needs a finite second moment for $\hat\theta$ and nothing else. It is an exact algebraic identity at every finite $n$, not an asymptotic approximation. No normality, no independence between observations, no correctly specified model, no large sample. The estimator does not have to be linear or even continuous.
 
-The one thing it does need is that the loss is squared error. Under absolute-error loss or an asymmetric loss there is no such clean split, which is the honest answer to "why do we always use MSE" — because it is the loss that decomposes.
+This decomposition relies on squared-error loss. Absolute or asymmetric losses do not have the same algebraic split. Squared error is useful for this analysis; the application's loss should reflect its actual prediction objective.
 
 **(c)** For a vector parameter, take squared Euclidean distance as the loss and apply the scalar identity coordinate by coordinate, then sum:
 
@@ -409,7 +409,6 @@ The fix is either non-overlapping windows, accepting the 60 observations, or kee
 ## Rapid-fire: estimator quality, OLS and correlated data
 
 Fifteen questions on what makes one estimator better than another, and on the assumptions that decide it.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Each word in BLUE** What does BLUE stand for, what does each word exclude, and what are the Gauss-Markov assumptions in full? For each of "best", "linear" and "unbiased", name one concrete estimator that beats OLS by escaping through that word.
 2. **The $n-1$ divisor** Why does the sample variance divide by $n-1$? Then say which divisor minimises mean squared error under normality, and what that says about unbiasedness as an objective.

@@ -9,7 +9,7 @@ estimatedMinutes: 100
 
 ## TL;DR
 
-PCA is one move: **rotate the coordinate system so the axes line up with the data's own directions of spread**, then keep the first few. Everything worth knowing follows from that move plus one fact — the rotation is chosen to reconstruct $X$, and it never looks at $y$. Maximizing projected variance and minimizing squared reconstruction error turn out to be the same objective. The eigendecomposition that finds the axes is never computed the way a linear-algebra course teaches. Ridge turns out to be a soft version of the same truncation. And the failure that matters — PCA deleting exactly the signal you needed — is not a bug but the direct consequence of optimizing for the wrong target.
+PCA **rotates the coordinate system to align its axes with directions of spread**, then retains a subset of those axes. Maximizing projected variance and minimizing squared reconstruction error give the same subspace for centered data. Numerical eigensolvers find it without expanding a characteristic polynomial; ridge provides a related, continuous shrinkage of the same directions. Because PCA optimizes reconstruction of $X$ without using $y$, it can discard a low-variance direction that carries the predictive signal.
 
 ## What you'll be able to do after this lesson
 
@@ -176,7 +176,7 @@ The fixes differ from Mechanism 1's entirely: do not interpret individual compon
 
 "Eigendecompose the covariance matrix" hides the part that matters. You do **not** solve the eigenvalue equation symbolically. You turn it into an iterative optimization problem. Because the covariance matrix is symmetric positive semidefinite, that optimization is especially clean.
 
-The linear algebra course answer is to form the characteristic polynomial and find its roots. For a 10,000-by-10,000 covariance matrix that is a degree-10,000 polynomial, and nobody does this.
+The eigenvalues are roots of the characteristic polynomial, but explicitly forming that polynomial is not a practical numerical method for a 10,000-by-10,000 covariance matrix. Matrix iterations and factorizations compute the required eigenpairs more directly.
 
 The whole hierarchy below comes from one idea: **repeated linear transformations reveal invariant directions.** Everything else is bookkeeping to make that idea fast and to stop the directions collapsing onto each other.
 

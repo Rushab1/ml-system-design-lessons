@@ -6,6 +6,7 @@ import rehypeSlug from "rehype-slug";
 import { DeepDive } from "./deep-dive";
 import { LossChart } from "./loss-chart";
 import { Quiz } from "./quiz";
+import { ResearchBars, ResearchFlow } from "./research-figures";
 import {
   OLSFit,
   Sigmoid,
@@ -189,6 +190,8 @@ export function MdxContent({ source }: { source: string }) {
         TCriticalVsDf,
         PValueAsArea,
         Quiz,
+        ResearchBars,
+        ResearchFlow,
       }}
       options={{
         mdxOptions: {

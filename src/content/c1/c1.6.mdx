@@ -9,7 +9,7 @@ estimatedMinutes: 115
 
 ## TL;DR
 
-Ensembles are **bias-variance engineering**. Start with the base learner. A single decision tree is a *low-bias, high-variance* learner: flexible enough to fit anything, unstable enough to fit noise. There are exactly two ways to fix that, and they pull opposite levers.
+Ensembles change a learner's **bias and variance**. A deep decision tree can fit complex patterns but can also change sharply when the training sample changes. Bagging and boosting address this instability and approximation error through different mechanisms:
 
 **Bagging / random forests** average many high-variance trees to crush **variance**. The whole game there is *decorrelating* the trees, and one identity tells you why.
 
@@ -137,7 +137,7 @@ Where does $(1-\tfrac1n)^n$ come from? One draw misses a specific row with proba
 
 The same row is eligible to be drawn $n$ times, so “a bootstrap sample has $n$ rows” does not mean it contains $n$ distinct observations. Roughly 63.2% are distinct; the rest are duplicates. For each training row, the trees that omitted it form a temporary validation ensemble. OOB scoring combines those honest predictions across rows.
 
-> **Stop and think.** You add 5,000 trees to a random forest *and* to a gradient-boosted model. One degrades on the test set; one doesn't. Which, and why? *Hint: RF averages i.i.d.-randomized trees, so by the decorrelation identity / LLN it converges to a floor — more trees never hurt. Boosting fits the loss sequentially, so each added round further reduces bias and eventually fits noise — more rounds DO overfit. That's why RF needs no early stopping and GBDT does.*
+> **Stop and think.** You add 5,000 trees to a random forest and 5,000 rounds to a boosted model. Why do these changes affect fitting differently? *Hint: one averages draws from a fixed tree-building procedure; the other changes the fitted function sequentially. Distinguish convergence in the average from monotonic improvement on a finite test set.*
 
 <RFvsGBDTErrorCurves caption="Train and test error as you add trees to RF (blue) vs GBDT (red). Follow the two test curves and ignore the train curves for a moment. RF's test error drops fast, plateaus, and stays there — more trees only ever help (they push down the (1−ρ)σ²/B term of the variance identity). GBDT's train error keeps falling toward zero, but its test error dips to a minimum and then rises — because each round is a bias-reducing gradient step that eventually fits noise. The dashed vertical is where early stopping catches it. RF ships with no early-stop knob because it doesn't need one; GBDT ships with one because it does." />
 
@@ -301,7 +301,7 @@ The honest recipe is: split into folds; for each fold, fit every base model on t
 
 > **Goal — the lens a quant interviewer applies: which lever each family pulls, and where calibration and monotonicity bite.**
 
-- **The dichotomy to memorize:** **bagging/RF reduce variance** (average low-bias/high-variance trees; bias ≈ a single tree's), **boosting reduces bias** (sequentially fit the loss; variance can creep up → can overfit). This is the single most-asked ensemble idea.
+- **Bagging and boosting:** averaging trees reduces the component of variance that is not shared across them; sequential boosting can reduce approximation error by fitting residual structure. Tree depth, regularization and the data determine the resulting bias and variance in both methods.
 - **Boosting = functional gradient descent / forward stagewise additive modeling** — the unifying frame; XGBoost is Newton's method in function space (it uses curvature $h_i$).
 - **Calibration (c1.2 tie):** trees/RF/GBDT are **not calibrated** out of the box. Both RF and boosting are *sigmoid-distorted* — their probabilities get pushed *toward* 0.5, so both are **under-confident at the extremes** (Niculescu-Mizil & Caruana 2005): RF because averaging bounded tree votes compresses toward the middle, AdaBoost because margin maximization pushes the mapped scores away from 0/1. A *sigmoid* (Platt) calibrator fits both (isotonic is the alternative), via `CalibratedClassifierCV` on held-out data. Contrast modern deep nets, which are *over*-confident (c1.2).
 - **Monotonic constraints** (quant favorite): enforce e.g. "default probability increases in leverage" via `monotone_constraints` (XGBoost/LightGBM/CatBoost) or `monotonic_cst` (sklearn HistGB).
@@ -322,7 +322,7 @@ The four rows below are the whole lesson compressed. The column to read first is
 
 **Scenario A: a fresh tabular prediction problem, accuracy matters.** Start with **gradient-boosted trees** — `HistGradientBoostingClassifier`, XGBoost, or LightGBM. They're the tabular default; tune learning rate, depth/leaves, and use **early stopping**.
 
-**Scenario B: noisy labels, little time to tune, want robustness.** **Random forest.** Near-zero tuning, robust to label noise (unlike AdaBoost's exp-loss), parallelizes trivially, and more trees never hurt.
+**Scenario B: noisy labels, limited tuning budget.** Compare a random forest as a baseline. Trees can be trained in parallel, and additional trees reduce Monte Carlo variability at a computational cost. Check label noise and validation performance when choosing tree depth, feature subsampling and leaf size.
 
 **Scenario C: you need trustworthy probabilities (expected-value decisions).** Whatever the model, **calibrate** it — RF/GBDT are not calibrated out of the box; fit Platt/isotonic on a held-out set and check a reliability diagram (c1.2).
 

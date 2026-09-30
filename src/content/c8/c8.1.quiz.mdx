@@ -392,7 +392,7 @@ Second, **an I(1) regressor with I(1) residuals**, which is the spurious case. T
 3. **Beta drift.** If the hedge ratio is re-estimated on a rolling window, the estimate chases the spread and flattens the deviation you wanted to trade, so the z-score stops getting large and the strategy quietly stops trading. A Kalman filter is the usual response, and it trades the problem for a tuning parameter.
 4. **Crowding.** Other people hold the same spread. A forced unwind somewhere else widens it against you regardless of the statistics, which is what happened across statistical-arbitrage books in August 2007.
 5. **Costs on the short leg.** Borrow fees on a hard-to-borrow name can exceed the whole spread edge, and they spike exactly when the spread is most dislocated.
-6. **It was never economic.** If nobody wrote down the mechanism tying the two names together before the backtest, a passing ADF test was a coincidence with a p-value attached.
+6. **An undocumented economic mechanism.** A passing ADF test does not explain why the spread should remain stable. Without a documented mechanism, scrutinize selection bias and check held-out periods, structural breaks and sensitivity to the estimation window before relying on the result.
 
 **(d)** Check the corporate-action and index history for both legs first, because item 1 is both the most likely and the cheapest to rule out, and it gives a date you can test at. Then re-estimate $\beta$ on the pre-drift sample only and see whether the current spread is wide against the old hedge ratio or only against the drifting one, which separates a genuine dislocation from beta drift. Then check whether other pairs sharing the same driver moved at the same time, which points at the environment rather than at this estimate. Finally look at the borrow rate on the short leg over the drift period.
 
@@ -413,9 +413,6 @@ While you check: cut the position rather than doubling it or closing it. Size do
 </Quiz>
 
 ## Rapid-fire: stationarity, unit roots and cointegration
-
-These 13 questions stand on their own and do not refer to anything above. Each should take two to five minutes out loud. They are selected on how often they get asked, not on how interesting they are, and several of them are asked in almost this exact wording. If you drill one section of this quiz, drill this one.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Two random walks** Two unrelated random walks show an $R^2$ above 0.5 over thousands of observations. What is going on? Give the growth-rate argument for why the t-statistic behaves the way it does, and say what happens to it as you collect more data.
 2. **What is ADF's null** Write the ADF regression and state its null hypothesis in words. Then say why the test statistic is not compared against 1.96, and roughly what the 5% critical value is.

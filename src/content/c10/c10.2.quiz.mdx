@@ -278,7 +278,7 @@ Five hundred positions bought the diversification of about ten. The corrected in
 
 The ceiling: as $BR \to \infty$, $BR_{\text{eff}} \to 1/\rho = 10$. Correlation puts a hard cap on breadth that no number of additional names can lift. This is the failure mode of every strategy built by ranking a single signal across a universe: those are not 500 bets, they are one bet expressed 500 times.
 
-**(d)** It buys almost nothing, and I can say how little. Going from 500 to 1,000 names at $\rho = 0.10$ takes effective breadth from 9.8 to $1000/(1 + 999 \times 0.10) = 1000/100.9 = 9.9$. The information ratio moves from 0.16 to 0.16. You are already sitting against the $1/\rho = 10$ ceiling, so the second five hundred names are decoration. Worse, they are expensive decoration: the marginal names are smaller, less liquid and more costly to trade, so net of costs the change is negative.
+**(d)** Under the assumed equal correlation, going from 500 to 1,000 names at $\rho=0.10$ increases effective breadth from $500/50.9\approx9.823$ to $1000/100.9\approx9.911$. Since information ratio scales with the square root of breadth in this model, the relative improvement is $\sqrt{9.911/9.823}-1\approx0.45\%$; both values round to 0.16 at two decimals. The $1/\rho=10$ limit explains the small gain. Whether it survives trading costs depends on the marginal assets and implementation; their liquidity was not specified.
 
 What actually raises the number is lowering $\rho$ or raising $IC$.
 
@@ -331,7 +331,7 @@ Two conclusions worth saying in the same breath. The headline Sharpe of 0.667 is
 
 **(d)** The errors run in both directions and they are not symmetric in how often they occur.
 
-**Omitting a real factor** credits its premium to you. A value-tilted book regressed on the market alone reports the value premium as alpha, and a short-volatility book regressed on anything reports the insurance premium as alpha until the tail arrives. This is the common direction because it is the flattering one, and nobody audits their own factor set upward.
+**Omitting a relevant factor** can attribute its expected contribution to the intercept. For example, market-only regression can leave a value exposure in reported alpha; omitting volatility exposure can misattribute an insurance premium. Audit plausible exposures using holdings, strategy mechanics and residual behavior, then test the expanded model on held-out periods. Adding factors after inspecting returns can itself introduce selection bias.
 
 **Including too many factors** regresses away returns that were genuinely yours. The sharp case is a factor constructed from the same characteristic your signal trades: the factor is then close to a repackaging of your own positions, and the regression assigns your return to it by construction. Adding factors is not a free robustness check, since each one can only lower the intercept.
 
@@ -419,9 +419,6 @@ Order of work: magnitude first, since an eigenvalue near $10^{-16}$ times the tr
 </Quiz>
 
 ## Rapid-fire: factor models, risk decomposition and active management
-
-These 16 questions stand alone and do not depend on anything above. Each should take 2 to 5 minutes out loud. They are chosen for how often they get asked, not for how interesting they are, and several are asked in close to this wording. Answer them speaking, with the arithmetic said aloud.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
 
 1. **Derive the factor covariance** Start from $r = \alpha + Bf + \varepsilon$ and derive $\Sigma = B\Sigma_f B^\top + D$. Name each assumption at the step that uses it, say which one is load-bearing, and state the exact condition for $\Sigma$ to be positive definite rather than merely positive semi-definite.
 2. **Five hundred stocks, sixty months** Count the free parameters in the covariance matrix and count the observations. Give the rank of the sample estimate and say what its null space means to an optimizer. Then answer the follow-up: your covariance matrix is noisy, what do you do?

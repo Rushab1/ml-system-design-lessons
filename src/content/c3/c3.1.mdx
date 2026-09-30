@@ -3,7 +3,6 @@ id: c3.1
 chapter: 3
 title: Attention and the transformer block
 subtitle: Self-attention derived from the problem it solves, and what one block actually costs
-refs: []
 estimatedMinutes: 55
 ---
 
@@ -52,7 +51,7 @@ $$
 
 $QK^\top$ is $n \times n$; entry $(i,j)$ is how much token $i$ wants token $j$. Softmax over $j$ makes each row a probability distribution. Multiplying by $V$ gives each token a convex combination of all value vectors.
 
-Why three projections and not one? With raw $X$ on both sides the score matrix would be $XX^\top$, which is symmetric: token $i$ attending to $j$ would force $j$ to attend back equally. A pronoun should attend hard to its antecedent without the antecedent attending back. Separate $W_Q$ and $W_K$ break that symmetry, and the scores are really $X W_Q W_K^\top X^\top$, a learned bilinear form of rank at most $d_k$.
+Why three projections and not one? With raw $X$ on both sides the score matrix would be $XX^\top$, which is symmetric: the unnormalized score for $i$ to $j$ would equal that for $j$ to $i$. Row-wise softmax can still make their attention probabilities differ because their denominators differ. A pronoun should attend hard to its antecedent without the antecedent attending back. Separate $W_Q$ and $W_K$ break that symmetry, and the scores are really $X W_Q W_K^\top X^\top$, a learned bilinear form of rank at most $d_k$.
 
 $V$ is separate for a different reason: the key is the address and the value is the payload. There is no reason the thing that makes a token findable is the thing you want to read from it. "Paris" should be findable by queries about cities and contribute geographic content, and those are different subspaces.
 
@@ -84,9 +83,11 @@ $$
 \frac{\partial p_i}{\partial z_j} = p_i(\delta_{ij} - p_j)
 $$
 
-At $p_i = 0.99999$, the diagonal term is $p(1-p) \approx 1.2 \times 10^{-5}$. With the $\sqrt{d_k}$ divisor, the same one-standard-deviation gap gives $p \approx 0.73$ and a Jacobian term of $0.2$. That is roughly a **16,000x difference in gradient magnitude** flowing back into $W_Q$ and $W_K$. Without scaling, attention gets stuck at initialization: it picks an essentially random hard assignment and receives almost no gradient to change its mind.
+At $p_i = 0.99999$, the diagonal term is $p(1-p) \approx 1.2 \times 10^{-5}$. With the $\sqrt{d_k}$ divisor, the same one-standard-deviation gap gives $p \approx 0.73$ and a Jacobian term of $0.2$. That is roughly a **16,000× difference in the softmax Jacobian term** with respect to its input logits. Gradients with respect to the original scores also include the divisor’s derivative; this is not directly a 16,000× parameter-gradient ratio. Without scaling, attention gets stuck at initialization: it picks an essentially random hard assignment and receives almost no gradient to change its mind.
 
-> **Stop and think.** The variance argument assumed unit-variance inputs. Modern models put an RMSNorm before the QKV projection, which enforces roughly that. What happens to this argument if a model drifts to key vectors with per-component standard deviation 3 during training? Hint: the effective temperature moves by a factor of 9, and nothing in the architecture pushes it back. This is why query-key normalization was added to several 2024-2026 training recipes.
+> **Stop and think.** Keep query-component standard deviation at 1 and let key-component standard deviation rise to 3. The scaled dot product now has variance 9 but standard deviation 3: logits sharpen by a factor of 3, equivalent to dividing temperature by 3, not 9. If both query and key standard deviations triple, logits scale by 9. Normalizing the residual stream before learned Q/K projections does not guarantee unit-variance projected coordinates.
+
+<ResearchFlow variant="attention" />
 
 ## Part 4 — Multi-head attention
 
@@ -165,7 +166,7 @@ $$
 
 **Residual connections.** Write $F$ for either sublayer, $L$ for the training loss and $I$ for the identity matrix. With $y = x + F(x)$, the gradient is $\partial L/\partial x = \partial L/\partial y \cdot (I + \partial F/\partial x)$. The identity term guarantees a path with gain exactly 1 through every layer, so 80 stacked layers do not multiply 80 small Jacobians together. The residual stream is also what makes heads additive.
 
-**Normalization.** LayerNorm normalizes across the feature dimension of a *single* token: subtract that token's mean, divide by its standard deviation, rescale by learned parameters. BatchNorm normalizes per feature across the *batch*. Transformers use LayerNorm because BatchNorm's statistics depend on the other examples in the batch, and at inference you decode one token at a time at batch 1 with variable sequence lengths, where those statistics are meaningless or stale. The reason is batch-independence at inference plus variable length, not that it works better.
+**Normalization.** LayerNorm normalizes the feature coordinates within one token, so its statistics do not depend on other examples in the batch. BatchNorm instead uses batch statistics during training and running estimates at inference. It can perform inference at batch one, but its training/inference statistics and treatment of variable sequences are less natural for autoregressive transformers. Do not confuse this choice with the separate pre-norm/post-norm placement question.
 
 Placement matters. Post-norm, the 2017 arrangement, is $\mathrm{Norm}(x + F(x))$, which puts a normalization on the main path and makes deep stacks need careful warmup. Pre-norm, $x + F(\mathrm{Norm}(x))$, leaves the residual path clean, which is why every large model since roughly 2020 uses it. RMSNorm drops the mean subtraction and the bias and keeps only division by the root-mean-square; it costs less and works as well, which suggests re-centering was never the active ingredient.
 
@@ -196,6 +197,14 @@ $$
 for one layer's attention matrix, and training retains it for the backward pass. That is why materializing $QK^\top$ is unaffordable. The way out is to never write the $n \times n$ matrix to HBM at all: compute it in tiles small enough to sit in SRAM, carry a running maximum and a running normalizer so the softmax can be finished tile by tile, and recompute the tiles in the backward pass rather than storing them. That construction is FlashAttention. It is exact, and it made long context practical by cutting bytes moved, not FLOPs.
 
 The second quadratic cost is in generation. Naively, producing token $n+1$ recomputes attention over the whole prefix, so a length-$n$ generation costs $O(n^3)$ in total. Caching each token's K and V removes that redundancy and makes a decode step $O(n)$, at the price of a cache that grows linearly with context and eventually dominates GPU memory. That trade, in bytes, is priced in c3.2 and c3.3.
+
+### What the cache changes, and what it does not
+
+**Goal — distinguish the cost of one token from the cost of a whole generation.** For fixed model width, recomputing dense attention over a prefix of length $t$ costs $O(t^2)$ per new token. Summing over $n$ generated tokens gives $O(n^3)$ attention work. With cached keys and values, only the new query attends over that prefix: $O(t)$ per token, $O(n^2)$ over the generation, plus the initial prefill. Projection and FFN work has its own lower-order terms; caching also avoids recomputing those for old tokens.
+
+<ResearchBars variant="decode" />
+
+These are dense causal-attention costs, not a law for every language model. [c3.2](/c/c3/c3.2) compares shared-head caches, compressed latent caches, native sparse attention, and recurrent-state hybrids. A cache saves recomputation; a sparse or recurrent architecture changes what is computed.
 
 ## Tradeoff matrix
 
@@ -234,3 +243,13 @@ The second quadratic cost is in generation. Naively, producing token $n+1$ recom
 ## Take the quiz
 
 **[Take the quiz →](/c/c3/c3.1/quiz)**
+
+
+## Cited references
+
+Research update: 27 September 2026; sources reviewed through 26 September. Worked examples in this lesson are illustrative unless explicitly attributed.
+
+### External works
+
+- Vaswani et al. (2017), [Attention Is All You Need](https://arxiv.org/abs/1706.03762).
+- Dao et al. (2022), [FlashAttention](https://arxiv.org/abs/2205.14135): IO-aware dense attention; the architecture and hardware updates are developed in [c3.2](/c/c3/c3.2).

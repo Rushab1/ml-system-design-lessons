@@ -524,9 +524,6 @@ Implementations run the SVD of $X$ rather than eigendecomposing $X^\top X$ for t
 
 ## Rapid-fire: PCA & dimensionality reduction
 
-These 13 questions do not depend on the numbered questions above, so you can study this section on its own. Each one should take 2 to 5 minutes to answer out loud. They are chosen for interview frequency, not for theoretical interest.
-They are ordered by interview importance, most-asked first: the first five carry most of the value and the first ten cover nearly all of it.
-
 1. **PCA in one minute** Explain PCA to a smart engineer who has never seen it. Say what it does geometrically, what the first principal component is, and why "the direction of maximum projected variance" and "the line the points sit closest to" describe the same thing.
 2. **How you actually compute the eigenvalues** PCA is an eigendecomposition of $C=\frac1{n-1}X^\top X$. Say how that is actually computed, and why it is not by solving $\det(C-\lambda I)=0$. Walk the chain: power iteration and what it converges to, the Rayleigh quotient for the eigenvalue, why $k$ independent starts all collapse to $v_1$ and what fixes it, then the QR algorithm and why reversing the factors preserves eigenvalues. Finish on practice: $d=10{,}000$ and $k=50$, what do you run, and why SVD $X$ directly rather than form $X^\top X$?
 3. **Center always, scale sometimes** Why is centering mandatory before PCA, while standardizing each column is a judgment call? Give a concrete dataset where PCA on the covariance matrix and PCA on the correlation matrix return completely different first components.
